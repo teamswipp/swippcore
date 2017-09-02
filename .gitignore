@@ -1,5 +1,5 @@
 .qmake.stash
-Makefile*
+/Makefile*
 build
 compile*
 object*
