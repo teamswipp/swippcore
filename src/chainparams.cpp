@@ -138,7 +138,7 @@ public:
 
         // Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nBits  = 0x1e0fffff; //504365055 Decimal Number
-        genesis.nTime    = 1504426000;
+        genesis.nTime    = 1504426001;
         genesis.nNonce = 1454059;
 
         assert(hashGenesisBlock == uint256("0xb89fdf732b4a04a89c2c7b4b006a8e09cc7c4dbdfe8c0042b8cd3f7a9fc9587a"));
