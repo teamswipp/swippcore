@@ -65,7 +65,7 @@ public:
         //    CTxIn(COutPoint(0000000000, 4294967295), coinbase 00012a24323020466562203230313420426974636f696e2041544d7320636f6d6520746f20555341)
         //    CTxOut(empty)
         //  vMerkleTree: 12630d16a9
-        const char* pszTimestamp = "Swipp - The Beginning 2/9/2017";
+        const char* pszTimestamp = "Swipp - The Beginning 3/9/2017";
         std::vector<CTxIn> vin;
         vin.resize(1);
         vin[0].scriptSig = CScript() << 0 << CBigNum(42) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
@@ -77,7 +77,7 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
-        genesis.nTime    = 1504344000;
+        genesis.nTime    = 1504426000;
         genesis.nBits    = 0x1e0fffff;
         genesis.nNonce   = 1454059;
 
@@ -138,7 +138,7 @@ public:
 
         // Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nBits  = 0x1e0fffff; //504365055 Decimal Number
-        genesis.nTime    = 1504344001;
+        genesis.nTime    = 1504426000;
         genesis.nNonce = 1454059;
 
         assert(hashGenesisBlock == uint256("0xb89fdf732b4a04a89c2c7b4b006a8e09cc7c4dbdfe8c0042b8cd3f7a9fc9587a"));
