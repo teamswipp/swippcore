@@ -111,7 +111,7 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
             return;
         }
 
-        
+
 
         //search existing masternode list, this is where we update existing masternodes with new dsee broadcasts
 	LOCK(cs_masternodes);
@@ -159,7 +159,7 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
         tx.vin.push_back(vin);
         tx.vout.push_back(vout);
         //if(AcceptableInputs(mempool, state, tx)){
-        bool* pfMissingInputs;
+        bool* pfMissingInputs = false;
 	if(AcceptableInputs(mempool, tx, false, pfMissingInputs)){
             if(fDebug) LogPrintf("dsee - Accepted masternode entry %i %i\n", count, current);
 
@@ -604,7 +604,7 @@ void CMasterNode::Check()
         tx.vout.push_back(vout);
 
         //if(!AcceptableInputs(mempool, state, tx)){
-        bool* pfMissingInputs;
+        bool* pfMissingInputs = false;
     if(!AcceptableInputs(mempool, tx, false, pfMissingInputs)){
             enabled = 3;
             return;
