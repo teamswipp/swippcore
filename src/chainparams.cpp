@@ -65,7 +65,7 @@ public:
         //    CTxIn(COutPoint(0000000000, 4294967295), coinbase 00012a24323020466562203230313420426974636f696e2041544d7320636f6d6520746f20555341)
         //    CTxOut(empty)
         //  vMerkleTree: 12630d16a9
-        const char* pszTimestamp = "Swipp - The Beginning 2/9/2017";
+        const char* pszTimestamp = "Swipp - The Beginning 5/9/2017";
         std::vector<CTxIn> vin;
         vin.resize(1);
         vin[0].scriptSig = CScript() << 0 << CBigNum(42) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
@@ -77,7 +77,7 @@ public:
         genesis.hashPrevBlock = 0;
         genesis.hashMerkleRoot = genesis.BuildMerkleTree();
         genesis.nVersion = 1;
-        genesis.nTime    = 1504344000;
+        genesis.nTime    = 1504550000;
         genesis.nBits    = 0x1e0fffff;
         genesis.nNonce   = 1454059;
 
@@ -86,8 +86,8 @@ public:
         hashGenesisBlock = genesis.GetHash();
         printf("genesis.GetHash = %s\n", genesis.GetHash().ToString().c_str());
         printf("merkle = %s\n", genesis.hashMerkleRoot.ToString().c_str());
-        assert(hashGenesisBlock == uint256("0x058a57604a3529ed5ea1aa78a2f01913df171f151f60b9b32d3cb3171b11bd34"));
-        assert(genesis.hashMerkleRoot == uint256("0x06a157289c98a556e9a0357b5a2ef951e0d60e12546b123c904e1f30f06e02db"));
+        assert(hashGenesisBlock == uint256("0xe94755b352f86725342f816a148ba490e07df1d7ae3a135fc0632ae4a83f8e81"));
+        assert(genesis.hashMerkleRoot == uint256("0x5cd583483a3f368810466dd6ac054dc5bc75b46ef03952e8ed7eefd3b32a8160"));
 
         vSeeds.push_back(CDNSSeedData("sd1", "174.138.90.184"));
 
@@ -138,10 +138,10 @@ public:
 
         // Modify the testnet genesis block so the timestamp is valid for a later start.
         genesis.nBits  = 0x1e0fffff; //504365055 Decimal Number
-        genesis.nTime    = 1504344001;
+        genesis.nTime    = 1504550001;
         genesis.nNonce = 1454059;
 
-        assert(hashGenesisBlock == uint256("0x058a57604a3529ed5ea1aa78a2f01913df171f151f60b9b32d3cb3171b11bd34"));
+        assert(hashGenesisBlock == uint256("0xe94755b352f86725342f816a148ba490e07df1d7ae3a135fc0632ae4a83f8e81"));
 
         vFixedSeeds.clear();
         vSeeds.clear();

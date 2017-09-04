@@ -1,0 +1,7 @@
+.qmake.stash
+/Makefile*
+build
+compile*
+object*
+release*
+swipp-qt*
