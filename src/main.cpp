@@ -1139,27 +1139,31 @@ int64_t GetProofOfWorkReward(int64_t nFees, int nHeight)
     {
         nSubsidy = 3000000 * COIN;   // 3M Premine
     }
-        else if(pindexBest->nHeight < 250000)
+    else if(pindexBest->nHeight < 90000)
     {
-        nSubsidy = 48 * COIN;  // ~15m
+        nSubsidy = 48 * COIN;  // +4.32m
     }
-        else if(pindexBest->nHeight < 750000)
+    else if(pindexBest->nHeight < 120000)
     {
-        nSubsidy = 24 * COIN;  // ~27m
+        nSubsidy = 24 * COIN;  // +0.72m
     }
-        else if(pindexBest->nHeight < 1250000)
+    else if(pindexBest->nHeight < 150000)
     {
-        nSubsidy = 12 * COIN;  // ~33m
+        nSubsidy = 12 * COIN;  // +0.36m
     }
-        else if(pindexBest->nHeight < 2000000)
+    else if(pindexBest->nHeight < 200000)
     {
-        nSubsidy = 6 * COIN;  // ~37,5m
+        nSubsidy = 6 * COIN;   // +0.3m
     }
-		else if(pindexBest->nHeight < 4000000)
+    else if(pindexBest->nHeight < 300000)
     {
-        nSubsidy = 3 * COIN;  // 43,5m
+        nSubsidy = 3 * COIN;   // ~0.3m
     }
-        else
+    else if(pindexBest->nHeight < 400000)
+    {
+        nSubsidy = 2 * COIN;   // ~0.2m
+    }
+    else
     {
         nSubsidy = 1 * COIN;
     }
@@ -1174,18 +1178,32 @@ int64_t GetProofOfStakeReward(int64_t nCoinAge, int64_t nFees, int nHeight)
 {
     int64_t nSubsidy = 2 * COIN;
 
-    if(pindexBest->nHeight < 100000)
+    if(pindexBest->nHeight < 90000)
     {
         nSubsidy = 5 * COIN;
     }
-        else
+    else if(pindexBest->nHeight < 150000)
     {
         nSubsidy = 2 * COIN;
     }
-
+    else if(pindexBest->nHeight < 200000)
+    {
+        nSubsidy = 1 * COIN;
+    }
+    else if(pindexBest->nHeight < 300000)
+    {
+        nSubsidy = 0.1 * COIN;
+    }
+    else if(pindexBest->nHeight < 400000)
+    {
+        nSubsidy = 0.01 * COIN;
+    }
+    else
+    {
+        nSubsidy = 0.001 * COIN;
+    }
 
     LogPrint("creation", "GetProofOfStakeReward(): create=%s nCoinAge=%d nHeight=%d\n", FormatMoney(nSubsidy), nCoinAge, nHeight);
-
     return nSubsidy + nFees;
 }
 
