@@ -20,9 +20,9 @@ class CValidationState;
 #define START_MASTERNODE_PAYMENTS_TESTNET 1432907775
 #define START_MASTERNODE_PAYMENTS 1432907775
 
-static const int64_t DARKSEND_COLLATERAL = (20000*COIN); //20000
+static const int64_t DARKSEND_COLLATERAL = (50000*COIN);
 static const int64_t DARKSEND_FEE = (0.002*COIN);
-static const int64_t DARKSEND_POOL_MAX = (1999999.99*COIN);
+static const int64_t DARKSEND_POOL_MAX = (9999999.99*COIN);
 /*
     At 15 signatures, 1/2 of the masternode network can be owned by
     one party without comprimising the security of InstantX

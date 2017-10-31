@@ -21,6 +21,7 @@
 #include "masternode.h"
 #include "chainparams.h"
 #include "smessage.h"
+#include "main.h"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/range/algorithm.hpp>
@@ -1433,7 +1434,7 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
                     found = true;
                     if (IsCollateralAmount(pcoin->vout[i].nValue)) continue; // do not use collateral amounts
                     found = !IsDenominatedAmount(pcoin->vout[i].nValue);
-                    if(found && coin_type == ONLY_NONDENOMINATED_NOTMN) found = (pcoin->vout[i].nValue != 20000*COIN); // do not use MN funds
+                    if(found && coin_type == ONLY_NONDENOMINATED_NOTMN) found = (pcoin->vout[i].nValue != DARKSEND_COLLATERAL); // do not use MN funds
                 } else {
                     found = true;
                 }
@@ -1500,7 +1501,7 @@ void CWallet::AvailableCoinsMN(vector<COutput>& vCoins, bool fOnlyConfirmed, con
                     found = true;
                     if (IsCollateralAmount(pcoin->vout[i].nValue)) continue; // do not use collateral amounts
                     found = !IsDenominatedAmount(pcoin->vout[i].nValue);
-                    if(found && coin_type == ONLY_NONDENOMINATED_NOTMN) found = (pcoin->vout[i].nValue != 20000*COIN); // do not use MN funds
+                    if(found && coin_type == ONLY_NONDENOMINATED_NOTMN) found = (pcoin->vout[i].nValue != DARKSEND_COLLATERAL); // do not use MN funds
                 } else {
                     found = true;
                 }
@@ -2137,7 +2138,7 @@ bool CWallet::SelectCoinsByDenominations(int nDenom, int64_t nValueMin, int64_t 
     {
         //there's no reason to allow inputs less than 1 COIN into DS (other than denominations smaller than that amount)
         if(out.tx->vout[out.i].nValue < 1*COIN && out.tx->vout[out.i].nValue != (.1*COIN)+100) continue;
-        if(fMasterNode && out.tx->vout[out.i].nValue == 20000*COIN) continue; //masternode input
+        if(fMasterNode && out.tx->vout[out.i].nValue == DARKSEND_COLLATERAL) continue; //masternode input
         if(nValueRet + out.tx->vout[out.i].nValue <= nValueMax){
             bool fAccepted = false;
 
@@ -2212,8 +2213,8 @@ bool CWallet::SelectCoinsDark(int64_t nValueMin, int64_t nValueMax, std::vector<
     BOOST_FOREACH(const COutput& out, vCoins)
     {
         //there's no reason to allow inputs less than 1 COIN into DS (other than denominations smaller than that amount)
-        if(out.tx->vout[out.i].nValue < 1*COIN && out.tx->vout[out.i].nValue != (.1*COIN)+100) continue;
-        if(fMasterNode && out.tx->vout[out.i].nValue == 20000*COIN) continue; //masternode input
+        if(out.tx->vout[out.i].nValue < 1 * COIN && out.tx->vout[out.i].nValue != (.1 * COIN) + 100) continue;
+        if(fMasterNode && out.tx->vout[out.i].nValue == DARKSEND_COLLATERAL) continue; //masternode input
 
         if(nValueRet + out.tx->vout[out.i].nValue <= nValueMax){
             CTxIn vin = CTxIn(out.tx->GetHash(),out.i);
