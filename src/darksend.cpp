@@ -769,8 +769,7 @@ void CDarkSendPool::ChargeRandomFees(){
                 Being that DarkSend has "no fees" we need to have some kind of cost associated
                 with using it to stop abuse. Otherwise it could serve as an attack vector and
                 allow endless transaction that would bloat Swipp and make it unusable. To
-                stop these kinds of attacks 1 in 50 successful transactions are charged. This
-                adds up to a cost of 0.002Swipp per transaction on average.
+                stop these kinds of attacks 1 in 50 successful transactions are charged.
             */
             if(r <= 20)
             {
