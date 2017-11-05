@@ -2395,8 +2395,8 @@ bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) c
         LOCK2(cs_main, mempool.cs);
 
         CBlockIndex *pindex = pindexBest;
-        if(IsProofOfStake() && pindex != NULL){
-            if(pindex->GetBlockHash() == hashPrevBlock){
+        if(pindex != NULL) {
+            if(pindex->GetBlockHash() == hashPrevBlock) {
                 CAmount masternodePaymentAmount = GetMasternodePayment(pindex->nHeight+1, vtx[1].GetValueOut());
                 bool fIsInitialDownload = IsInitialBlockDownload();
 
