@@ -1155,15 +1155,15 @@ int64_t GetProofOfWorkReward(int64_t nFees, int nHeight)
     {
         nSubsidy = 6 * COIN;   // +0.3m
     }
-    else if(pindexBest->nHeight < 300000)
-    {
-        nSubsidy = 3 * COIN;   // ~0.3m
-    }
     else if(pindexBest->nHeight < 400000)
     {
-        nSubsidy = 2 * COIN;   // ~0.2m
+        nSubsidy = 3 * COIN;   // ~0.6m
     }
-    else if(pindexBest->nHeight < 800000)
+    else if(pindexBest->nHeight < 600000)
+    {
+        nSubsidy = 2 * COIN;   // ~0.4m
+    }
+    else if(pindexBest->nHeight < 1000000)
     {
         nSubsidy = 1 * COIN;   // ~0.4m
     }
@@ -1183,31 +1183,27 @@ int64_t GetProofOfStakeReward(int64_t nCoinAge, int64_t nFees, int nHeight)
 
     if(pindexBest->nHeight < 90000)
     {
-        nSubsidy = 5 * COIN;
+        nSubsidy = 5 * COIN;   // 0.45m
     }
     else if(pindexBest->nHeight < 150000)
     {
-        nSubsidy = 2 * COIN;
-    }
-    else if(pindexBest->nHeight < 200000)
-    {
-        nSubsidy = 1 * COIN;
+        nSubsidy = 3 * COIN;   // 0.18m
     }
     else if(pindexBest->nHeight < 300000)
     {
-        nSubsidy = 0.1 * COIN;
+        nSubsidy = 1.5 * COIN; // 0.225m
     }
-    else if(pindexBest->nHeight < 400000)
+    else if(pindexBest->nHeight < 500000)
     {
-        nSubsidy = 0.01 * COIN;
+        nSubsidy = 1 * COIN;   // 0.2m
     }
-    else if(pindexBest->nHeight < 800000)
+    else if(pindexBest->nHeight < 1000000)
     {
-        nSubsidy = 0.005 * COIN;
+        nSubsidy = 0.5 * COIN; // 0.25m
     }
     else
     {
-        nSubsidy = 0.001 * COIN;
+        nSubsidy = 0.1 * COIN;
     }
 
     LogPrint("creation", "GetProofOfStakeReward(): create=%s nCoinAge=%d nHeight=%d\n", FormatMoney(nSubsidy), nCoinAge, nHeight);
