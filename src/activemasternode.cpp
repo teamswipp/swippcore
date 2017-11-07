@@ -8,7 +8,7 @@
 #include "clientversion.h"
 
 //
-// Bootup the masternode, look for a 50.000 Swipp input and register on the network
+// Bootup the masternode, look for a 30.000 Swipp input and register on the network
 //
 void CActiveMasternode::ManageStatus()
 {
