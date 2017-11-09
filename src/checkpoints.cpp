@@ -1,4 +1,5 @@
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,7 +11,6 @@
 #include "txdb.h"
 #include "main.h"
 #include "uint256.h"
-
 
 static const int nCheckpointSpan = 500;
 
@@ -25,22 +25,10 @@ namespace Checkpoints
     //    timestamp before)
     // + Contains no strange transactions
     //
-    static MapCheckpoints mapCheckpoints =
-        boost::assign::map_list_of
-        ( 0,   uint256("0xe94755b352f86725342f816a148ba490e07df1d7ae3a135fc0632ae4a83f8e81") )
-        ( 100,   uint256("0x0000000064300e993d53071ecb44a86464d920f2e867f9cb3343a5fa1dd6dbfd") )
-         //( 000,   uint256("0x") )
-         //( 0000,   uint256("0x") )
-         //( 000,   uint256("0x") )
-         //( 0000,   uint256("0x") )
-         //( 0000,   uint256("0x") )
-         //( 000,   uint256("0x") )
-        //( 000,   uint256("0x") )
-        //( 0000,   uint256("0x") )
-
-
-    ;
-
+    static MapCheckpoints mapCheckpoints = boost::assign::map_list_of
+        ( 0,     uint256("0xe94755b352f86725342f816a148ba490e07df1d7ae3a135fc0632ae4a83f8e81"))
+        ( 100,   uint256("0x0000000064300e993d53071ecb44a86464d920f2e867f9cb3343a5fa1dd6dbfd"))
+        ( 86900, uint256("0xb92c39195ccbadafb2d1481ddce36bf02c638190444e31bbb2d5c195d8e9ad1f"));
 
     // TestNet has no checkpoints
     static MapCheckpoints mapCheckpointsTestnet;
