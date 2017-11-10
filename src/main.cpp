@@ -1139,33 +1139,37 @@ int64_t GetProofOfWorkReward(int64_t nFees, int nHeight)
     {
         nSubsidy = 3000000 * COIN;   // 3M Premine
     }
-    else if(pindexBest->nHeight < 90000)
+    else if(pindexBest->nHeight < 93000)
     {
-        nSubsidy = 48 * COIN;  // +4.32m
+        nSubsidy = 48 * COIN;  // 93 000, +4.464m
     }
     else if(pindexBest->nHeight < 120000)
     {
-        nSubsidy = 24 * COIN;  // +0.72m
+        nSubsidy = 24 * COIN;  // 27 000, +0.648m
     }
-    else if(pindexBest->nHeight < 150000)
+    else if(pindexBest->nHeight < 180000)
     {
-        nSubsidy = 12 * COIN;  // +0.36m
+        nSubsidy = 12 * COIN;  // 60 000, +0.72m
     }
-    else if(pindexBest->nHeight < 250000)
+    else if(pindexBest->nHeight < 300000)
     {
-        nSubsidy = 6 * COIN;   // +0.6m
+        nSubsidy = 6 * COIN;   // 120 000, +0.72m
     }
     else if(pindexBest->nHeight < 500000)
     {
-        nSubsidy = 3 * COIN;   // ~0.75m
+        nSubsidy = 3 * COIN;   // 200 000, +0.6m
     }
     else if(pindexBest->nHeight < 800000)
     {
-        nSubsidy = 2 * COIN;   // ~0.6m
+        nSubsidy = 2 * COIN;   // 300 000, +0.6m
     }
-    else if(pindexBest->nHeight < 1500000)
+    else if(pindexBest->nHeight < 1200000)
     {
-        nSubsidy = 1 * COIN;   // ~0.7m
+        nSubsidy = 1.5 * COIN; // 400 000, +0.6m
+    }
+    else if(pindexBest->nHeight < 2000000)
+    {
+        nSubsidy = 1 * COIN;   // 800 000, +0.8m
     }
     else
     {
@@ -1181,25 +1185,29 @@ int64_t GetProofOfStakeReward(int64_t nCoinAge, int64_t nFees, int nHeight)
 {
     int64_t nSubsidy = 2 * COIN;
 
-    if(pindexBest->nHeight < 90000)
+    if(pindexBest->nHeight < 93000)
     {
-        nSubsidy = 5 * COIN;   // 0.45m
+        nSubsidy = 5 * COIN;   // 93 000, 0.465m
     }
-    else if(pindexBest->nHeight < 150000)
+    else if(pindexBest->nHeight < 200000)
     {
-        nSubsidy = 3 * COIN;   // 0.18m
+        nSubsidy = 3 * COIN;   // 107 000, 0.321m
     }
     else if(pindexBest->nHeight < 400000)
     {
-        nSubsidy = 1.5 * COIN; // 0.375m
+        nSubsidy = 2 * COIN;   // 200 000, 0.4m
     }
     else if(pindexBest->nHeight < 800000)
     {
-        nSubsidy = 1 * COIN;   // 0.4m
+        nSubsidy = 1.5 * COIN; // 400 000, 0.6m
     }
-    else if(pindexBest->nHeight < 1500000)
+    else if(pindexBest->nHeight < 1200000)
     {
-        nSubsidy = 0.5 * COIN; // 0.35m
+        nSubsidy = 1 * COIN;   // 400 000, 0.4m
+    }
+    else if(pindexBest->nHeight < 2000000)
+    {
+        nSubsidy = 0.5 * COIN; // 800 000, 0.4m
     }
     else
     {
