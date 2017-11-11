@@ -1778,7 +1778,7 @@ void CBlock::RebuildAddressIndex(CTxDB& txdb)
 bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 {
     // Check it again in case a previous version let a bad block in, but skip BlockSig checking
-    if (!CheckBlock(!fJustCheck, !fJustCheck, false))
+    if (!CheckBlock(NULL, !fJustCheck, !fJustCheck, false))
         return false;
 
     unsigned int flags = SCRIPT_VERIFY_NOCACHE;
@@ -2327,10 +2327,23 @@ bool CBlock::AddToBlockIndex(unsigned int nFile, unsigned int nBlockPos, const u
 
 
 
-bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) const
+bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) const
 {
     // These are checks that are independent of context
     // that can be verified before saving an orphan block.
+
+    // block break
+
+    if (pfrom != NULL)
+    {
+        CBlockIndex *pindex = pindexBest;
+        if(pindex != NULL)
+        {
+            if (!isVersionCompatible(PEER, pfrom->nVersion, pindex->nHeight+1)) {
+                return DoS(100, error("isVersionCompatible() : failed to pass"));
+            }
+        }
+    }
 
     // Size limits
     if (vtx.empty() || vtx.size() > MAX_BLOCK_SIZE || ::GetSerializeSize(*this, SER_NETWORK, PROTOCOL_VERSION) > MAX_BLOCK_SIZE)
@@ -2686,7 +2699,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
     }
 
     // Preliminary checks
-    if (!pblock->CheckBlock())
+    if (!pblock->CheckBlock(pfrom))
         return error("ProcessBlock() : CheckBlock FAILED");
 
     // If we don't already have its previous block, shunt it off to holding area until we get it
