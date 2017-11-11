@@ -1,8 +1,10 @@
 // Copyright (c) 2012 The Bitcoin developers
+// Copyright (c) 2017 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+#include <map>
 #include <string>
-
+#include "main.h"
 #include "version.h"
 
 // Name of client reported in the 'version' message. Report the same name
@@ -64,3 +66,37 @@ const std::string CLIENT_NAME("swippcore");
 
 const std::string CLIENT_BUILD(BUILD_DESC CLIENT_VERSION_SUFFIX);
 const std::string CLIENT_DATE(BUILD_DATE);
+
+// Check if the specific version is valid for the given block height.
+// The idea here is to allow for smooth transitions between new protocol versions.
+// NEEDS TO BE MODIFIED IF A NEW BLOCK BREAK OCCURS IN THE FUTURE!
+
+bool isVersionCompatible(BlockBreakVersionType fbVersionType, int version, int nHeight)
+{
+    int *b0ToLbb = new int[2] {0, LAST_BLOCK_BREAK - 1};
+    int *lbbToMax = new int[2] {LAST_BLOCK_BREAK, MAX_BLOCK_SIZE};
+
+    std::map<int, int *> instantXForkBlocks   = {{69110, b0ToLbb}, {MIN_INSTANTX_PROTO_VERSION, lbbToMax}};
+    std::map<int, int *> masternodeForkBlocks = {{69110, b0ToLbb}, {MIN_MN_PROTO_VERSION, lbbToMax}};
+    std::map<int, int *> peerForkBlocks       = {{69110, b0ToLbb}, {MIN_PEER_PROTO_VERSION, lbbToMax}};
+
+    std::map<BlockBreakVersionType, std::map<int, int *>> fbt = {
+        {INSTANTX, instantXForkBlocks},
+        {MASTERNODE, masternodeForkBlocks},
+        {PEER, peerForkBlocks}
+    };
+
+    try
+    {
+        auto versionMap = fbt.at(fbVersionType);
+        auto forkBlock = versionMap.at(version);
+
+        return nHeight >= forkBlock[0] && nHeight <= forkBlock[1];
+    }
+    catch(const std::out_of_range& oor)
+    {
+        LogPrintf("non-existing protocol version %d received.\n", version);
+    }
+
+    return false;
+}

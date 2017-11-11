@@ -1,4 +1,5 @@
 // Copyright (c) 2012 The Bitcoin developers
+// Copyright (c) 2017 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_VERSION_H
@@ -35,13 +36,6 @@ static const int PROTOCOL_VERSION = 69200;
 // intial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 209;
 
-// disconnect from peers older than this proto version
-static const int MIN_PEER_PROTO_VERSION = 69200;
-
-static const int MIN_INSTANTX_PROTO_VERSION = 69200;
-
-static const int MIN_MN_PROTO_VERSION = 69200;
-
 // nTime field added to CAddress, starting with this version;
 // if possible, avoid requesting addresses nodes older than this
 static const int CADDR_TIME_VERSION = 31402;
@@ -56,4 +50,20 @@ static const int BIP0031_VERSION = 60000;
 // "mempool" command, enhanced "getdata" behavior starts with this version:
 static const int MEMPOOL_GD_VERSION = 60005;
 
+enum BlockBreakVersionType
+{
+	INSTANTX,
+	MASTERNODE,
+	PEER
+};
+
+bool isVersionCompatible(BlockBreakVersionType fbVersionType, int version, int nHeight);
+
+// minimum protocol versions required for the last block break.
+
+static const int MIN_PEER_PROTO_VERSION = 69200;
+static const int MIN_INSTANTX_PROTO_VERSION = 69200;
+static const int MIN_MN_PROTO_VERSION = 69200;
+
+static const int LAST_BLOCK_BREAK = 93000;
 #endif
