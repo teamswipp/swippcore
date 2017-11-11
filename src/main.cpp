@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -2399,9 +2400,11 @@ bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) c
         LOCK2(cs_main, mempool.cs);
 
         CBlockIndex *pindex = pindexBest;
+        int vtxIndex = IsProofOfStake() ? 1 : 0;
+
         if(pindex != NULL) {
             if(pindex->GetBlockHash() == hashPrevBlock) {
-                CAmount masternodePaymentAmount = GetMasternodePayment(pindex->nHeight+1, vtx[1].GetValueOut());
+                CAmount masternodePaymentAmount = GetMasternodePayment(pindex->nHeight+1, vtx[vtxIndex].GetValueOut());
                 bool fIsInitialDownload = IsInitialBlockDownload();
 
                 // If we don't already have its previous block, skip masternode payment step
@@ -2419,12 +2422,12 @@ bool CBlock::CheckBlock(bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) c
                         if(fDebug) { LogPrintf("CheckBlock() : Using non-specific masternode payments %d\n", pindexBest->nHeight+1); }
                     }
 
-                    for (unsigned int i = 0; i < vtx[1].vout.size(); i++) {
-                        if(vtx[1].vout[i].nValue == masternodePaymentAmount )
+                    for (unsigned int i = 0; i < vtx[vtxIndex].vout.size(); i++) {
+                        if(vtx[vtxIndex].vout[i].nValue == masternodePaymentAmount )
                             foundPaymentAmount = true;
-                        if(vtx[1].vout[i].scriptPubKey == payee )
+                        if(vtx[vtxIndex].vout[i].scriptPubKey == payee )
                             foundPayee = true;
-                        if(vtx[1].vout[i].nValue == masternodePaymentAmount && vtx[1].vout[i].scriptPubKey == payee)
+                        if(vtx[vtxIndex].vout[i].nValue == masternodePaymentAmount && vtx[vtxIndex].vout[i].scriptPubKey == payee)
                             foundPaymentAndPayee = true;
                     }
 
