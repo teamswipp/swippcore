@@ -2339,7 +2339,7 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
         CBlockIndex *pindex = pindexBest;
         if(pindex != NULL)
         {
-            if (!isVersionCompatible(PEER, pfrom->nVersion, pindex->nHeight+1)) {
+            if (pindex->nHeight+1 >= 93000 && pfrom->nVersion < MIN_PEER_PROTO_VERSION) {
                 return DoS(100, error("isVersionCompatible() : failed to pass"));
             }
         }
@@ -3407,7 +3407,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         LogPrintf("partner at %s with version %i, has starting height of %i\n", pfrom->addr.ToString(), pfrom->nVersion, pfrom->nStartingHeight);
 
-        if (!isVersionCompatible(PEER, pfrom->nVersion, pfrom->nStartingHeight))
+        if (pfrom->nStartingHeight >= 93000 && pfrom->nVersion < MIN_PEER_PROTO_VERSION)
         {
             // disconnect from peers older than this proto version
             LogPrintf("partner %s using obsolete version %i for height %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, pfrom->nStartingHeight);
