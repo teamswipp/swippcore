@@ -89,7 +89,8 @@ public:
         assert(hashGenesisBlock == uint256("0xe94755b352f86725342f816a148ba490e07df1d7ae3a135fc0632ae4a83f8e81"));
         assert(genesis.hashMerkleRoot == uint256("0x5cd583483a3f368810466dd6ac054dc5bc75b46ef03952e8ed7eefd3b32a8160"));
 
-        vSeeds.push_back(CDNSSeedData("sd1", "174.138.90.184"));
+        vSeeds.push_back(CDNSSeedData("node1.swippcoin.com", "node1.swippcoin.com"));
+        vSeeds.push_back(CDNSSeedData("node2.swippcoin.com", "node2.swippcoin.com"));
 
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,63);
