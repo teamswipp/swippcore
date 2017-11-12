@@ -1434,7 +1434,7 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
                     found = true;
                     if (IsCollateralAmount(pcoin->vout[i].nValue)) continue; // do not use collateral amounts
                     found = !IsDenominatedAmount(pcoin->vout[i].nValue);
-                    if(found && coin_type == ONLY_NONDENOMINATED_NOTMN) found = (pcoin->vout[i].nValue != DARKSEND_COLLATERAL); // do not use MN funds
+                    if(found && coin_type == ONLY_NONDENOMINATED_NOTMN) found = (pcoin->vout[i].nValue != getMasternodeCollateralForBlock(pindexBest->nHeight)); // do not use MN funds
                 } else {
                     found = true;
                 }
@@ -1501,7 +1501,7 @@ void CWallet::AvailableCoinsMN(vector<COutput>& vCoins, bool fOnlyConfirmed, con
                     found = true;
                     if (IsCollateralAmount(pcoin->vout[i].nValue)) continue; // do not use collateral amounts
                     found = !IsDenominatedAmount(pcoin->vout[i].nValue);
-                    if(found && coin_type == ONLY_NONDENOMINATED_NOTMN) found = (pcoin->vout[i].nValue != DARKSEND_COLLATERAL); // do not use MN funds
+                    if(found && coin_type == ONLY_NONDENOMINATED_NOTMN) found = (pcoin->vout[i].nValue != getMasternodeCollateralForBlock(pindexBest->nHeight)); // do not use MN funds
                 } else {
                     found = true;
                 }
@@ -2138,7 +2138,7 @@ bool CWallet::SelectCoinsByDenominations(int nDenom, int64_t nValueMin, int64_t 
     {
         //there's no reason to allow inputs less than 1 COIN into DS (other than denominations smaller than that amount)
         if(out.tx->vout[out.i].nValue < 1*COIN && out.tx->vout[out.i].nValue != (.1*COIN)+100) continue;
-        if(fMasterNode && out.tx->vout[out.i].nValue == DARKSEND_COLLATERAL) continue; //masternode input
+        if(fMasterNode && out.tx->vout[out.i].nValue == getMasternodeCollateralForBlock(pindexBest->nHeight)) continue; //masternode input
         if(nValueRet + out.tx->vout[out.i].nValue <= nValueMax){
             bool fAccepted = false;
 
@@ -2214,7 +2214,7 @@ bool CWallet::SelectCoinsDark(int64_t nValueMin, int64_t nValueMax, std::vector<
     {
         //there's no reason to allow inputs less than 1 COIN into DS (other than denominations smaller than that amount)
         if(out.tx->vout[out.i].nValue < 1 * COIN && out.tx->vout[out.i].nValue != (.1 * COIN) + 100) continue;
-        if(fMasterNode && out.tx->vout[out.i].nValue == DARKSEND_COLLATERAL) continue; //masternode input
+        if(fMasterNode && out.tx->vout[out.i].nValue == getMasternodeCollateralForBlock(pindexBest->nHeight)) continue; //masternode input
 
         if(nValueRet + out.tx->vout[out.i].nValue <= nValueMax){
             CTxIn vin = CTxIn(out.tx->GetHash(),out.i);
@@ -2311,11 +2311,13 @@ bool CWallet::HasCollateralInputs() const
 
 bool CWallet::IsCollateralAmount(int64_t nInputAmount) const
 {
-    return  nInputAmount == (DARKSEND_COLLATERAL * 5)+DARKSEND_FEE ||
-            nInputAmount == (DARKSEND_COLLATERAL * 4)+DARKSEND_FEE ||
-            nInputAmount == (DARKSEND_COLLATERAL * 3)+DARKSEND_FEE ||
-            nInputAmount == (DARKSEND_COLLATERAL * 2)+DARKSEND_FEE ||
-            nInputAmount == (DARKSEND_COLLATERAL * 1)+DARKSEND_FEE;
+    int64_t coll = getMasternodeCollateralForBlock(pindexBest->nHeight);
+
+    return  nInputAmount == (coll * 5) + DARKSEND_FEE ||
+            nInputAmount == (coll * 4) + DARKSEND_FEE ||
+            nInputAmount == (coll * 3)+  DARKSEND_FEE ||
+            nInputAmount == (coll * 2) + DARKSEND_FEE ||
+            nInputAmount == (coll * 1) + DARKSEND_FEE;
 }
 
 bool CWallet::SelectCoinsWithoutDenomination(int64_t nTargetValue, set<pair<const CWalletTx*,unsigned int> >& setCoinsRet, int64_t& nValueRet) const
@@ -2364,9 +2366,9 @@ bool CWallet::CreateCollateralTransaction(CTransaction& txCollateral, std::strin
     BOOST_FOREACH(CTxIn v, vCoinsCollateral)
         txCollateral.vin.push_back(v);
 
-    if(nValueIn2 - DARKSEND_COLLATERAL - nFeeRet > 0) {
+    if(nValueIn2 - getMasternodeCollateralForBlock(pindexBest->nHeight) - nFeeRet > 0) {
         //pay collateral charge in fees
-        CTxOut vout3 = CTxOut(nValueIn2 - DARKSEND_COLLATERAL, scriptChange);
+        CTxOut vout3 = CTxOut(nValueIn2 - getMasternodeCollateralForBlock(pindexBest->nHeight), scriptChange);
         txCollateral.vout.push_back(vout3);
     }
 

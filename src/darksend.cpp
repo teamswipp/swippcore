@@ -965,7 +965,7 @@ bool CDarkSendPool::IsCollateralValid(const CTransaction& txCollateral){
     }
 
     //collateral transactions are required to pay out DARKSEND_COLLATERAL as a fee to the miners
-    if(nValueIn-nValueOut < DARKSEND_COLLATERAL) {
+    if(nValueIn-nValueOut < getMasternodeCollateralForBlock(pindexBest->nHeight)) {
         if(fDebug) LogPrintf ("CDarkSendPool::IsCollateralValid - did not include enough fees in transaction %d\n%s\n", nValueOut-nValueIn, txCollateral.ToString().c_str());
         return false;
     }
@@ -1402,7 +1402,7 @@ bool CDarkSendPool::DoAutomaticDenominating(bool fDryRun, bool ready)
     // if there are no DS collateral inputs yet
     if(!pwalletMain->HasCollateralInputs())
         // should have some additional amount for them
-        nLowestDenom += (DARKSEND_COLLATERAL*4)+DARKSEND_FEE*2;
+        nLowestDenom += (getMasternodeCollateralForBlock(pindexBest->nHeight) * 4) + DARKSEND_FEE * 2;
 
     int64_t nBalanceNeedsAnonymized = nAnonymizeSwippAmount*COIN - pwalletMain->GetAnonymizedBalance();
 
@@ -1677,8 +1677,8 @@ bool CDarkSendPool::MakeCollateralAmounts()
     std::string strFail = "";
     vector< pair<CScript, int64_t> > vecSend;
 
-    vecSend.push_back(make_pair(scriptChange, (DARKSEND_COLLATERAL*2)+DARKSEND_FEE));
-    vecSend.push_back(make_pair(scriptChange, (DARKSEND_COLLATERAL*2)+DARKSEND_FEE));
+    vecSend.push_back(make_pair(scriptChange, (getMasternodeCollateralForBlock(pindexBest->nHeight) * 2) + DARKSEND_FEE));
+    vecSend.push_back(make_pair(scriptChange, (getMasternodeCollateralForBlock(pindexBest->nHeight) * 2) + DARKSEND_FEE));
 
     CCoinControl *coinControl=NULL;
     int32_t nChangePos;
@@ -1724,10 +1724,10 @@ bool CDarkSendPool::CreateDenominated(int64_t nTotalValue)
 
     // ****** Add collateral outputs ************ /
     if(!pwalletMain->HasCollateralInputs()) {
-        vecSend.push_back(make_pair(scriptChange, (DARKSEND_COLLATERAL*2)+DARKSEND_FEE));
-        nValueLeft -= (DARKSEND_COLLATERAL*2)+DARKSEND_FEE;
-        vecSend.push_back(make_pair(scriptChange, (DARKSEND_COLLATERAL*2)+DARKSEND_FEE));
-        nValueLeft -= (DARKSEND_COLLATERAL*2)+DARKSEND_FEE;
+        vecSend.push_back(make_pair(scriptChange, (getMasternodeCollateralForBlock(pindexBest->nHeight)*2)+DARKSEND_FEE));
+        nValueLeft -= (getMasternodeCollateralForBlock(pindexBest->nHeight)*2)+DARKSEND_FEE;
+        vecSend.push_back(make_pair(scriptChange, (getMasternodeCollateralForBlock(pindexBest->nHeight)*2)+DARKSEND_FEE));
+        nValueLeft -= (getMasternodeCollateralForBlock(pindexBest->nHeight)*2)+DARKSEND_FEE;
     }
 
     // ****** Add denoms ************ /
@@ -1984,7 +1984,7 @@ bool CDarkSendSigner::IsVinAssociatedWithPubkey(CTxIn& vin, CPubKey& pubkey){
     //if(GetTransaction(vin.prevout.hash, txVin, hash, true)){
     if(GetTransaction(vin.prevout.hash, txVin, hash)){
         BOOST_FOREACH(CTxOut out, txVin.vout){
-            if(out.nValue == DARKSEND_COLLATERAL){
+            if(out.nValue == getMasternodeCollateralForBlock(pindexBest->nHeight)){
                 if(out.scriptPubKey == payee2) return true;
             }
         }
