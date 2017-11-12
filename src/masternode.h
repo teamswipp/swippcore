@@ -242,6 +242,5 @@ public:
     bool GetBlockPayee(int nBlockHeight, CScript& payee);
 };
 
-
-
+int64_t getMasternodeCollateralForBlock(int nHeight);
 #endif

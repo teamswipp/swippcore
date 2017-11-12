@@ -836,3 +836,12 @@ bool CMasternodePayments::SetPrivKey(std::string strPrivKey)
         return false;
     }
 }
+
+// NEEDS TO BE MODIFIED IF A NEW BLOCK BREAK OCCURS IN THE FUTURE!
+
+int64_t getMasternodeCollateralForBlock(int nHeight) {
+    if (isVersionCompatible(MASTERNODE, 69200, nHeight))
+        return DARKSEND_COLLATERAL;
+
+    return 20000 * COIN;
+}
