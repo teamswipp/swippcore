@@ -142,7 +142,7 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
         // make sure the vout that was signed is related to the transaction that spawned the masternode
         //  - this is expensive, so it's only done once per masternode
         if(!darkSendSigner.IsVinAssociatedWithPubkey(vin, pubkey)) {
-            LogPrintf("dsee - Got mismatched pubkey and vin\n");
+            LogPrintf("dsee - Got mismatched pubkey and vin, %s\n", vin.ToString().c_str());
             Misbehaving(pfrom->GetId(), 100);
             return;
         }
