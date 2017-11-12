@@ -58,6 +58,7 @@ enum BlockBreakVersionType
 };
 
 bool isVersionCompatible(BlockBreakVersionType fbVersionType, int version, int nHeight);
+int getBlockVersion(BlockBreakVersionType fbVersionType, int nHeight);
 
 // minimum protocol versions required for the last block break.
 
