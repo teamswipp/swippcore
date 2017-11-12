@@ -2413,9 +2413,20 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
         LOCK2(cs_main, mempool.cs);
 
         CBlockIndex *pindex = pindexBest;
-        int vtxIndex = IsProofOfStake() ? 1 : 0;
+        bool statement;
 
-        if(pindex != NULL) {
+        if (pindexBest->nHeight+1 < 93000)
+        {
+            statement = IsProofOfStake() && pindex != NULL;
+        }
+        else
+        {
+            statement = pindex != NULL;
+        }
+
+        if(statement) {
+            int vtxIndex = IsProofOfStake() ? 1 : 0;
+
             if(pindex->GetBlockHash() == hashPrevBlock) {
                 CAmount masternodePaymentAmount = GetMasternodePayment(pindex->nHeight+1, vtx[vtxIndex].GetValueOut());
                 bool fIsInitialDownload = IsInitialBlockDownload();
