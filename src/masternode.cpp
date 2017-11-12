@@ -78,7 +78,9 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
 
         strMessage = addr.ToString() + boost::lexical_cast<std::string>(sigTime) + vchPubKey + vchPubKey2 + boost::lexical_cast<std::string>(protocolVersion);
 
-        if(protocolVersion < MIN_MN_PROTO_VERSION) {
+        if(pindexBest == NULL) return;
+
+        if(!isVersionCompatible(MASTERNODE, pfrom->nVersion, pindexBest->nHeight)) {
             LogPrintf("dsee - ignoring outdated masternode %s protocol version %d\n", vin.ToString().c_str(), protocolVersion);
             return;
         }
@@ -417,7 +419,7 @@ int GetMasternodeByVin(CTxIn& vin)
     return -1;
 }
 
-int GetCurrentMasterNode(int mod, int64_t nBlockHeight, int minProtocol)
+int GetCurrentMasterNode(int mod, int64_t nBlockHeight)
 {
     int i = 0;
     unsigned int score = 0;
@@ -426,7 +428,7 @@ int GetCurrentMasterNode(int mod, int64_t nBlockHeight, int minProtocol)
     // scan for winner
     BOOST_FOREACH(CMasterNode mn, vecMasternodes) {
         mn.Check();
-        if(mn.protocolVersion < minProtocol) continue;
+        if(!isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight)) continue;
         if(!mn.IsEnabled()) {
             i++;
             continue;
@@ -448,7 +450,7 @@ int GetCurrentMasterNode(int mod, int64_t nBlockHeight, int minProtocol)
     return winner;
 }
 
-int GetMasternodeByRank(int findRank, int64_t nBlockHeight, int minProtocol)
+int GetMasternodeByRank(int findRank, int64_t nBlockHeight)
 {
     LOCK(cs_masternodes);
     int i = 0;
@@ -458,7 +460,7 @@ int GetMasternodeByRank(int findRank, int64_t nBlockHeight, int minProtocol)
     i = 0;
     BOOST_FOREACH(CMasterNode mn, vecMasternodes) {
         mn.Check();
-        if(mn.protocolVersion < minProtocol) continue;
+        if(!isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight)) continue;
         if(!mn.IsEnabled()) {
             i++;
             continue;
@@ -483,7 +485,7 @@ int GetMasternodeByRank(int findRank, int64_t nBlockHeight, int minProtocol)
     return -1;
 }
 
-int GetMasternodeRank(CTxIn& vin, int64_t nBlockHeight, int minProtocol)
+int GetMasternodeRank(CTxIn& vin, int64_t nBlockHeight)
 {
     LOCK(cs_masternodes);
     std::vector<pair<unsigned int, CTxIn> > vecMasternodeScores;
@@ -491,7 +493,7 @@ int GetMasternodeRank(CTxIn& vin, int64_t nBlockHeight, int minProtocol)
     BOOST_FOREACH(CMasterNode& mn, vecMasternodes) {
         mn.Check();
 
-        if(mn.protocolVersion < minProtocol) continue;
+        if(!isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight)) continue;
         if(!mn.IsEnabled()) {
             continue;
         }
