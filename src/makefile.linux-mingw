@@ -121,6 +121,7 @@ version.cpp: obj/build.h
 DEFS += -DHAVE_BUILD_INFO
 
 obj/%.o: %.cpp $(HEADERS)
+	@mkdir -p obj/crypto
 	$(CXX) -c $(CFLAGS) -o $@ $<
 
 swippd.exe: $(OBJS:obj/%=obj/%)
