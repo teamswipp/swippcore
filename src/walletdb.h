@@ -4,6 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_WALLETDB_H
 #define BITCOIN_WALLETDB_H
+#define BOOST_NO_CXX11_SCOPED_ENUMS
 
 #include "db.h"
 #include "key.h"
