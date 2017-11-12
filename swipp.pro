@@ -34,8 +34,8 @@ LIBPNG_INCLUDE_PATH=C:/deps/libpng-1.6.16
 LIBPNG_LIB_PATH=C:/deps/libpng-1.6.16/.libs
 QRENCODE_INCLUDE_PATH=C:/deps/qrencode-3.4.4
 QRENCODE_LIB_PATH=C:/deps/qrencode-3.4.4/.libs
-SECP256K1_LIB_PATH =/home/uzbek/sw/secp256k1/.libs
-SECP256K1_INCLUDE_PATH = /home/uzbek/sw/secp256k1/include
+SECP256K1_LIB_PATH = $$PWD/src/secp256k1/.libs
+SECP256K1_INCLUDE_PATH = $$PWD/src/secp256k1/include
 #GMP_INCLUDE_PATH=C:/deps/gmp-6.0.0
 #GMP_LIB_PATH=C:/deps/gmp-6.0.0/.libs
 }
