@@ -8,7 +8,7 @@ CONFIG += no_include_pwd
 CONFIG += thread
 CONFIG += static
 QT += core gui network printsupport
-QMAKE_CXXFLAGS = -fpermissive
+QMAKE_CXXFLAGS = -fpermissive -std=c++11
 
 greaterThan(QT_MAJOR_VERSION, 4) {
     QT += widgets
