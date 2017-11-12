@@ -101,6 +101,8 @@ bool isVersionCompatible(BlockBreakVersionType fbVersionType, int version, int n
     return false;
 }
 
+// NEEDS TO BE MODIFIED IF A NEW BLOCK BREAK OCCURS IN THE FUTURE!
+
 int getBlockVersion(BlockBreakVersionType fbVersionType, int nHeight)
 {
     if (isVersionCompatible(fbVersionType, 69200, nHeight))
