@@ -89,7 +89,7 @@ static const int64_t MAX_MONEY = 1400000 * COIN; //14M
 // First POS block
 static const int MODIFIER_INTERVAL_SWITCH = 1;
 
-inline bool MoneyRange(int64_t nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
+inline bool MoneyRange(int64_t nValue) { return (nValue >= 0 && nValue <= 5000000 * COIN); } //TODO: Add check for both
 /** Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp. */
 static const unsigned int LOCKTIME_THRESHOLD = 500000000; // Tue Nov  5 00:53:20 1985 UTC
 
