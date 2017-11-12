@@ -6,9 +6,6 @@
 #include "util.h"
 #include "addrman.h"
 #include <boost/lexical_cast.hpp>
-//tt
-
-int CMasterNode::minProtoVersion = MIN_MN_PROTO_VERSION;
 
 CCriticalSection cs_masternodes;
 
