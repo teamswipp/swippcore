@@ -3514,7 +3514,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     if(bMasterNodePayment) {
         //spork
         if(!masternodePayments.GetBlockPayee(pindexPrev->nHeight+1, payee)){
-            int winningNode = GetCurrentMasterNode(1);
+            int winningNode = GetCurrentMasterNode(1, pindexPrev->nHeight+1);
                 if(winningNode >= 0){
                     payee =GetScriptForDestination(vecMasternodes[winningNode].pubkey.GetID());
                 } else {

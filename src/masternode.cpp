@@ -428,6 +428,7 @@ int GetCurrentMasterNode(int mod, int64_t nBlockHeight)
     // scan for winner
     BOOST_FOREACH(CMasterNode mn, vecMasternodes) {
         mn.Check();
+        LogPrintf("Trying to fetch masternode with protocol %d for blockheight %d\n", mn.protocolVersion, nBlockHeight);
         if(!isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight)) continue;
         if(!mn.IsEnabled()) {
             i++;

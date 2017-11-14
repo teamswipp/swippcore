@@ -153,11 +153,10 @@ public:
 
 
 // Get the current winner for this block
-int GetCurrentMasterNode(int mod=1, int64_t nBlockHeight=0);
-
+int GetCurrentMasterNode(int mod, int64_t nBlockHeight);
 int GetMasternodeByVin(CTxIn& vin);
-int GetMasternodeRank(CTxIn& vin, int64_t nBlockHeight=0);
-int GetMasternodeByRank(int findRank, int64_t nBlockHeight=0);
+int GetMasternodeRank(CTxIn& vin, int64_t nBlockHeight);
+int GetMasternodeByRank(int findRank, int64_t nBlockHeight);
 
 
 // for storing the winning payments
