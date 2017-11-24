@@ -1,3 +1,7 @@
+// Copyright (c) 2017 Team Swipp
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include <boost/test/unit_test.hpp>
 #include "json/json_spirit_reader_template.h"
 #include "json/json_spirit_writer_template.h"
@@ -7,7 +11,18 @@
 #include "util.h"
 
 using namespace json_spirit;
-extern Array read_json(const std::string& filename);
+
+static Array read_json(const std::string& jsondata)
+{
+    Value v;
+
+    if (!read_string(jsondata, v) || v.type() != array_type)
+    {
+        BOOST_ERROR("Parse error.");
+        return Array();
+    }
+    return v.get_array();
+}
 
 BOOST_AUTO_TEST_SUITE(base58_tests)
 
@@ -75,6 +90,10 @@ public:
     bool operator()(const CNoDestination &no) const
     {
         return (exp_addrType == "none");
+    }
+    bool operator()(const CStealthAddress &sa) const
+    {
+        return (exp_addrType == "stealth");
     }
 };
 

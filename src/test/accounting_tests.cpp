@@ -1,5 +1,6 @@
-#include <boost/test/unit_test.hpp>
+#include <cstdint>
 
+#include <boost/test/unit_test.hpp>
 #include <boost/foreach.hpp>
 
 #include "init.h"
@@ -9,7 +10,7 @@
 BOOST_AUTO_TEST_SUITE(accounting_tests)
 
 static void
-GetResults(CWalletDB& walletdb, std::map<int64, CAccountingEntry>& results)
+GetResults(CWalletDB& walletdb, std::map<int64_t, CAccountingEntry>& results)
 {
     std::list<CAccountingEntry> aes;
 
@@ -28,7 +29,7 @@ BOOST_AUTO_TEST_CASE(acc_orderupgrade)
     std::vector<CWalletTx*> vpwtx;
     CWalletTx wtx;
     CAccountingEntry ae;
-    std::map<int64, CAccountingEntry> results;
+    std::map<int64_t, CAccountingEntry> results;
 
     ae.strAccount = "";
     ae.nCreditDebit = 1;
