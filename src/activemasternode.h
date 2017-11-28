@@ -19,12 +19,12 @@
 class CActiveMasternode
 {
 public:
-	// Initialized by init.cpp
-	// Keys for the main masternode
-	CPubKey pubKeyMasternode;
+    // Initialized by init.cpp
+    // Keys for the main masternode
+    CPubKey pubKeyMasternode;
 
-	// Initialized while registering masternode
-	CTxIn vin;
+    // Initialized while registering masternode
+    CTxIn vin;
     CService service;
 
     int status;

@@ -82,7 +82,7 @@ public:
 
     bool operator ==(const CStealthAddress& y) const
     {
-	return Encoded() == y.Encoded();
+        return Encoded() == y.Encoded();
     }
     
     IMPLEMENT_SERIALIZE

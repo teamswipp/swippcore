@@ -202,20 +202,20 @@ bool CTxDB::WriteAddrIndex(uint160 addrHash, uint256 txHash)
     std::vector<uint256> txHashes;
     if(!ReadAddrIndex(addrHash, txHashes))
     {
-	txHashes.push_back(txHash);
+        txHashes.push_back(txHash);
         return Write(make_pair(string("adr"), addrHash), txHashes);
     }
     else
     {
-	if(std::find(txHashes.begin(), txHashes.end(), txHash) == txHashes.end()) 
-    	{
-    	    txHashes.push_back(txHash);
+        if(std::find(txHashes.begin(), txHashes.end(), txHash) == txHashes.end())
+        {
+            txHashes.push_back(txHash);
             return Write(make_pair(string("adr"), addrHash), txHashes);
-	}
-	else
-	{
-	    return true; // already have this tx hash
-	}
+        }
+        else
+        {
+            return true; // already have this tx hash
+        }
     }
 }
 

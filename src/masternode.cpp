@@ -113,14 +113,14 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
 
 
         //search existing masternode list, this is where we update existing masternodes with new dsee broadcasts
-	LOCK(cs_masternodes);
+        LOCK(cs_masternodes);
         BOOST_FOREACH(CMasterNode& mn, vecMasternodes) {
             if(mn.vin.prevout == vin.prevout) {
                 // count == -1 when it's a new entry
                 //   e.g. We don't want the entry relayed/time updated when we're syncing the list
                 // mn.pubkey = pubkey, IsVinAssociatedWithPubkey is validated once below,
                 //   after that they just need to match
-                if(count == -1 && mn.pubkey == pubkey && !mn.UpdatedWithin(MASTERNODE_MIN_DSEE_SECONDS)){
+                if(count == -1 && mn.pubkey == pubkey && !mn.UpdatedWithin(MASTERNODE_MIN_DSEE_SECONDS)) {
                     mn.UpdateLastSeen();
 
                     if(mn.now < sigTime){ //take the newest entry
@@ -159,7 +159,7 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
         tx.vout.push_back(vout);
         //if(AcceptableInputs(mempool, state, tx)){
         bool pfMissingInputs = false;
-	if(AcceptableInputs(mempool, tx, false, &pfMissingInputs)){
+        if(AcceptableInputs(mempool, tx, false, &pfMissingInputs)){
             if(fDebug) LogPrintf("dsee - Accepted masternode entry %i %i\n", count, current);
 
             if(GetInputAge(vin) < MASTERNODE_MIN_CONFIRMATIONS){
@@ -222,11 +222,11 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
         }
 
         // see if we have this masternode
-	LOCK(cs_masternodes);
+        LOCK(cs_masternodes);
         BOOST_FOREACH(CMasterNode& mn, vecMasternodes) {
             if(mn.vin.prevout == vin.prevout) {
-            	// LogPrintf("dseep - Found corresponding mn for vin: %s\n", vin.ToString().c_str());
-            	// take this only if it's newer
+                // LogPrintf("dseep - Found corresponding mn for vin: %s\n", vin.ToString().c_str());
+                // take this only if it's newer
                 if(mn.lastDseep < sigTime){
                     std::string strMessage = mn.addr.ToString() + boost::lexical_cast<std::string>(sigTime) + boost::lexical_cast<std::string>(stop);
 
@@ -295,7 +295,7 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
             //}
         } //else, asking for a specific node which is ok
 
-	LOCK(cs_masternodes);
+        LOCK(cs_masternodes);
         int count = vecMasternodes.size();
         int i = 0;
 

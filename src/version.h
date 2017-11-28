@@ -52,9 +52,9 @@ static const int MEMPOOL_GD_VERSION = 60005;
 
 enum BlockBreakVersionType
 {
-	INSTANTX,
-	MASTERNODE,
-	PEER
+    INSTANTX,
+    MASTERNODE,
+    PEER
 };
 
 bool isVersionCompatible(BlockBreakVersionType fbVersionType, int version, int nHeight);

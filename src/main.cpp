@@ -770,7 +770,7 @@ bool AcceptableInputs(CTxMemPool& pool, const CTransaction &txo, bool fLimitFree
         *pfMissingInputs = false;
 
     CTransaction tx(txo);
-	string reason;
+    string reason;
 
     if (!tx.CheckTransaction())
         return error("AcceptableInputs : CheckTransaction failed");
@@ -887,7 +887,7 @@ bool AcceptableInputs(CTxMemPool& pool, const CTransaction &txo, bool fLimitFree
     /*LogPrint("mempool", "AcceptableInputs : accepted %s (poolsz %u)\n",
            hash.ToString(),
            pool.mapTx.size());
-	*/
+    */
     return true;
 }
 
@@ -976,15 +976,15 @@ int GetInputAge(CTxIn& vin)
     bool fFound = GetTransaction(prevHash, tx, hashBlock);
     if(fFound)
     {
-	if(mapBlockIndex.find(hashBlock) != mapBlockIndex.end())
-	{
-	    return pindexBest->nHeight - mapBlockIndex[hashBlock]->nHeight;
-	}
-	else
-	    return 0;
+        if(mapBlockIndex.find(hashBlock) != mapBlockIndex.end())
+        {
+            return pindexBest->nHeight - mapBlockIndex[hashBlock]->nHeight;
+        }
+        else
+           return 0;
     }
     else
-	return 0;
+        return 0;
 }
 
 int CTxIndex::GetDepthInMainChain() const
@@ -1578,8 +1578,8 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs, map<uint256, CTx
             if (!txindex.vSpent[prevout.n].IsNull())
                 return fMiner ? false : error("ConnectInputs() : %s prev tx already used at %s", GetHash().ToString(), txindex.vSpent[prevout.n].ToString());
 
-	   if(fValidateSig)
-	   {
+        if(fValidateSig)
+        {
             // Skip ECDSA signature verification when connecting blocks (fBlock=true)
             // before the last blockchain checkpoint. This is safe because block merkle hashes are
             // still computed and checked, and any change will be caught at the next checkpoint.
@@ -1608,16 +1608,15 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs, map<uint256, CTx
                     return DoS(100,error("ConnectInputs() : %s VerifySignature failed", GetHash().ToString()));
                 }
             }
-	   }
+        }
 
-            // Mark outpoints as spent
-            txindex.vSpent[prevout.n] = posThisTx;
+        // Mark outpoints as spent
+        txindex.vSpent[prevout.n] = posThisTx;
 
-            // Write back
-            if (fBlock || fMiner)
-            {
-                mapTestPool[prevout.hash] = txindex;
-            }
+        // Write back
+        if (fBlock || fMiner)
+        {
+            mapTestPool[prevout.hash] = txindex;
         }
 
         if (!IsCoinStake())
@@ -1690,15 +1689,15 @@ bool static BuildAddrIndex(const CScript &script, std::vector<uint160>& addrIds)
     }
     if (!fHaveData) {
         uint160 addrid = Hash160(script);
-	addrIds.push_back(addrid);
+        addrIds.push_back(addrid);
         return true;
     }
     else
     {
-	if(addrIds.size() > 0)
-	    return true;
-	else
-  	    return false;
+        if(addrIds.size() > 0)
+            return true;
+        else
+            return false;
     }
 }
 
@@ -1722,8 +1721,8 @@ bool FindTransactionsByDestination(const CTxDestination &dest, std::vector<uint2
     CTxDB txdb("r");
     if(!txdb.ReadAddrIndex(addrid, vtxhash))
     {
-	LogPrintf("FindTransactionsByDestination(): txdb.ReadAddrIndex failed\n");
-	return false;
+        LogPrintf("FindTransactionsByDestination(): txdb.ReadAddrIndex failed\n");
+        return false;
     }
     return true;
 }
@@ -1733,45 +1732,48 @@ void CBlock::RebuildAddressIndex(CTxDB& txdb)
     BOOST_FOREACH(CTransaction& tx, vtx)
     {
         uint256 hashTx = tx.GetHash();
-	// inputs
-	if(!tx.IsCoinBase())
-	{
+        // inputs
+        if(!tx.IsCoinBase())
+        {
             MapPrevTx mapInputs;
-	    map<uint256, CTxIndex> mapQueuedChangesT;
-	    bool fInvalid;
+            map<uint256, CTxIndex> mapQueuedChangesT;
+            bool fInvalid;
+
             if (!tx.FetchInputs(txdb, mapQueuedChangesT, true, false, mapInputs, fInvalid))
                 return;
 
-	    MapPrevTx::const_iterator mi;
-	    for(MapPrevTx::const_iterator mi = mapInputs.begin(); mi != mapInputs.end(); ++mi)
-	    {
-		    BOOST_FOREACH(const CTxOut &atxout, (*mi).second.second.vout)
-		    {
-			std::vector<uint160> addrIds;
-			if(BuildAddrIndex(atxout.scriptPubKey, addrIds))
-			{
-                            BOOST_FOREACH(uint160 addrId, addrIds)
-		            {
-			        if(!txdb.WriteAddrIndex(addrId, hashTx))
-				    LogPrintf("RebuildAddressIndex(): txins WriteAddrIndex failed addrId: %s txhash: %s\n", addrId.ToString().c_str(), hashTx.ToString().c_str());
-                            }
-			}
-		    }
-	    }
+            MapPrevTx::const_iterator mi;
 
-        }
-	// outputs
-	BOOST_FOREACH(const CTxOut &atxout, tx.vout) {
-	    std::vector<uint160> addrIds;
-            if(BuildAddrIndex(atxout.scriptPubKey, addrIds))
-	    {
-		BOOST_FOREACH(uint160 addrId, addrIds)
-		{
-		    if(!txdb.WriteAddrIndex(addrId, hashTx))
-		        LogPrintf("RebuildAddressIndex(): txouts WriteAddrIndex failed addrId: %s txhash: %s\n", addrId.ToString().c_str(), hashTx.ToString().c_str());
+            for(MapPrevTx::const_iterator mi = mapInputs.begin(); mi != mapInputs.end(); ++mi)
+            {
+                BOOST_FOREACH(const CTxOut &atxout, (*mi).second.second.vout)
+                {
+                    std::vector<uint160> addrIds;
+                    if(BuildAddrIndex(atxout.scriptPubKey, addrIds))
+                    {
+                            BOOST_FOREACH(uint160 addrId, addrIds)
+                            {
+                                if(!txdb.WriteAddrIndex(addrId, hashTx))
+                                    LogPrintf("RebuildAddressIndex(): txins WriteAddrIndex failed addrId: %s txhash: %s\n", addrId.ToString().c_str(), hashTx.ToString().c_str());
+                            }
+                    }
                 }
-	    }
-	}
+            }
+        }
+
+        // outputs
+        BOOST_FOREACH(const CTxOut &atxout, tx.vout)
+        {
+            std::vector<uint160> addrIds;
+            if(BuildAddrIndex(atxout.scriptPubKey, addrIds))
+            {
+                BOOST_FOREACH(uint160 addrId, addrIds)
+                {
+                    if(!txdb.WriteAddrIndex(addrId, hashTx))
+                        LogPrintf("RebuildAddressIndex(): txouts WriteAddrIndex failed addrId: %s txhash: %s\n", addrId.ToString().c_str(), hashTx.ToString().c_str());
+                }
+            }
+        }
     }
 }
 
@@ -1803,7 +1805,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
     BOOST_FOREACH(CTransaction& tx, vtx)
     {
         uint256 hashTx = tx.GetHash();
-	nInputs += tx.vin.size();
+        nInputs += tx.vin.size();
 
         // Do not allow blocks that contain transactions which 'overwrite' older transactions,
         // unless those are already completely spent.
@@ -1908,46 +1910,49 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
     BOOST_FOREACH(CTransaction& tx, vtx)
     {
         uint256 hashTx = tx.GetHash();
-	// inputs
-	if(!tx.IsCoinBase())
-	{
+
+        // inputs
+        if(!tx.IsCoinBase())
+        {
             MapPrevTx mapInputs;
-	    map<uint256, CTxIndex> mapQueuedChangesT;
-	    bool fInvalid;
+            map<uint256, CTxIndex> mapQueuedChangesT;
+            bool fInvalid;
+
             if (!tx.FetchInputs(txdb, mapQueuedChangesT, true, false, mapInputs, fInvalid))
                 return false;
 
-	    MapPrevTx::const_iterator mi;
-	    for(MapPrevTx::const_iterator mi = mapInputs.begin(); mi != mapInputs.end(); ++mi)
-	    {
-		    BOOST_FOREACH(const CTxOut &atxout, (*mi).second.second.vout)
-		    {
-			std::vector<uint160> addrIds;
-			if(BuildAddrIndex(atxout.scriptPubKey, addrIds))
-			{
-                            BOOST_FOREACH(uint160 addrId, addrIds)
-		            {
-			        if(!txdb.WriteAddrIndex(addrId, hashTx))
-				    LogPrintf("ConnectBlock(): txins WriteAddrIndex failed addrId: %s txhash: %s\n", addrId.ToString().c_str(), hashTx.ToString().c_str());
-                            }
-			}
-		    }
-	    }
+            MapPrevTx::const_iterator mi;
 
+            for(MapPrevTx::const_iterator mi = mapInputs.begin(); mi != mapInputs.end(); ++mi)
+            {
+                BOOST_FOREACH(const CTxOut &atxout, (*mi).second.second.vout)
+                {
+                    std::vector<uint160> addrIds;
+                    if(BuildAddrIndex(atxout.scriptPubKey, addrIds))
+                    {
+                        BOOST_FOREACH(uint160 addrId, addrIds)
+                        {
+                            if(!txdb.WriteAddrIndex(addrId, hashTx))
+                                LogPrintf("ConnectBlock(): txins WriteAddrIndex failed addrId: %s txhash: %s\n", addrId.ToString().c_str(), hashTx.ToString().c_str());
+                        }
+                    }
+                }
+            }
         }
 
-	// outputs
-	BOOST_FOREACH(const CTxOut &atxout, tx.vout) {
-	    std::vector<uint160> addrIds;
+        // outputs
+        BOOST_FOREACH(const CTxOut &atxout, tx.vout)
+        {
+            std::vector<uint160> addrIds;
             if(BuildAddrIndex(atxout.scriptPubKey, addrIds))
-	    {
-		BOOST_FOREACH(uint160 addrId, addrIds)
-		{
-		    if(!txdb.WriteAddrIndex(addrId, hashTx))
-		        LogPrintf("ConnectBlock(): txouts WriteAddrIndex failed addrId: %s txhash: %s\n", addrId.ToString().c_str(), hashTx.ToString().c_str());
+            {
+                BOOST_FOREACH(uint160 addrId, addrIds)
+                {
+                    if(!txdb.WriteAddrIndex(addrId, hashTx))
+                        LogPrintf("ConnectBlock(): txouts WriteAddrIndex failed addrId: %s txhash: %s\n", addrId.ToString().c_str(), hashTx.ToString().c_str());
                 }
-	    }
-	}
+            }
+        }
     }
 
     // Update block index on disk without changing it in memory.
@@ -3496,7 +3501,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         //pfrom->nTimeOffset = nTimeOffset;
         if (GetBoolArg("-synctime", true))
             //AddTimeData(pfrom->addr, nTimeOffset);
-	AddTimeData(pfrom->addr, nTime);
+            AddTimeData(pfrom->addr, nTime);
     }
 
 
