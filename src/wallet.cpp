@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -3492,8 +3493,8 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     // start masternode payments
     bool bMasterNodePayment = true; // note was false, set true to test
 
-    if ( Params().NetworkID() == CChainParams::TESTNET ){
-        if (GetTime() > START_MASTERNODE_PAYMENTS_TESTNET ){
+    if (Params().NetworkID() == CChainParams::TESTNET){
+        if (GetTime() > START_MASTERNODE_PAYMENTS_TESTNET){
             bMasterNodePayment = true;
         }
     }else{
@@ -3803,7 +3804,6 @@ string CWallet::PrepareDarksendDenominate(int minRounds, int maxRounds)
         nValueLeft = nTotalValue;
 
         // Make outputs by looping through denominations, from small to large
-
         BOOST_FOREACH(const COutput& out, vCoins2){
             CScript scriptChange;
             CPubKey vchPubKey;
