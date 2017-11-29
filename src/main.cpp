@@ -1311,9 +1311,13 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits)
     if (bnTarget <= 0 || bnTarget > Params().ProofOfWorkLimit())
         return error("CheckProofOfWork() : nBits below minimum work");
 
-    // Check proof of work matches claimed amount
+    //Check proof of work matches claimed amount
     if (hash > bnTarget.getuint256())
-        return error("CheckProofOfWork() : hash doesn't match nBits");
+    {
+        /* Special check to handle the genesis block on the testnet */
+        if (!TestNet() || (TestNet() && pindexBest != NULL))
+            return error("CheckProofOfWork() : hash doesn't match nBits (%s vs %s)", hash.ToString(), bnTarget.getuint256().ToString());
+    }
 
     return true;
 }
@@ -1578,45 +1582,46 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs, map<uint256, CTx
             if (!txindex.vSpent[prevout.n].IsNull())
                 return fMiner ? false : error("ConnectInputs() : %s prev tx already used at %s", GetHash().ToString(), txindex.vSpent[prevout.n].ToString());
 
-        if(fValidateSig)
-        {
-            // Skip ECDSA signature verification when connecting blocks (fBlock=true)
-            // before the last blockchain checkpoint. This is safe because block merkle hashes are
-            // still computed and checked, and any change will be caught at the next checkpoint.
-            if (!(fBlock && (nBestHeight < Checkpoints::GetTotalBlocksEstimate())))
+            if(fValidateSig)
             {
-                // Verify signature
-                if (!VerifySignature(txPrev, *this, i, flags, 0))
+                // Skip ECDSA signature verification when connecting blocks (fBlock=true)
+                // before the last blockchain checkpoint. This is safe because block merkle hashes are
+                // still computed and checked, and any change will be caught at the next checkpoint.
+                if (!(fBlock && (nBestHeight < Checkpoints::GetTotalBlocksEstimate())))
                 {
-                    if (flags & STANDARD_NOT_MANDATORY_VERIFY_FLAGS) {
-                        // Check whether the failure was caused by a
-                        // non-mandatory script verification check, such as
-                        // non-null dummy arguments;
-                        // if so, don't trigger DoS protection to
-                        // avoid splitting the network between upgraded and
-                        // non-upgraded nodes.
-                        if (VerifySignature(txPrev, *this, i, flags & ~STANDARD_NOT_MANDATORY_VERIFY_FLAGS, 0))
-                            return error("ConnectInputs() : %s non-mandatory VerifySignature failed", GetHash().ToString());
+                    // Verify signature
+                    if (!VerifySignature(txPrev, *this, i, flags, 0))
+                    {
+                        if (flags & STANDARD_NOT_MANDATORY_VERIFY_FLAGS) {
+                            // Check whether the failure was caused by a
+                            // non-mandatory script verification check, such as
+                            // non-null dummy arguments;
+                            // if so, don't trigger DoS protection to
+                            // avoid splitting the network between upgraded and
+                            // non-upgraded nodes.
+                            if (VerifySignature(txPrev, *this, i, flags & ~STANDARD_NOT_MANDATORY_VERIFY_FLAGS, 0))
+                                return error("ConnectInputs() : %s non-mandatory VerifySignature failed", GetHash().ToString());
+                        }
+                        // Failures of other flags indicate a transaction that is
+                        // invalid in new blocks, e.g. a invalid P2SH. We DoS ban
+                        // such nodes as they are not following the protocol. That
+                        // said during an upgrade careful thought should be taken
+                        // as to the correct behavior - we may want to continue
+                        // peering with non-upgraded nodes even after a soft-fork
+                        // super-majority vote has passed.
+                        return DoS(100,error("ConnectInputs() : %s VerifySignature failed", GetHash().ToString()));
                     }
-                    // Failures of other flags indicate a transaction that is
-                    // invalid in new blocks, e.g. a invalid P2SH. We DoS ban
-                    // such nodes as they are not following the protocol. That
-                    // said during an upgrade careful thought should be taken
-                    // as to the correct behavior - we may want to continue
-                    // peering with non-upgraded nodes even after a soft-fork
-                    // super-majority vote has passed.
-                    return DoS(100,error("ConnectInputs() : %s VerifySignature failed", GetHash().ToString()));
                 }
             }
-        }
 
-        // Mark outpoints as spent
-        txindex.vSpent[prevout.n] = posThisTx;
+            // Mark outpoints as spent
+            txindex.vSpent[prevout.n] = posThisTx;
 
-        // Write back
-        if (fBlock || fMiner)
-        {
-            mapTestPool[prevout.hash] = txindex;
+            // Write back
+            if (fBlock || fMiner)
+            {
+                mapTestPool[prevout.hash] = txindex;
+            }
         }
 
         if (!IsCoinStake())
@@ -1869,6 +1874,9 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 
     if (IsProofOfWork())
     {
+        if (pindexBest == NULL)
+            pindexBest = pindex;
+
         int64_t nReward = GetProofOfWorkReward(pindex->nHeight, nFees);
         // Check coinbase reward
         if (vtx[0].GetValueOut() > nReward)
@@ -1878,6 +1886,9 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
     }
     if (IsProofOfStake())
     {
+        if (pindexBest == NULL)
+            pindexBest = pindex;
+
         // ppcoin: coin stake tx earns reward instead of paying fee
         uint64_t nCoinAge;
         if (!vtx[1].GetCoinAge(txdb, nCoinAge))
@@ -2089,7 +2100,8 @@ bool CBlock::SetBestChainInner(CTxDB& txdb, CBlockIndex *pindexNew)
         return error("SetBestChain() : TxnCommit failed");
 
     // Add to current best branch
-    pindexNew->pprev->pnext = pindexNew;
+    if (pindexNew->pprev != NULL) /* This can happen on a zero block and needs to be checked */
+        pindexNew->pprev->pnext = pindexNew;
 
     // Delete redundant memory transactions
     BOOST_FOREACH(CTransaction& tx, vtx)
@@ -2420,7 +2432,7 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
         CBlockIndex *pindex = pindexBest;
         bool statement;
 
-        if (pindexBest->nHeight+1 < 93000)
+        if (pindex != NULL && pindex->nHeight+1 < 93000)
         {
             statement = IsProofOfStake() && pindex != NULL;
         }
