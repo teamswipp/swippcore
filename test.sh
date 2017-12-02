@@ -7,17 +7,34 @@ SWIPP_BINARY=src/swippd
 ARGS="-debug -testnet -datadir="
 TMP_TEMPLATE=/tmp/swipp.XXXXXXX
 
+# Return a randomly generated UUID.
+
 uuid() {
 	cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1
 }
+
+# Stall and wait for the process in $1 to exit. Returns instantly if the
+# process is not running.
+#
+# $1 [pid] The process id to wait for.
 
 waitpid() {
 	tail --pid=$1 -f /dev/null
 }
 
+# Return true/false exit value depending on if the process in $1 exists.
+#
+# $1 [pid] The process id to check for.
+
 pidexists() {
 	kill -0 $1 &> /dev/null
 }
+
+# Start the swipp daemon executable specified in SWIPP_BINARY.
+#
+# $1 [ip]      IP address to bind daemon to.
+# $2 [port]    Port to bind daemon to.
+# $3 [rpcport] Port to run the rpc interface on.
 
 start_swipp_exe () {
 	dir=$(mktemp -d $TMP_TEMPLATE)
@@ -48,6 +65,14 @@ start_swipp_exe () {
 		exit 1
 	fi
 }
+
+# Create a list of peers in the given interval and put them into $peers.
+# Exclude the IP specified in $1. Peers are generated frm 127.0.10.<startindex>
+# to 127.0.10.<endindex>.
+#
+# $1 [ip]         IP (peer) to exclude from the final list.
+# $2 [startindex] The index to start from when generating peer list.
+# $3 [endindex]   The index to end at when generating peer list.
 
 get_peers() {
 	tmp_peers=()
