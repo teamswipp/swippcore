@@ -104,6 +104,12 @@ case $1 in
 	stop
 	;;
 
+	status)
+	status_command="ps -eo pid,args | grep swippd | grep testnet"
+	eval $status_command
+	echo There are $(eval $status_command | wc -l) nodes up and running. > /dev/null
+	;;
+
 	run)
 	run
 	;;
