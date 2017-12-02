@@ -29,7 +29,12 @@ start_swipp_exe () {
 	echo $password > $dir/.password
 
 	extraargs="-rpcuser=$user -rpcpassword=$password "
-	extraargs+="-externalip=$2 -bind=$2:$3 -rpcport=$4"
+	extraargs+="-externalip=$2 -bind=$2:$3 -rpcport=$4 "
+
+	for i in "${peers[@]}"; do
+		extraargs+="-addnode=$i "
+	done
+
 	$1$dir $extraargs &
 	pid=$!
 
@@ -43,10 +48,22 @@ start_swipp_exe () {
 	fi
 }
 
+get_peers() {
+	tmp_peers=()
+	for j in $(seq $2 $3); do
+		tmp_peers[$j]="127.0.10."$j
+	done
+	peers=(${tmp_peers[@]/$1*/})
+}
+
 start () {
 	echo Starting Swipp instances... > /dev/null
-	start_swipp_exe "$SWIPP_BINARY $ARGS" 127.0.10.1 18065 15075
-	start_swipp_exe "$SWIPP_BINARY $ARGS" 127.0.10.2 18065 15076
+
+	for i in $(seq 1 $1); do
+		ip="127.0.10."$i
+		get_peers $ip 1 $1
+		start_swipp_exe "$SWIPP_BINARY $ARGS" $ip 18065 $((15074 + $i))
+	done
 }
 
 stop () {
@@ -72,7 +89,7 @@ set -o xtrace
 
 case $1 in
 	start)
-	start
+	start $2
 	;;
 
 	stop)
@@ -85,7 +102,7 @@ case $1 in
 
 	# unknown option
 	*)
-	echo Please specify one of the following; start/stop/run. Exiting...
+	echo Please specify one of the following: start/stop/run. Exiting... > /dev/null
 	exit 1
 	;;
 esac
