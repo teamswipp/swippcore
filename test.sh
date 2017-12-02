@@ -42,7 +42,8 @@ start_swipp_exe () {
 	sleep 2
 
 	if ! pidexists $pid; then
-		echo Failed to start swipp instance "$1$dir $extrargs" Aborting startup... > /dev/null
+		echo Failed to start swipp instance "$1$dir $extrargs" \
+		     Aborting startup... > /dev/null
 		stop
 		exit 1
 	fi
@@ -95,6 +96,7 @@ case $1 in
 		     where n denotes the number of nodes. Exiting... > /dev/null
 		exit 1
 	fi
+
 	start $2
 	;;
 
@@ -108,7 +110,8 @@ case $1 in
 
 	# unknown option
 	*)
-	echo Please specify one of the following: start/stop/run. Exiting... > /dev/null
+	echo Please specify one of the following: start/stop/run. \
+	     Exiting... > /dev/null
 	exit 1
 	;;
 esac
