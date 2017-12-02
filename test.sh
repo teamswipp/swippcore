@@ -34,7 +34,7 @@ start_swipp_exe () {
 	pid=$!
 
 	echo $pid > $dir/.pid
-	sleep 3
+	sleep 2
 
 	if ! pidexists $pid; then
 		echo Failed to start swipp instance "$1$dir $extrargs" Aborting startup... > /dev/null
