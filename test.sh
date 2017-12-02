@@ -89,6 +89,12 @@ set -o xtrace
 
 case $1 in
 	start)
+
+	if [ "$#" -lt 2 ]; then
+		echo Syntax for starting swipp test instances is "start <n>", \
+		     where n denotes the number of nodes. Exiting... > /dev/null
+		exit 1
+	fi
 	start $2
 	;;
 
