@@ -29,13 +29,13 @@ start_swipp_exe () {
 	echo $password > $dir/.password
 
 	extraargs="-rpcuser=$user -rpcpassword=$password "
-	extraargs+="-externalip=$2 -bind=$2:$3 -rpcport=$4 "
+	extraargs+="-externalip=$1 -bind=$1:$2 -rpcport=$3 "
 
 	for i in "${peers[@]}"; do
 		extraargs+="-addnode=$i "
 	done
 
-	$1$dir $extraargs &
+	$SWIPP_BINARY $ARGS$dir $extraargs &
 	pid=$!
 
 	echo $pid > $dir/.pid
@@ -63,7 +63,7 @@ start () {
 	for i in $(seq 1 $1); do
 		ip="127.0.10."$i
 		get_peers $ip 1 $1
-		start_swipp_exe "$SWIPP_BINARY $ARGS" $ip 18065 $((15074 + $i))
+		start_swipp_exe $ip 18065 $((15074 + $i))
 	done
 }
 
