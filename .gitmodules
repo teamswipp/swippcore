@@ -1,0 +1,3 @@
+[submodule "cpuminer-opt"]
+	path = cpuminer-opt
+	url = https://github.com/JayDDee/cpuminer-opt.git
