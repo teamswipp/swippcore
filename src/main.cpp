@@ -2480,7 +2480,7 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
                         if(fDebug) { LogPrintf("CheckBlock() : Couldn't find masternode payment(%d|%d) or payee(%d|%s) nHeight %d. \n", foundPaymentAmount, masternodePaymentAmount, foundPayee, address2.ToString().c_str(), pindexBest->nHeight+1); }
                         return DoS(100, error("CheckBlock() : Couldn't find masternode payment or payee"));
                     } else {
-                        if(fDebug) { LogPrintf("CheckBlock() : Found masternode payment %d\n", pindexBest->nHeight+1); }
+                        if(fDebug) { LogPrintf("CheckBlock() : Found masternode payment %d with amount of %f\n", pindexBest->nHeight+1, (double) masternodePaymentAmount / COIN); }
                     }
                 } else {
                     if(fDebug) { LogPrintf("CheckBlock() : Is initial download, skipping masternode payment check %d\n", pindexBest->nHeight+1); }
