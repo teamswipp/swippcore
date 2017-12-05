@@ -97,7 +97,7 @@ endif
 
 # CXXFLAGS can be specified on the make command line, so we use xCXXFLAGS that only
 # adds some defaults in front. Unfortunately, CXXFLAGS=... $(CXXFLAGS) does not work.
-xCXXFLAGS=-std=c++11 -O2 $(EXT_OPTIONS) -pthread -Wall -Wextra -Wno-ignored-qualifiers -Wformat -Wformat-security -Wno-unused-parameter \
+xCXXFLAGS=-std=c++11 -O2 -rdynamic $(EXT_OPTIONS) -pthread -Wall -Wextra -Wno-ignored-qualifiers -Wformat -Wformat-security -Wno-unused-parameter \
     $(DEBUGFLAGS) $(DEFS) $(HARDENING) $(CXXFLAGS)
 
 # LDFLAGS can be specified on the make command line, so we use xLDFLAGS that only
@@ -105,7 +105,8 @@ xCXXFLAGS=-std=c++11 -O2 $(EXT_OPTIONS) -pthread -Wall -Wextra -Wno-ignored-qual
 xLDFLAGS=$(LDHARDENING) $(LDFLAGS)
 
 OBJS= \
-	obj/groestl.o \
+    obj/groestl.o \
+    obj/backtrace.o \
     obj/blake.o \
     obj/bmw.o \
     obj/skein.o \
@@ -166,7 +167,7 @@ OBJS= \
     obj/crypto/sha1.o \
     obj/crypto/sha256.o \
     obj/crypto/sha512.o \
-    obj/smessage.o    
+    obj/smessage.o
 
 ifeq (${USE_WALLET}, 1)
     DEFS += -DENABLE_WALLET

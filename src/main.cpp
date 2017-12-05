@@ -9,6 +9,7 @@
 #include <boost/filesystem/fstream.hpp>
 
 #include "alert.h"
+#include "backtrace.h"
 #include "chainparams.h"
 #include "checkpoints.h"
 #include "db.h"
@@ -2481,6 +2482,7 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
                         return DoS(100, error("CheckBlock() : Couldn't find masternode payment or payee"));
                     } else {
                         if(fDebug) { LogPrintf("CheckBlock() : Found masternode payment %d with amount of %f\n", pindexBest->nHeight+1, (double) masternodePaymentAmount / COIN); }
+                        Backtrace::output();
                     }
                 } else {
                     if(fDebug) { LogPrintf("CheckBlock() : Is initial download, skipping masternode payment check %d\n", pindexBest->nHeight+1); }

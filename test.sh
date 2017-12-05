@@ -4,7 +4,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 SWIPP_BINARY=src/swippd
-ARGS="-debug -testnet -datadir="
+ARGS="-debug -debugbacktrace -testnet -staking -datadir="
 TMP_TEMPLATE=/tmp/swipp.XXXXXXX
 
 # Return a randomly generated UUID.

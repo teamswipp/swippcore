@@ -87,6 +87,7 @@ map<string, string> mapArgs;
 map<string, vector<string> > mapMultiArgs;
 bool fDebug = false;
 bool fDebugSmsg = false;
+bool fDebugBacktrace = false;
 bool fNoSmsg = false;
 bool fPrintToConsole = false;
 bool fPrintToDebugLog = true;

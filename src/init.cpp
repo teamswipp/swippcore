@@ -229,6 +229,7 @@ std::string HelpMessage()
     {
         strUsage += ".\n";
     }
+    strUsage += "  -debugbacktrace        " + _("Output backtrace debugging information, disabled by default") + "\n";
     strUsage += "  -logtimestamps         " + _("Prepend debug output with timestamp") + "\n";
     strUsage += "  -shrinkdebugfile       " + _("Shrink debug.log file on client startup (default: 1 when no -debug)") + "\n";
     strUsage += "  -printtoconsole        " + _("Send trace/debug info to console instead of debug.log file") + "\n";
@@ -440,13 +441,15 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     if(fDebug)
     {
-	fDebugSmsg = true;
-    } else
+        fDebugSmsg = true;
+    }
+    else
     {
         fDebugSmsg = GetBoolArg("-debugsmsg", false);
     }
-    fNoSmsg = GetBoolArg("-nosmsg", false);
 
+    fDebugBacktrace = GetBoolArg("-debugbacktrace", false);
+    fNoSmsg = GetBoolArg("-nosmsg", false);
 
     // Check for -debugnet (deprecated)
     if (GetBoolArg("-debugnet", false))
@@ -463,6 +466,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     /* force fServer when running without GUI */
     if (!fHaveGUI)
         fServer = true;
+
     fPrintToConsole = GetBoolArg("-printtoconsole", false);
     fLogTimestamps = GetBoolArg("-logtimestamps", false);
 #ifdef ENABLE_WALLET
