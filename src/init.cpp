@@ -600,11 +600,13 @@ bool AppInit2(boost::thread_group& threadGroup)
         std::set<enum Network> nets;
         BOOST_FOREACH(std::string snet, mapMultiArgs["-onlynet"]) {
             enum Network net = ParseNetwork(snet);
-	    if(net == NET_TOR)
-		fOnlyTor = true;
+
+            if(net == NET_TOR)
+                fOnlyTor = true;
 
             if (net == NET_UNROUTABLE)
                 return InitError(strprintf(_("Unknown network specified in -onlynet: '%s'"), snet));
+
             nets.insert(net);
         }
         for (int n = 0; n < NET_MAX; n++) {
@@ -990,19 +992,20 @@ bool AppInit2(boost::thread_group& threadGroup)
     {
         uiInterface.InitMessage(_("Rebuilding address index..."));
         CBlockIndex *pblockAddrIndex = pindexBest;
-	CTxDB txdbAddr("rw");
-	while(pblockAddrIndex)
-	{
-	    uiInterface.InitMessage(strprintf("Rebuilding address index, block %i", pblockAddrIndex->nHeight));
-	    bool ReadFromDisk(const CBlockIndex* pindex, bool fReadTransactions=true);
-	    CBlock pblockAddr;
-	    if(pblockAddr.ReadFromDisk(pblockAddrIndex, true))
-	        pblockAddr.RebuildAddressIndex(txdbAddr);
-	    pblockAddrIndex = pblockAddrIndex->pprev;
-	}
+        CTxDB txdbAddr("rw");
+
+        while(pblockAddrIndex)
+        {
+            uiInterface.InitMessage(strprintf("Rebuilding address index, block %i", pblockAddrIndex->nHeight));
+            bool ReadFromDisk(const CBlockIndex* pindex, bool fReadTransactions=true);
+            CBlock pblockAddr;
+
+            if(pblockAddr.ReadFromDisk(pblockAddrIndex, true))
+                pblockAddr.RebuildAddressIndex(txdbAddr);
+            pblockAddrIndex = pblockAddrIndex->pprev;
+        }
     }
 
-    //// debug print
     LogPrintf("mapBlockIndex.size() = %u\n",   mapBlockIndex.size());
     LogPrintf("nBestHeight = %d\n",                   nBestHeight);
 #ifdef ENABLE_WALLET
@@ -1033,10 +1036,10 @@ bool AppInit2(boost::thread_group& threadGroup)
 
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
-	BOOST_FOREACH(PAIRTYPE(std::string, CAdrenalineNodeConfig) adrenaline, pwalletMain->mapMyAdrenalineNodes)
-	{
-	    uiInterface.NotifyAdrenalineNodeChanged(adrenaline.second);
-	}
+    BOOST_FOREACH(PAIRTYPE(std::string, CAdrenalineNodeConfig) adrenaline, pwalletMain->mapMyAdrenalineNodes)
+    {
+        uiInterface.NotifyAdrenalineNodeChanged(adrenaline.second);
+    }
 
         // Add wallet transactions that aren't already in a block to mapTransactions
         pwalletMain->ReacceptWalletTransactions();
