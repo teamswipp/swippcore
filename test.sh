@@ -5,6 +5,8 @@
 
 SWIPP_BINARY=src/swippd
 SWIPP_ARGS="-debug -debugbacktrace -testnet -staking -datadir="
+MINER_BINARY=cpuminer-opt/cpuminer
+MINER_ARGS=" -a x11 --userpass=%s:%s --url=http://127.0.0.1:%d"
 TMP_TEMPLATE=/tmp/swipp.XXXXXXX
 STATUS_COMMAND="ps -eo pid,args | grep swippd | grep testnet"
 
@@ -127,6 +129,24 @@ status() {
 	echo There are $i nodes up and running.
 }
 
+get_node_parameters() {
+	running_nodes=$(eval $STATUS_COMMAND)
+	SAVEIFS=$IFS; IFS=$'\n'; running_nodes=($running_nodes); IFS=$SAVEIFS
+
+	re="-datadir=([^ ]+) -rpcuser=([^ ]+) -rpcpassword=([^ ]+) [^ ]+ [^ ]+ -rpcport=([^ ]+)"
+	if [[ ${running_nodes[$1]} =~ $re ]]; then
+		node_datadir=${BASH_REMATCH[1]}
+		node_user=${BASH_REMATCH[2]}
+		node_password=${BASH_REMATCH[3]}
+		node_rpcport=${BASH_REMATCH[4]}
+	fi
+}
+
+mine() {
+	echo Initiating mining on Swipp node instance $1. Please hit CTRL-C to stop...
+	get_node_parameters $1
+	$MINER_BINARY $(printf "$MINER_ARGS" $node_user $node_password $node_rpcport)
+}
 
 case $1 in
 	start)
@@ -154,6 +174,20 @@ case $1 in
 	status
 	;;
 
+	mine)
+	if [ "$#" -lt 2 ]; then
+		echo $RED"Syntax" for initiating a mining session is \
+		     "\"mine <n>\"", where n denotes the node number as shown \
+		     by "\"status\"".$RESET
+		exit 1
+	fi
+
+	if [ ! -f $MINER_BINARY ]; then
+		echo $RED"Miner" binary not found. Please compile the miner \
+		     before executing this operation.
+	fi
+
+	mine $2
 	run)
 	run
 	;;
