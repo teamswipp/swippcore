@@ -7,6 +7,10 @@ SWIPP_BINARY=src/swippd
 ARGS="-debug -debugbacktrace -testnet -staking -datadir="
 TMP_TEMPLATE=/tmp/swipp.XXXXXXX
 
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+RESET=$(tput sgr0)
+
 # Return a randomly generated UUID.
 
 uuid() {
@@ -36,7 +40,7 @@ pidexists() {
 # $2 [port]    Port to bind daemon to.
 # $3 [rpcport] Port to run the rpc interface on.
 
-start_swipp_exe () {
+start_swipp_exe() {
 	dir=$(mktemp -d $TMP_TEMPLATE)
 
 	user=$(uuid)
@@ -60,7 +64,7 @@ start_swipp_exe () {
 
 	if ! pidexists $pid; then
 		echo Failed to start swipp instance "$1$dir $extrargs" \
-		     Aborting startup... > /dev/null
+		     Aborting startup...
 		stop
 		exit 1
 	fi
@@ -82,8 +86,8 @@ get_peers() {
 	peers=(${tmp_peers[@]/$1*/})
 }
 
-start () {
-	echo Starting Swipp instances... > /dev/null
+start() {
+	echo Preparing Swipp instances...
 
 	for i in $(seq 1 $1); do
 		ip="127.0.10."$i
@@ -92,8 +96,8 @@ start () {
 	done
 }
 
-stop () {
-	echo Stopping all running Swipp instances... > /dev/null
+stop() {
+	echo Stopping all running Swipp instances...
 
 
 	if ls /tmp/swipp.* 1> /dev/null 2>&1; then
@@ -103,22 +107,25 @@ stop () {
 		done
 	fi
 
-	echo Deleting data directories... > /dev/null
+	echo Deleting data directories...
 	rm -rf /tmp/swipp.*
 }
 
-run () {
-	echo "Running..." > /dev/null
 }
 
-set -o xtrace
 
 case $1 in
 	start)
 
 	if [ "$#" -lt 2 ]; then
-		echo Syntax for starting swipp test instances is "start <n>", \
-		     where n denotes the number of nodes. Exiting... > /dev/null
+		echo $RED"Syntax" for starting swipp test instances is \
+		     "\"start <n>\"", where n denotes the number of nodes. \
+		     Exiting...$RESET
+		exit 1
+	fi
+
+	if [ "$(eval $STATUS_COMMAND)" != "" ]; then
+		echo $RED"Already started."$RESET
 		exit 1
 	fi
 
@@ -142,7 +149,7 @@ case $1 in
 	# unknown option
 	*)
 	echo Please specify one of the following: start/stop/run. \
-	     Exiting... > /dev/null
+	     Exiting...
 	exit 1
 	;;
 esac
