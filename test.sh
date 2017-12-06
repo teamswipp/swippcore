@@ -189,8 +189,6 @@ case $1 in
 	fi
 
 	mine $2
-	run)
-	run
 	;;
 
 	# unknown option
