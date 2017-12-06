@@ -115,6 +115,12 @@ stop() {
 	rm -rf /tmp/swipp.*
 }
 
+command() {
+	get_node_parameters $1
+	$SWIPP_BINARY -rpcuser=$node_user -rpcpassword=$node_password\
+	              -rpcport=$node_rpcport "${@:2}"
+}
+
 status() {
 	running_nodes=$(eval $STATUS_COMMAND)
 	SAVEIFS=$IFS; IFS=$'\n'; running_nodes=($running_nodes); IFS=$SAVEIFS
@@ -140,6 +146,10 @@ get_node_parameters() {
 		node_user=${BASH_REMATCH[2]}
 		node_password=${BASH_REMATCH[3]}
 		node_rpcport=${BASH_REMATCH[4]}
+	else
+		echo $RED"The" specified Swipp node is not running and could \
+		     not be found. Exiting...$RESET
+		exit 1
 	fi
 }
 
@@ -151,7 +161,6 @@ mine() {
 
 case $1 in
 	start)
-
 	if [ "$#" -lt 2 ]; then
 		echo $RED"Syntax" for starting swipp test instances is \
 		     "\"start <n>\"", where n denotes the number of nodes. \
@@ -171,6 +180,18 @@ case $1 in
 	stop
 	;;
 
+	command)
+	if [ "$#" -lt 3 ]; then
+		echo $RED"Syntax" for sending a command to a Swipp node \
+		     is incorrect. The correct syntax is \
+		     "\"command <n> <command> <args>\"", where n denotes \
+		     the node number as shown by "\"status\"".$RESET
+		     exit 1
+	fi
+
+	command $2 "${@:3}"
+	;;
+
 	status)
 	status
 	;;
@@ -186,6 +207,7 @@ case $1 in
 	if [ ! -f $MINER_BINARY ]; then
 		echo $RED"Miner" binary not found. Please compile the miner \
 		     before executing this operation.
+		exit 1
 	fi
 
 	mine $2
