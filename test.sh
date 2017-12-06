@@ -4,7 +4,7 @@
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 SWIPP_BINARY=src/swippd
-ARGS="-debug -debugbacktrace -testnet -staking -datadir="
+SWIPP_ARGS="-debug -debugbacktrace -testnet -staking -datadir="
 TMP_TEMPLATE=/tmp/swipp.XXXXXXX
 
 RED=$(tput setaf 1)
@@ -56,7 +56,7 @@ start_swipp_exe() {
 		extraargs+="-addnode=$i "
 	done
 
-	$SWIPP_BINARY $ARGS$dir $extraargs &
+	$SWIPP_BINARY $SWIPP_ARGS$dir $extraargs &
 	pid=$!
 
 	echo $pid > $dir/.pid
