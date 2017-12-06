@@ -6,6 +6,7 @@
 SWIPP_BINARY=src/swippd
 SWIPP_ARGS="-debug -debugbacktrace -testnet -staking -datadir="
 TMP_TEMPLATE=/tmp/swipp.XXXXXXX
+STATUS_COMMAND="ps -eo pid,args | grep swippd | grep testnet"
 
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
@@ -111,6 +112,19 @@ stop() {
 	rm -rf /tmp/swipp.*
 }
 
+status() {
+	running_nodes=$(eval $STATUS_COMMAND)
+	SAVEIFS=$IFS; IFS=$'\n'; running_nodes=($running_nodes); IFS=$SAVEIFS
+
+	i=0;
+
+	if [ "$running_nodes" != "" ]; then
+		for (( ; i < ${#running_nodes[@]}; i++ )); do
+			echo $GREEN[$i]$RESET: ${running_nodes[$i]}
+		done
+	fi
+
+	echo There are $i nodes up and running.
 }
 
 
@@ -137,9 +151,7 @@ case $1 in
 	;;
 
 	status)
-	status_command="ps -eo pid,args | grep swippd | grep testnet"
-	eval $status_command
-	echo There are $(eval $status_command | wc -l) nodes up and running. > /dev/null
+	status
 	;;
 
 	run)
