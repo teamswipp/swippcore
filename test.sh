@@ -59,6 +59,7 @@ start_swipp_exe() {
 		extraargs+="-addnode=$i "
 	done
 
+	echo $GREEN"Starting swipp instance"$RESET ">" $SWIPP_BINARY $extraargs
 	$SWIPP_BINARY $SWIPP_ARGS$dir $extraargs &
 	pid=$!
 
