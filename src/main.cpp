@@ -2465,6 +2465,9 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
                     }
 
                     for (unsigned int i = 0; i < vtx[vtxIndex].vout.size(); i++) {
+                        if(fDebug)
+                           LogPrintf("VTX information : index:%d, i:%d, value:%d\n", vtxIndex, i, vtx[vtxIndex].vout[i].nValue);
+
                         if(vtx[vtxIndex].vout[i].nValue == masternodePaymentAmount )
                             foundPaymentAmount = true;
                         if(vtx[vtxIndex].vout[i].scriptPubKey == payee )
