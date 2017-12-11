@@ -2357,7 +2357,9 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
         CBlockIndex *pindex = pindexBest;
         if(pindex != NULL)
         {
-            if (pindex->nHeight+1 >= 93000 && pfrom->nVersion < MIN_PEER_PROTO_VERSION) {
+            // TODO: Move checks to version.cpp
+            if ((pindex->nHeight+1 >= 93000 && pindex->nHeight+1 < 140000 && pfrom->nVersion < 69200) ||
+                (pindex->nHeight+1 >= 140000 && pfrom->nVersion < MIN_PEER_PROTO_VERSION)) {
                 return DoS(100, error("isVersionCompatible() : failed to pass"));
             }
         }
@@ -2433,7 +2435,8 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
         CBlockIndex *pindex = pindexBest;
         bool statement;
 
-        if (pindex != NULL && pindex->nHeight+1 < 93000)
+        //TODO: Move check to version.cpp
+        if (pindex != NULL && pindex->nHeight+1 < 140000)
         {
             statement = IsProofOfStake() && pindex != NULL;
         }
@@ -3441,7 +3444,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         LogPrintf("partner at %s with version %i, has starting height of %i\n", pfrom->addr.ToString(), pfrom->nVersion, pfrom->nStartingHeight);
 
-        if (pfrom->nStartingHeight >= 93000 && pfrom->nVersion < MIN_PEER_PROTO_VERSION)
+        // TODO: Move checks to version.cpp
+        if ((pfrom->nStartingHeight >= 93000 && pfrom->nStartingHeight < 140000 && pfrom->nVersion < 69200) ||
+            (pfrom->nStartingHeight >= 140000 && pfrom->nVersion < 69210))
         {
             // disconnect from peers older than this proto version
             LogPrintf("partner %s using obsolete version %i for height %i; disconnecting\n", pfrom->addr.ToString(), pfrom->nVersion, pfrom->nStartingHeight);

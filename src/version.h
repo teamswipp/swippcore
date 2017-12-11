@@ -31,7 +31,7 @@ static const int DATABASE_VERSION = 71500;
 // network protocol versioning
 //
 
-static const int PROTOCOL_VERSION = 69200;
+static const int PROTOCOL_VERSION = 69210;
 
 // intial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 209;
@@ -62,9 +62,9 @@ int getBlockVersion(BlockBreakVersionType fbVersionType, int nHeight);
 
 // minimum protocol versions required for the last block break.
 
-static const int MIN_PEER_PROTO_VERSION = 69200;
-static const int MIN_INSTANTX_PROTO_VERSION = 69200;
-static const int MIN_MN_PROTO_VERSION = 69200;
+static const int MIN_PEER_PROTO_VERSION = 69210;
+static const int MIN_INSTANTX_PROTO_VERSION = 69210;
+static const int MIN_MN_PROTO_VERSION = 69210;
 
-static const int LAST_BLOCK_BREAK = 93000;
+static const int LAST_BLOCK_BREAK = 140000;
 #endif

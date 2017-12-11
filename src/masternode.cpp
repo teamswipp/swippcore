@@ -841,7 +841,8 @@ bool CMasternodePayments::SetPrivKey(std::string strPrivKey)
 // NEEDS TO BE MODIFIED IF A NEW BLOCK BREAK OCCURS IN THE FUTURE!
 
 int64_t getMasternodeCollateralForBlock(int nHeight) {
-    if (isVersionCompatible(MASTERNODE, 69200, nHeight))
+    if (isVersionCompatible(MASTERNODE, 69200, nHeight) ||
+        isVersionCompatible(MASTERNODE, 69210, nHeight))
         return DARKSEND_COLLATERAL;
 
     return 20000 * COIN;
