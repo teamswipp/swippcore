@@ -2,6 +2,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "backtrace.h"
 #include "protocol.h"
 #include "activemasternode.h"
 #include <boost/lexical_cast.hpp>
@@ -370,6 +371,7 @@ bool CActiveMasternode::GetMasterNodeVinForPubKey(std::string collateralAddress,
         }
         if(!found) {
             LogPrintf("CActiveMasternode::GetMasterNodeVinForPubKey - Could not locate valid vin\n");
+            Backtrace::output();
             return false;
         }
     } else {
@@ -378,6 +380,7 @@ bool CActiveMasternode::GetMasterNodeVinForPubKey(std::string collateralAddress,
             selectedOutput = &possibleCoins[0];
         } else {
             LogPrintf("CActiveMasternode::GetMasterNodeVinForPubKey - Could not locate specified vin from possible list\n");
+            Backtrace::output();
             return false;
         }
     }
