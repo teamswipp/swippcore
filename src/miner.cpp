@@ -4,6 +4,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "backtrace.h"
 #include "txdb.h"
 #include "miner.h"
 #include "kernel.h"
@@ -168,7 +169,7 @@ CBlock* CreateNewBlock(CReserveKey& reservekey, bool fProofOfStake, int64_t* pFe
     {
         LOCK2(cs_main, mempool.cs);
         CTxDB txdb("r");
-//>Swipp<
+
         // Priority order to process transactions
         list<COrphan> vOrphan; // list memory doesn't move
         map<uint256, vector<COrphan*> > mapDependers;
@@ -356,19 +357,94 @@ CBlock* CreateNewBlock(CReserveKey& reservekey, bool fProofOfStake, int64_t* pFe
 
         if (fDebug && GetBoolArg("-printpriority", false))
             LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
-// >Swipp<
-        if (!fProofOfStake)
+
+        if (!fProofOfStake) {
             pblock->vtx[0].vout[0].nValue = GetProofOfWorkReward(pindexPrev->nHeight + 1, nFees);
+        }
 
         if (pFees)
             *pFees = nFees;
 
+        // Masternode handling
+        //
+        // TODO: Move to a seperate file, removing masternode PoS payment handling from wallet and use this instead!
+        if(!fProofOfStake && nHeight >= 140000 /* TODO: MOVE TO version.cpp */)
+        {
+            int payments = 1;
+            bool bMasterNodePayment = true;
+
+            if (Params().NetworkID() == CChainParams::TESTNET)
+            {
+                if (GetTime() > START_MASTERNODE_PAYMENTS_TESTNET)
+                    bMasterNodePayment = true;
+            }
+            else
+            {
+                if (GetTime() > START_MASTERNODE_PAYMENTS)
+                    bMasterNodePayment = true;
+            }
+
+            CScript payee;
+            bool hasPayment = true;
+
+            if(bMasterNodePayment) {
+                //spork
+                if(!masternodePayments.GetBlockPayee(pindexPrev->nHeight + 1, payee))
+                {
+                    int winningNode = GetCurrentMasterNode(1, pindexPrev->nHeight + 1);
+
+                    if(winningNode >= 0){
+                        payee = GetScriptForDestination(vecMasternodes[winningNode].pubkey.GetID());
+                    } else {
+                        LogPrintf("CreateNewBlock : Failed to detect masternode to pay\n");
+                        Backtrace::output();
+                        hasPayment = false;
+                    }
+                }
+            }
+
+            if(hasPayment)
+            {
+                payments = pblock->vtx[0].vout.size() + 1;
+                pblock->vtx[0].vout.resize(payments);
+
+                pblock->vtx[0].vout[payments-1].scriptPubKey = payee;
+                pblock->vtx[0].vout[payments-1].nValue = 0;
+
+                CTxDestination address1;
+                ExtractDestination(payee, address1);
+                CBitcoinAddress address2(address1);
+
+                LogPrintf("CreateNewBlock : Masternode payment to %s, payments: %d\n",
+                          address2.ToString().c_str(), payments);
+            }
+
+            int64_t blockValue = pblock->vtx[0].vout[0].nValue;
+            int64_t masternodePayment = GetMasternodePayment(pindexPrev->nHeight + 1, blockValue);
+
+            // Set output amount
+            if(!hasPayment && pblock->vtx[0].vout.size() == 1) {
+                pblock->vtx[0].vout[0].nValue = blockValue;
+            }
+            else if(hasPayment && pblock->vtx[0].vout.size() == 2)
+            {
+                pblock->vtx[0].vout[payments-1].nValue = masternodePayment;
+                blockValue -= masternodePayment;
+                pblock->vtx[0].vout[0].nValue = blockValue;
+            }
+
+            LogPrintf("CreateNewBlock : vtx[0].vout.size == %d, blockValue: %d, masternodePayment: %d\n",
+                      pblock->vtx[0].vout.size(), blockValue, masternodePayment);
+        }
+
         // Fill in header
-        pblock->hashPrevBlock  = pindexPrev->GetBlockHash();
-        pblock->nTime          = max(pindexPrev->GetPastTimeLimit()+1, pblock->GetMaxTransactionTime());
+        pblock->hashPrevBlock = pindexPrev->GetBlockHash();
+        pblock->nTime = max(pindexPrev->GetPastTimeLimit()+1, pblock->GetMaxTransactionTime());
+
         if (!fProofOfStake)
             pblock->UpdateTime(pindexPrev);
-        pblock->nNonce         = 0;
+
+        pblock->nNonce = 0;
     }
 
     return pblock.release();
