@@ -2723,10 +2723,12 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
         // Extra checks to prevent "fill up memory by spamming with bogus blocks"
         const CBlockIndex* pcheckpoint = Checkpoints::AutoSelectSyncCheckpoint();
         int64_t deltaTime = pblock->GetBlockTime() - pcheckpoint->nTime;
+
         if (deltaTime < 0)
         {
             if (pfrom)
                 pfrom->Misbehaving(1);
+
             return error("ProcessBlock() : block with timestamp before last checkpoint");
         }
     }
@@ -2750,24 +2752,30 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
                 if (setStakeSeenOrphan.count(pblock->GetProofOfStake()) && !mapOrphanBlocksByPrev.count(hash))
                     return error("ProcessBlock() : duplicate proof-of-stake (%s, %d) for orphan block %s", pblock->GetProofOfStake().first.ToString(), pblock->GetProofOfStake().second, hash.ToString());
             }
+
             PruneOrphanBlocks();
             COrphanBlock* pblock2 = new COrphanBlock();
+
             {
                 CDataStream ss(SER_DISK, CLIENT_VERSION);
                 ss << *pblock;
                 pblock2->vchBlock = std::vector<unsigned char>(ss.begin(), ss.end());
             }
+
             pblock2->hashBlock = hash;
             pblock2->hashPrev = pblock->hashPrevBlock;
             pblock2->stake = pblock->GetProofOfStake();
+
             nOrphanBlocksSize += pblock2->vchBlock.size();
             mapOrphanBlocks.insert(make_pair(hash, pblock2));
             mapOrphanBlocksByPrev.insert(make_pair(pblock2->hashPrev, pblock2));
+
             if (pblock->IsProofOfStake())
                 setStakeSeenOrphan.insert(pblock->GetProofOfStake());
 
             // Ask this guy to fill in what we're missing
             PushGetBlocks(pfrom, pindexBest, GetOrphanRoot(hash));
+
             // ppcoin: getblocks may not obtain the ancestor block rejected
             // earlier by duplicate-stake check so we ask for it again directly
             if (!IsInitialBlockDownload())
@@ -2783,31 +2791,35 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
     // Recursively process any orphan blocks that depended on this one
     vector<uint256> vWorkQueue;
     vWorkQueue.push_back(hash);
+
     for (unsigned int i = 0; i < vWorkQueue.size(); i++)
     {
         uint256 hashPrev = vWorkQueue[i];
         for (multimap<uint256, COrphanBlock*>::iterator mi = mapOrphanBlocksByPrev.lower_bound(hashPrev);
-             mi != mapOrphanBlocksByPrev.upper_bound(hashPrev);
-             ++mi)
+             mi != mapOrphanBlocksByPrev.upper_bound(hashPrev); ++mi)
         {
             CBlock block;
             {
                 CDataStream ss(mi->second->vchBlock, SER_DISK, CLIENT_VERSION);
                 ss >> block;
             }
+
             block.BuildMerkleTree();
+
             if (block.AcceptBlock())
                 vWorkQueue.push_back(mi->second->hashBlock);
+
             mapOrphanBlocks.erase(mi->second->hashBlock);
             setStakeSeenOrphan.erase(block.GetProofOfStake());
             nOrphanBlocksSize -= mi->second->vchBlock.size();
+
             delete mi->second;
         }
+
         mapOrphanBlocksByPrev.erase(hashPrev);
     }
 
     LogPrintf("ProcessBlock: ACCEPTED\n");
-
     return true;
 }
 
