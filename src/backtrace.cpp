@@ -3,7 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <stdlib.h>
+#ifdef __linux__
 #include <execinfo.h>
+#endif
 
 #include "backtrace.h"
 #include "util.h"
