@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = swipp-qt
-VERSION = 2.1.0
+VERSION = 2.1.1
 INCLUDEPATH += src src/json src/qt src/qt/plugins/mrichtexteditor
 DEFINES += ENABLE_WALLET
 DEFINES += BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
