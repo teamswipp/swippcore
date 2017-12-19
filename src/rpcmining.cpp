@@ -3,6 +3,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "base58.h"
 #include "rpcserver.h"
 #include "chainparams.h"
 #include "main.h"
@@ -500,7 +501,10 @@ Value getblocktemplate(const Array& params, bool fHelp)
             "  \"sizelimit\" : limit of block size\n"
             "  \"bits\" : compressed target of next block\n"
             "  \"height\" : height of the next block\n"
-            "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.");
+            "  \"masternode\" : masternode payment information\n"
+            "  \"masternode_payments_started\" : boolean indicating status of masternode payments\n"
+            "  \"masternode_payments_enforced\" : boolean indicating masternode payment enforcement\n"
+        );
 
     std::string strMode = "template";
     if (params.size() > 0)
@@ -509,11 +513,7 @@ Value getblocktemplate(const Array& params, bool fHelp)
         const Value& modeval = find_value(oparam, "mode");
         if (modeval.type() == str_type)
             strMode = modeval.get_str();
-        else if (modeval.type() == null_type)
-        {
-            /* Do nothing */
-        }
-        else
+        else if (modeval.type() != null_type)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
     }
 
@@ -619,21 +619,59 @@ Value getblocktemplate(const Array& params, bool fHelp)
         aMutable.push_back("prevblock");
     }
 
+    int64_t coinBaseValue = 0;
+
+    /* Include all payments in coin base value */
+    BOOST_FOREACH (CTxOut out, pblock->vtx[0].vout)
+    {
+        coinBaseValue += out.nValue;
+    }
+
+    bool hasMasternodePayments;
+
+    if (TestNet())
+    {
+        hasMasternodePayments = pblock->nTime >= START_MASTERNODE_PAYMENTS_TESTNET;
+    }
+    else
+    {
+        hasMasternodePayments = pblock->nTime >= START_MASTERNODE_PAYMENTS;
+    }
+
+    Object masternodePayment;
+    int size = pblock->vtx[0].vout.size();
+
+    /* Fill in masternode payment information */
+    if (hasMasternodePayments && size > 1)
+    {
+        CScript payee = pblock->vtx[0].vout[size - 1].scriptPubKey;
+        CTxDestination address1;
+        ExtractDestination(payee, address1);
+        CBitcoinAddress address2(address1);
+
+        masternodePayment.push_back(Pair("payee", address2.ToString().c_str()));
+        masternodePayment.push_back(Pair("script", payee.GetID().GetHex()));
+        masternodePayment.push_back(Pair("amount", pblock->vtx[0].vout[size - 1].nValue));
+    }
+
     Object result;
     result.push_back(Pair("version", pblock->nVersion));
     result.push_back(Pair("previousblockhash", pblock->hashPrevBlock.GetHex()));
     result.push_back(Pair("transactions", transactions));
     result.push_back(Pair("coinbaseaux", aux));
-    result.push_back(Pair("coinbasevalue", (int64_t)pblock->vtx[0].vout[0].nValue));
+    result.push_back(Pair("coinbasevalue", (int64_t) coinBaseValue));
     result.push_back(Pair("target", hashTarget.GetHex()));
-    result.push_back(Pair("mintime", (int64_t)pindexPrev->GetPastTimeLimit()+1));
+    result.push_back(Pair("mintime", (int64_t) pindexPrev->GetPastTimeLimit() + 1));
     result.push_back(Pair("mutable", aMutable));
     result.push_back(Pair("noncerange", "00000000ffffffff"));
-    result.push_back(Pair("sigoplimit", (int64_t)MAX_BLOCK_SIGOPS));
-    result.push_back(Pair("sizelimit", (int64_t)MAX_BLOCK_SIZE));
-    result.push_back(Pair("curtime", (int64_t)pblock->nTime));
+    result.push_back(Pair("sigoplimit", (int64_t) MAX_BLOCK_SIGOPS));
+    result.push_back(Pair("sizelimit", (int64_t) MAX_BLOCK_SIZE));
+    result.push_back(Pair("curtime", (int64_t) pblock->nTime));
     result.push_back(Pair("bits", strprintf("%08x", pblock->nBits)));
-    result.push_back(Pair("height", (int64_t)(pindexPrev->nHeight+1)));
+    result.push_back(Pair("height", (int64_t) (pindexPrev->nHeight + 1)));
+    result.push_back(Pair("masternode", masternodePayment));
+    result.push_back(Pair("masternode_payments_started", hasMasternodePayments));
+    result.push_back(Pair("masternode_payments_enforced", hasMasternodePayments));
 
     return result;
 }
@@ -644,8 +682,7 @@ Value submitblock(const Array& params, bool fHelp)
         throw runtime_error(
             "submitblock <hex data> [optional-params-obj]\n"
             "[optional-params-obj] parameter is currently ignored.\n"
-            "Attempts to submit new block to network.\n"
-            "See https://en.bitcoin.it/wiki/BIP_0022 for full specification.");
+            "Attempts to submit new block to network.\n");
 
     vector<unsigned char> blockData(ParseHex(params[0].get_str()));
     CDataStream ssBlock(blockData, SER_NETWORK, PROTOCOL_VERSION);
@@ -663,4 +700,3 @@ Value submitblock(const Array& params, bool fHelp)
 
     return Value::null;
 }
-
