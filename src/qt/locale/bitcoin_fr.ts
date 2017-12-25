@@ -14,11 +14,13 @@
     <message>
         <location line="+41"/>
         <source>Copyright © 2009-2014 The Bitcoin developers
+Copyright © 2011-2012 PPCoin developers
 Copyright © 2012-2014 The NovaCoin developers
-Copyright © 2014 The Swipp developers</source>
+Copyright © 2017 The Swipp developers</source>
         <translation>Copyright © 2009-2014 Les développeurs Bitcoin
+Copyright © 2011-2012 Les développeurs PPCoin
 Copyright © 2012-2014 Les développeurs NovaCoin
-Copyright © 2014 Les développeurs Swipp</translation>
+Copyright © 2017 Les développeurs Swipp</translation>
     </message>
     <message>
         <location line="+15"/>
