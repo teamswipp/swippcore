@@ -59,3 +59,9 @@ make -j8
 ```
 
 If successful, this should generate an executable file "swipp-qt" in the current directory.
+
+# IMPORTANT!
+The master branch is  our main development branch. When you run or update to a new Swipp version, we recommend you that you only
+use commits where a new version has been tagged. We tag new versions at regular intervals - even when we do not make an official
+release. Any tagged release can be considered stable and safe to run. <b>Running any other version at any other commit in-between
+is not supported and done at your own risk.</b>
