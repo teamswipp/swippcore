@@ -73,9 +73,9 @@ const std::string CLIENT_DATE(BUILD_DATE);
 
 bool isVersionCompatible(BlockBreakVersionType fbVersionType, int version, int nHeight)
 {
-    int *b0To93000   = new int[2] {0, 93000 - 1};
-    int *b93000ToLbb = new int[2] {93000, LAST_BLOCK_BREAK - 1};
-    int *lbbToMax    = new int[2] {LAST_BLOCK_BREAK, MAX_BLOCK_SIZE};
+    int b0To93000[]   = {0, 93000 - 1};
+    int b93000ToLbb[] = {93000, LAST_BLOCK_BREAK - 1};
+    int lbbToMax[]    = {LAST_BLOCK_BREAK, MAX_BLOCK_SIZE};
 
     std::map<int, int *> instantXForkBlocks   = {{69110, b0To93000}, {69200, b93000ToLbb}, {MIN_INSTANTX_PROTO_VERSION, lbbToMax}};
     std::map<int, int *> masternodeForkBlocks = {{69110, b0To93000}, {69200, b93000ToLbb}, {MIN_MN_PROTO_VERSION, lbbToMax}};
