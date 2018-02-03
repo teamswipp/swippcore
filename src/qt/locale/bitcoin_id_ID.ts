@@ -16,11 +16,11 @@
         <source>Copyright © 2009-2014 The Bitcoin developers
 Copyright © 2011-2012 PPCoin developers
 Copyright © 2012-2014 The NovaCoin developers
-Copyright © 2017 The Swipp developers</source>
+Copyright © 2017-2018 The Swipp developers</source>
         <translation>Copyright © 2009-2014 para pengembang Bitcoin
 Copyright © 2011-2012 para pengembang PPCoin
 Copyright © 2012-2014 para pengembang NovaCoin
-Copyright © 2017 para pengembang Swipp</translation>
+Copyright © 2017-2018 para pengembang Swipp</translation>
     </message>
     <message>
         <location line="+15"/>
