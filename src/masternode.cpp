@@ -419,7 +419,7 @@ int GetMasternodeByVin(CTxIn& vin)
     return -1;
 }
 
-int GetCurrentMasterNode(int mod, int64_t nBlockHeight)
+int GetCurrentMasterNode(int64_t nBlockHeight)
 {
     int i = 0;
     unsigned int score = 0;
@@ -436,7 +436,7 @@ int GetCurrentMasterNode(int mod, int64_t nBlockHeight)
         }
 
         // calculate the score for each masternode
-        uint256 n = mn.CalculateScore(mod, nBlockHeight);
+        uint256 n = mn.CalculateScore(nBlockHeight);
         unsigned int n2 = 0;
         memcpy(&n2, &n, sizeof(n2));
 
@@ -467,7 +467,7 @@ int GetMasternodeByRank(int findRank, int64_t nBlockHeight)
             continue;
         }
 
-        uint256 n = mn.CalculateScore(1, nBlockHeight);
+        uint256 n = mn.CalculateScore(nBlockHeight);
         unsigned int n2 = 0;
         memcpy(&n2, &n, sizeof(n2));
 
@@ -499,7 +499,7 @@ int GetMasternodeRank(CTxIn& vin, int64_t nBlockHeight)
             continue;
         }
 
-        uint256 n = mn.CalculateScore(1, nBlockHeight);
+        uint256 n = mn.CalculateScore(nBlockHeight);
         unsigned int n2 = 0;
         memcpy(&n2, &n, sizeof(n2));
 
@@ -562,7 +562,7 @@ bool GetBlockHash(uint256& hash, int nBlockHeight)
 // the proof of work for that block. The further away they are the better, the furthest will win the election
 // and get paid this block
 //
-uint256 CMasterNode::CalculateScore(int mod, int64_t nBlockHeight)
+uint256 CMasterNode::CalculateScore(int64_t nBlockHeight)
 {
     if(pindexBest == NULL) return 0;
 
@@ -662,10 +662,6 @@ uint64_t CMasternodePayments::CalculateScore(uint256 blockHash, CTxIn& vin)
     uint256 n2 = Hash(BEGIN(n1), END(n1));
     uint256 n3 = Hash(BEGIN(vin.prevout.hash), END(vin.prevout.hash));
     uint256 n4 = n3 > n2 ? (n3 - n2) : (n2 - n3);
-
-    //printf(" -- CMasternodePayments CalculateScore() n2 = %d \n", n2.Get64());
-    //printf(" -- CMasternodePayments CalculateScore() n3 = %d \n", n3.Get64());
-    //printf(" -- CMasternodePayments CalculateScore() n4 = %d \n", n4.Get64());
 
     return n4.Get64();
 }

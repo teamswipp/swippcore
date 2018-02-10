@@ -391,7 +391,7 @@ CBlock* CreateNewBlock(CReserveKey& reservekey, bool fProofOfStake, int64_t* pFe
                 //spork
                 if(!masternodePayments.GetBlockPayee(pindexPrev->nHeight + 1, payee))
                 {
-                    int winningNode = GetCurrentMasterNode(1, pindexPrev->nHeight + 1);
+                    int winningNode = GetCurrentMasterNode(pindexPrev->nHeight + 1);
 
                     if(winningNode >= 0){
                         payee = GetScriptForDestination(vecMasternodes[winningNode].pubkey.GetID());
