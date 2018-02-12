@@ -629,7 +629,7 @@ bool CPubKey::VerifyCompact(const uint256 &hash, const std::vector<unsigned char
     if (vchSig.size() != 65)
         return false;
     int recid = (vchSig[0] - 27) & 3;
-    bool fComp = IsCompressed();
+    //bool fComp = IsCompressed();
     CPubKey pubkeyRec;
 /*#ifdef USE_SECP256K1
     int pubkeylen = 65;
