@@ -194,6 +194,15 @@ public:
         READWRITE(score);
         READWRITE(vchSig);
      }
+
+    std::string ToString() const
+    {
+        return strprintf("CMasternodePaymentWinner(nBlockHeight=%d, vin=%s, payee=%s, score=%" PRId64 ")",
+            nBlockHeight,
+            vin.ToString().c_str(),
+            payee.ToString().c_str(),
+            score);
+    }
 };
 
 //
