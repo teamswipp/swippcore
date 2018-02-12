@@ -1,3 +1,9 @@
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2012 The Darkcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include "masternode.h"
 #include "activemasternode.h"
 #include "darksend.h"
@@ -790,6 +796,8 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight)
         winner.vin = vecMasternodes[0].vin;
         winner.payee = GetScriptForDestination(vecMasternodes[0].pubkey.GetID());
     }
+
+    if(fDebug) LogPrintf("CMasternodePayments::ProcessBlock - signing winner \"%s\"\n", winner.ToString().c_str());
 
     if(Sign(winner)){
         if(AddWinningMasternode(winner)){
