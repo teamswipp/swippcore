@@ -6,3 +6,6 @@ object*
 release*
 swipp-qt*
 *.qm
+src/swippd
+src/test/tests
+qrc_*.cpp
