@@ -424,27 +424,28 @@ int GetCurrentMasterNode(int64_t nBlockHeight)
     int i = 0;
     unsigned int score = 0;
     int winner = -1;
+
     LOCK(cs_masternodes);
-    // scan for winner
-    BOOST_FOREACH(CMasterNode mn, vecMasternodes) {
+
+    BOOST_FOREACH(CMasterNode mn, vecMasternodes)
+    {
         mn.Check();
         LogPrintf("Trying to fetch masternode with protocol %d for blockheight %d\n", mn.protocolVersion, nBlockHeight);
-        if(!isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight)) continue;
-        if(!mn.IsEnabled()) {
-            i++;
-            continue;
+
+        if (isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight) && mn.IsEnabled())
+        {
+            // calculate the score for each masternode
+            uint256 n = mn.CalculateScore(nBlockHeight);
+            unsigned int n2 = 0;
+            memcpy(&n2, &n, sizeof(n2));
+
+            // determine the winner
+            if(n2 > score){
+                score = n2;
+                winner = i;
+            }
         }
 
-        // calculate the score for each masternode
-        uint256 n = mn.CalculateScore(nBlockHeight);
-        unsigned int n2 = 0;
-        memcpy(&n2, &n, sizeof(n2));
-
-        // determine the winner
-        if(n2 > score){
-            score = n2;
-            winner = i;
-        }
         i++;
     }
 
@@ -454,33 +455,36 @@ int GetCurrentMasterNode(int64_t nBlockHeight)
 int GetMasternodeByRank(int findRank, int64_t nBlockHeight)
 {
     LOCK(cs_masternodes);
-    int i = 0;
 
+    int i = 0;
     std::vector<pair<unsigned int, int> > vecMasternodeScores;
 
-    i = 0;
-    BOOST_FOREACH(CMasterNode mn, vecMasternodes) {
+    BOOST_FOREACH(CMasterNode mn, vecMasternodes)
+    {
         mn.Check();
-        if(!isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight)) continue;
-        if(!mn.IsEnabled()) {
-            i++;
-            continue;
+
+        if (isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight) && mn.IsEnabled())
+        {
+            uint256 n = mn.CalculateScore(nBlockHeight);
+            unsigned int n2 = 0;
+            memcpy(&n2, &n, sizeof(n2));
+
+            vecMasternodeScores.push_back(make_pair(n2, i));
         }
 
-        uint256 n = mn.CalculateScore(nBlockHeight);
-        unsigned int n2 = 0;
-        memcpy(&n2, &n, sizeof(n2));
-
-        vecMasternodeScores.push_back(make_pair(n2, i));
         i++;
     }
 
     sort(vecMasternodeScores.rbegin(), vecMasternodeScores.rend(), CompareValueOnly2());
-
     int rank = 0;
-    BOOST_FOREACH (PAIRTYPE(unsigned int, int)& s, vecMasternodeScores){
+
+    BOOST_FOREACH (PAIRTYPE(unsigned int, int)& s, vecMasternodeScores)
+    {
         rank++;
-        if(rank == findRank) return s.second;
+        if(rank == findRank)
+        {
+            return s.second;
+        }
     }
 
     return -1;
@@ -491,27 +495,28 @@ int GetMasternodeRank(CTxIn& vin, int64_t nBlockHeight)
     LOCK(cs_masternodes);
     std::vector<pair<unsigned int, CTxIn> > vecMasternodeScores;
 
-    BOOST_FOREACH(CMasterNode& mn, vecMasternodes) {
+    BOOST_FOREACH(CMasterNode& mn, vecMasternodes)
+    {
         mn.Check();
 
-        if(!isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight)) continue;
-        if(!mn.IsEnabled()) {
-            continue;
+        if (isVersionCompatible(MASTERNODE, mn.protocolVersion, nBlockHeight) && mn.IsEnabled())
+        {
+            uint256 n = mn.CalculateScore(nBlockHeight);
+            unsigned int n2 = 0;
+
+            memcpy(&n2, &n, sizeof(n2));
+            vecMasternodeScores.push_back(make_pair(n2, mn.vin));
         }
-
-        uint256 n = mn.CalculateScore(nBlockHeight);
-        unsigned int n2 = 0;
-        memcpy(&n2, &n, sizeof(n2));
-
-        vecMasternodeScores.push_back(make_pair(n2, mn.vin));
     }
 
     sort(vecMasternodeScores.rbegin(), vecMasternodeScores.rend(), CompareValueOnly());
-
     unsigned int rank = 0;
-    BOOST_FOREACH (PAIRTYPE(unsigned int, CTxIn)& s, vecMasternodeScores){
+
+    BOOST_FOREACH (PAIRTYPE(unsigned int, CTxIn)& s, vecMasternodeScores)
+    {
         rank++;
-        if(s.second == vin) {
+        if(s.second == vin)
+        {
             return rank;
         }
     }
@@ -772,17 +777,17 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight)
         winner.score = 0;
         winner.nBlockHeight = nBlockHeight;
         winner.vin = mn.vin;
-        winner.payee =GetScriptForDestination(mn.pubkey.GetID());
+        winner.payee = GetScriptForDestination(mn.pubkey.GetID());
 
         break;
     }
 
-    //if we can't find someone to get paid, pick randomly
+    /* If we can't find someone to get paid, pick randomly */
     if(winner.nBlockHeight == 0 && vecMasternodes.size() > 0) {
         winner.score = 0;
         winner.nBlockHeight = nBlockHeight;
         winner.vin = vecMasternodes[0].vin;
-        winner.payee =GetScriptForDestination(vecMasternodes[0].pubkey.GetID());
+        winner.payee = GetScriptForDestination(vecMasternodes[0].pubkey.GetID());
     }
 
     if(Sign(winner)){
