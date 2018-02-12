@@ -2342,9 +2342,6 @@ bool CBlock::AddToBlockIndex(unsigned int nFile, unsigned int nBlockPos, const u
     return true;
 }
 
-
-
-
 bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, bool fCheckSig) const
 {
     // These are checks that are independent of context
@@ -2402,9 +2399,7 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
     if (fCheckSig && !CheckBlockSignature())
         return DoS(100, error("CheckBlock() : bad proof-of-stake block signature"));
 
-
 // ----------- instantX transaction scanning -----------
-
 
         BOOST_FOREACH(const CTransaction& tx, vtx){
             if (!tx.IsCoinBase()){
@@ -2419,8 +2414,6 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
                 }
             }
         }
-
-
 
     // ----------- masternode payments -----------
 
@@ -2449,7 +2442,7 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
             int vtxIndex = IsProofOfStake() ? 1 : 0;
 
             if(pindex->GetBlockHash() == hashPrevBlock) {
-                CAmount masternodePaymentAmount = GetMasternodePayment(pindex->nHeight+1, vtx[vtxIndex].GetValueOut());
+                CAmount masternodePaymentAmount = GetMasternodePayment(pindex->nHeight + 1, vtx[vtxIndex].GetValueOut());
                 bool fIsInitialDownload = IsInitialBlockDownload();
 
                 // If we don't already have its previous block, skip masternode payment step
@@ -2471,9 +2464,9 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
                         if(fDebug)
                            LogPrintf("VTX information : index:%d, i:%d, value:%d\n", vtxIndex, i, vtx[vtxIndex].vout[i].nValue);
 
-                        if(vtx[vtxIndex].vout[i].nValue == masternodePaymentAmount )
+                        if(vtx[vtxIndex].vout[i].nValue == masternodePaymentAmount)
                             foundPaymentAmount = true;
-                        if(vtx[vtxIndex].vout[i].scriptPubKey == payee )
+                        if(vtx[vtxIndex].vout[i].scriptPubKey == payee)
                             foundPayee = true;
                         if(vtx[vtxIndex].vout[i].nValue == masternodePaymentAmount && vtx[vtxIndex].vout[i].scriptPubKey == payee)
                             foundPaymentAndPayee = true;
@@ -2502,8 +2495,6 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
     } else {
         if(fDebug) { LogPrintf("CheckBlock() : skipping masternode payment checks\n"); }
     }
-
-
 
     // Check transactions
     BOOST_FOREACH(const CTransaction& tx, vtx)

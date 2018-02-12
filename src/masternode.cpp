@@ -761,6 +761,7 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight)
         if(++c > (int)vecMasternodes.size()) break;
     }
 
+    /* Try to find a winner */
     std::random_shuffle ( vecMasternodes.begin(), vecMasternodes.end() );
     BOOST_FOREACH(CMasterNode& mn, vecMasternodes) {
         bool found = false;

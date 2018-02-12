@@ -142,7 +142,8 @@ public:
     {
         if(pindexBest == NULL) return 0;
 
-        if(cacheInputAge == 0){
+        if(cacheInputAge == 0)
+        {
             cacheInputAge = GetInputAge(vin);
             cacheInputAgeBlock = pindexBest->nHeight;
         }
@@ -169,7 +170,8 @@ public:
     std::vector<unsigned char> vchSig;
     uint64_t score;
 
-    CMasternodePaymentWinner() {
+    CMasternodePaymentWinner()
+    {
         nBlockHeight = 0;
         score = 0;
         vin = CTxIn();
@@ -186,8 +188,9 @@ public:
     ADD_SERIALIZE_METHODS;
 
     template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion){
-	unsigned int nSerSize = 0;
+    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion)
+    {
+        unsigned int nSerSize = 0;
         READWRITE(nBlockHeight);
         READWRITE(payee);
         READWRITE(vin);
