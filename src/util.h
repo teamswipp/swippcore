@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -526,8 +527,8 @@ template <typename Callable> void LoopForever(const char* name,  Callable func, 
     {
         while (1)
         {
-            MilliSleep(msecs);
             func();
+            MilliSleep(msecs);
         }
     }
     catch (boost::thread_interrupted)
