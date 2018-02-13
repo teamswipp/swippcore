@@ -28,6 +28,7 @@ class CNode;
 class CBlockIndex;
 extern int nBestHeight;
 
+#define SWIPPCORE_RELEASES_ATOM_LOCATION "https://github.com/teamswipp/swippcore/releases.atom"
 
 /** Time between pings automatically sent out for latency probing and keepalive (in seconds). */
 static const int PING_INTERVAL = 1 * 60;
@@ -771,6 +772,7 @@ void RelayDarkSendElectionEntryPing(const CTxIn vin, const std::vector<unsigned 
 void SendDarkSendElectionEntryPing(const CTxIn vin, const std::vector<unsigned char> vchSig, const int64_t nNow, const bool stop);
 void RelayDarkSendCompletedTransaction(const int sessionID, const bool error, const std::string errorMessage);
 void RelayDarkSendMasterNodeContestant();
+std::string GetLatestRelease();
 
 /** Access to the (IP) address database (peers.dat) */
 class CAddrDB
