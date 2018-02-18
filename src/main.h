@@ -1,7 +1,9 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef BITCOIN_MAIN_H
 #define BITCOIN_MAIN_H
 
@@ -48,7 +50,6 @@ static const int64_t DARKSEND_POOL_MAX = (9999999.99*COIN);
 #define MASTERNODE_PING_WAIT_SECONDS           (5*60)
 #define MASTERNODE_EXPIRATION_SECONDS          (43265*60) //Old 65*60
 #define MASTERNODE_REMOVAL_SECONDS             (43270*60) //Old 70*60
-
 
 class CBlock;
 class CBlockIndex;
@@ -183,14 +184,12 @@ uint256 WantedByOrphan(const COrphanBlock* pblockOrphan);
 const CBlockIndex* GetLastBlockIndex(const CBlockIndex* pindex, bool fProofOfStake);
 void ThreadStakeMiner(CWallet *pwallet);
 
-
 /** (try to) add transaction to memory pool **/
 bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction &tx, bool fLimitFree,
                         bool* pfMissingInputs);
 
 bool AcceptableInputs(CTxMemPool& pool, const CTransaction &txo, bool fLimitFree,
                         bool* pfMissingInputs);
-
 
 bool FindTransactionsByDestination(const CTxDestination &dest, std::vector<uint256> &vtxhash);
 
@@ -201,7 +200,6 @@ bool AbortNode(const std::string &msg, const std::string &userMessage="");
 void Misbehaving(NodeId nodeid, int howmuch);
 
 int64_t GetMasternodePayment(int nHeight, int64_t blockValue);
-
 
 /** Position on disk for a particular transaction. */
 class CDiskTxPos
@@ -239,7 +237,6 @@ public:
         return !(a == b);
     }
 
-
     std::string ToString() const
     {
         if (IsNull())
@@ -249,9 +246,6 @@ public:
     }
 };
 
-
-
-
 enum GetMinFee_mode
 {
     GMF_BLOCK,
@@ -260,10 +254,7 @@ enum GetMinFee_mode
 };
 
 typedef std::map<uint256, std::pair<CTxIndex, CTransaction> > MapPrevTx;
-
 int64_t GetMinFee(const CTransaction& tx, unsigned int nBlockSize = 1, enum GetMinFee_mode mode = GMF_BLOCK, unsigned int nBytes = 0);
-
-
 
 /** The basic transaction that is broadcasted on the network and contained in
  * blocks.  A transaction can contain multiple inputs and outputs.
@@ -352,8 +343,8 @@ public:
         Note that lightweight clients may not know anything besides the hash of previous transactions,
         so may not be able to calculate this.
 
-        @param[in] mapInputs	Map of previous transactions that have outputs we're spending
-        @return	Sum of value of all inputs (scriptSigs)
+        @param[in] mapInputs Map of previous transactions that have outputs we're spending
+        @return Sum of value of all inputs (scriptSigs)
         @see CTransaction::FetchInputs
      */
     int64_t GetValueIn(const MapPrevTx& mapInputs) const;
@@ -368,10 +359,12 @@ public:
         if (fseek(filein, pos.nTxPos, SEEK_SET) != 0)
             return error("CTransaction::ReadFromDisk() : fseek failed");
 
-        try {
+        try
+        {
             filein >> *this;
         }
-        catch (std::exception &e) {
+        catch (std::exception &e)
+        {
             return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
         }
 
@@ -380,6 +373,7 @@ public:
         {
             if (fseek(filein, pos.nTxPos, SEEK_SET) != 0)
                 return error("CTransaction::ReadFromDisk() : second fseek failed");
+
             *pfileRet = filein.release();
         }
         return true;
@@ -417,7 +411,6 @@ public:
         return str;
     }
 
-
     bool ReadFromDisk(CTxDB& txdb, COutPoint prevout, CTxIndex& txindexRet);
     bool ReadFromDisk(CTxDB& txdb, COutPoint prevout);
     bool ReadFromDisk(COutPoint prevout);
@@ -425,13 +418,13 @@ public:
 
     /** Fetch from memory and/or disk. inputsRet keys are transaction hashes.
 
-     @param[in] txdb	Transaction database
-     @param[in] mapTestPool	List of pending changes to the transaction index database
-     @param[in] fBlock	True if being called to add a new best-block to the chain
-     @param[in] fMiner	True if being called by CreateNewBlock
-     @param[out] inputsRet	Pointers to this transaction's inputs
-     @param[out] fInvalid	returns true if transaction is invalid
-     @return	Returns true if all inputs are in txdb or mapTestPool
+     @param[in] txdb Transaction database
+     @param[in] mapTestPool List of pending changes to the transaction index database
+     @param[in] fBlock True if being called to add a new best-block to the chain
+     @param[in] fMiner True if being called by CreateNewBlock
+     @param[out] inputsRet Pointers to this transaction's inputs
+     @param[out] fInvalid Returns true if transaction is invalid
+     @return Returns true if all inputs are in txdb or mapTestPool
      */
     bool FetchInputs(CTxDB& txdb, const std::map<uint256, CTxIndex>& mapTestPool,
                      bool fBlock, bool fMiner, MapPrevTx& inputsRet, bool& fInvalid);
@@ -439,12 +432,12 @@ public:
     /** Sanity check previous transactions, then, if all checks succeed,
         mark them as spent by this transaction.
 
-        @param[in] inputs	Previous transactions (from FetchInputs)
-        @param[out] mapTestPool	Keeps track of inputs that need to be updated on disk
-        @param[in] posThisTx	Position of this transaction on disk
+        @param[in] inputs Previous transactions (from FetchInputs)
+        @param[out] mapTestPool Keeps track of inputs that need to be updated on disk
+        @param[in] posThisTx Position of this transaction on disk
         @param[in] pindexBlock
-        @param[in] fBlock	true if called from ConnectBlock
-        @param[in] fMiner	true if called from CreateNewBlock
+        @param[in] fBlock true if called from ConnectBlock
+        @param[in] fMiner true if called from CreateNewBlock
         @return Returns true if all checks succeed
      */
     bool ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
@@ -455,9 +448,6 @@ public:
 
     const CTxOut& GetOutputFor(const CTxIn& input, const MapPrevTx& inputs) const;
 };
-
-
-
 
 /** wrapper for CTxOut that provides a more compact serialization */
 class CTxOutCompressor
@@ -475,7 +465,7 @@ public:
 };
 
 /** Check for standard transaction types
-    @param[in] mapInputs	Map of previous transactions that have outputs we're spending
+    @param[in] mapInputs Map of previous transactions that have outputs we're spending
     @return True if all inputs (scriptSigs) use only standard transaction forms
     @see CTransaction::FetchInputs
 */
@@ -489,7 +479,7 @@ unsigned int GetLegacySigOpCount(const CTransaction& tx);
 
 /** Count ECDSA signature operations in pay-to-script-hash inputs.
 
-    @param[in] mapInputs	Map of previous transactions that have outputs we're spending
+    @param[in] mapInputs Map of previous transactions that have outputs we're spending
     @return maximum number of sigops required to validate this transaction's inputs
     @see CTransaction::FetchInputs
  */
@@ -501,8 +491,6 @@ unsigned int GetP2SHSigOpCount(const CTransaction& tx, const MapPrevTx& mapInput
 bool IsStandardTx(const CTransaction& tx, std::string& reason);
 
 bool IsFinalTx(const CTransaction &tx, int nBlockHeight = 0, int64_t nBlockTime = 0);
-
-
 
 /** A transaction with a merkle branch linking it to the block chain. */
 class CMerkleTx : public CTransaction
@@ -535,7 +523,6 @@ public:
         fMerkleVerified = false;
     }
 
-
     IMPLEMENT_SERIALIZE
     (
         nSerSize += SerReadWrite(s, *(CTransaction*)this, nType, nVersion, ser_action);
@@ -544,7 +531,6 @@ public:
         READWRITE(vMerkleBranch);
         READWRITE(nIndex);
     )
-
 
     int SetMerkleBranch(const CBlock* pblock=NULL);
 
@@ -560,9 +546,6 @@ public:
     int GetTransactionLockSignatures() const;
     bool IsTransactionLockTimedOut() const;
 };
-
-
-
 
 /**  A txdb record that contains the disk location of a transaction and the
  * locations of transactions that spend its outputs.  vSpent is really only
@@ -617,10 +600,6 @@ public:
     int GetDepthInMainChain() const;
 
 };
-
-
-
-
 
 /** Nodes collect new transactions into a block, hash them into a hash tree,
  * and scan through nonce values to make the block's hash satisfy proof-of-work
@@ -707,17 +686,14 @@ public:
     uint256 GetHash() const
     {
         if (nVersion > 6)
-            //return Hash(BEGIN(nVersion), END(nNonce));
-			return Hash9(BEGIN(nVersion), END(nNonce));
+            return Hash9(BEGIN(nVersion), END(nNonce));
         else
             return GetPoWHash();
     }
 
     uint256 GetPoWHash() const
     {
-		//return scrypt_blockhash(CVOIDBEGIN(nVersion)); scrypt algo
-		//return Hash(BEGIN(nVersion), END(nNonce));    sha256 algo
-		return Hash9(BEGIN(nVersion), END(nNonce)); // X... algo series
+        return Hash9(BEGIN(nVersion), END(nNonce)); // X... algo series
     }
 
     int64_t GetBlockTime() const
@@ -850,10 +826,12 @@ public:
             filein.nType |= SER_BLOCKHEADERONLY;
 
         // Read block
-        try {
+        try
+        {
             filein >> *this;
         }
-        catch (std::exception &e) {
+        catch (std::exception &e)
+        {
             return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
         }
 
@@ -888,7 +866,6 @@ public:
         return s.str();
     }
 
-
     bool DisconnectBlock(CTxDB& txdb, CBlockIndex* pindex);
     bool ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck=false);
     bool ReadFromDisk(const CBlockIndex* pindex, bool fReadTransactions=true);
@@ -903,11 +880,6 @@ public:
 private:
     bool SetBestChainInner(CTxDB& txdb, CBlockIndex *pindexNew);
 };
-
-
-
-
-
 
 /** The block chain is a tree shaped structure starting with the
  * genesis block at the root, with each block potentially having multiple
@@ -1131,8 +1103,6 @@ public:
     }
 };
 
-
-
 /** Used to marshal pointers into hashes for db storage. */
 class CDiskBlockIndex : public CBlockIndex
 {
@@ -1220,13 +1190,6 @@ public:
         return str;
     }
 };
-
-
-
-
-
-
-
 
 /** Describes a place in the block chain to another node such that if the
  * other node doesn't have the same branch, it can find a recent common trunk.
@@ -1355,9 +1318,6 @@ public:
     }
 };
 
-
-
-
 /** Capture information about block/transaction validation */
 class CValidationState {
 private:
@@ -1366,66 +1326,83 @@ private:
         MODE_INVALID, //! network rule violation (DoS value may be set)
         MODE_ERROR,   //! run-time error
     } mode;
+
     int nDoS;
     std::string strRejectReason;
     unsigned char chRejectCode;
     bool corruptionPossible;
+
 public:
     CValidationState() : mode(MODE_VALID), nDoS(0), chRejectCode(0), corruptionPossible(false) {}
-    bool DoS(int level, bool ret = false,
-             unsigned char chRejectCodeIn=0, std::string strRejectReasonIn="",
-             bool corruptionIn=false) {
+    bool DoS(int level, bool ret = false, unsigned char chRejectCodeIn=0, std::string strRejectReasonIn="",
+             bool corruptionIn=false)
+    {
         chRejectCode = chRejectCodeIn;
         strRejectReason = strRejectReasonIn;
         corruptionPossible = corruptionIn;
+
         if (mode == MODE_ERROR)
             return ret;
+
         nDoS += level;
         mode = MODE_INVALID;
         return ret;
     }
-    bool Invalid(bool ret = false,
-                 unsigned char _chRejectCode=0, std::string _strRejectReason="") {
+
+    bool Invalid(bool ret = false, unsigned char _chRejectCode=0, std::string _strRejectReason="")
+    {
         return DoS(0, ret, _chRejectCode, _strRejectReason);
     }
-    bool Error(std::string strRejectReasonIn="") {
+
+    bool Error(std::string strRejectReasonIn="")
+    {
         if (mode == MODE_VALID)
             strRejectReason = strRejectReasonIn;
+
         mode = MODE_ERROR;
         return false;
     }
-    bool Abort(const std::string &msg) {
+
+    bool Abort(const std::string &msg)
+    {
         AbortNode(msg);
         return Error(msg);
     }
-    bool IsValid() const {
+
+    bool IsValid() const
+    {
         return mode == MODE_VALID;
     }
-    bool IsInvalid() const {
+
+    bool IsInvalid() const
+    {
         return mode == MODE_INVALID;
     }
-    bool IsError() const {
+
+    bool IsError() const
+    {
         return mode == MODE_ERROR;
     }
-    bool IsInvalid(int &nDoSOut) const {
-        if (IsInvalid()) {
+
+    bool IsInvalid(int &nDoSOut) const
+    {
+        if (IsInvalid())
+        {
             nDoSOut = nDoS;
             return true;
         }
+
         return false;
     }
-    bool CorruptionPossible() const {
+
+    bool CorruptionPossible() const
+    {
         return corruptionPossible;
     }
+
     unsigned char GetRejectCode() const { return chRejectCode; }
     std::string GetRejectReason() const { return strRejectReason; }
 };
-
-
-
-
-
-
 
 class CWalletInterface {
 protected:
