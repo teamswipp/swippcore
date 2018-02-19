@@ -74,8 +74,7 @@ Value darksend(const Array& params, bool fHelp)
     {
         throw runtime_error("darksend <Swippaddress> <amount>\n"
             "Swippaddress, reset, or auto (AutoDenominate)"
-            "<amount> is a real and is rounded to the nearest 0.00000001" +
-            HelpRequiringPassphrase());
+            "<amount> is a real and is rounded to the nearest 0.00000001" + HelpRequiringPassphrase());
     }
 
     if (pwalletMain->IsLocked())
@@ -101,11 +100,11 @@ Value darksend(const Array& params, bool fHelp)
     {
         throw runtime_error("darksend <Swippaddress> <amount>\n"
             "Swippaddress, denominate, or auto (AutoDenominate)"
-            "<amount> is a real and is rounded to the nearest 0.00000001"
-            + HelpRequiringPassphrase());
+            "<amount> is a real and is rounded to the nearest 0.00000001" + HelpRequiringPassphrase());
     }
 
     CBitcoinAddress address(params[0].get_str());
+
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Swipp address");
 
@@ -115,6 +114,7 @@ Value darksend(const Array& params, bool fHelp)
     // Wallet comments
     CWalletTx wtx;
     SendMoney(address.Get(), nAmount, wtx, ONLY_DENOMINATED);
+
     return wtx.GetHash().GetHex();
 }
 
@@ -131,6 +131,7 @@ Value getpoolinfo(const Array& params, bool fHelp)
     obj.push_back(Pair("state", darkSendPool.GetState()));
     obj.push_back(Pair("entries", darkSendPool.GetEntriesCount()));
     obj.push_back(Pair("entries_accepted", darkSendPool.GetCountEntriesAccepted()));
+
     return obj;
 }
 
@@ -138,6 +139,7 @@ Value getpoolinfo(const Array& params, bool fHelp)
 Value masternode(const Array& params, bool fHelp)
 {
     string strCommand;
+
     if (params.size() >= 1)
         strCommand = params[0].get_str();
 
@@ -154,7 +156,8 @@ Value masternode(const Array& params, bool fHelp)
 
     if (strCommand == "stop")
     {
-        if(!fMasterNode) return "you must set masternode=1 in the configuration";
+        if(!fMasterNode)
+            return "you must set masternode=1 in the configuration";
 
         if(pwalletMain->IsLocked())
         {
@@ -162,38 +165,34 @@ Value masternode(const Array& params, bool fHelp)
             strWalletPass.reserve(100);
 
             if (params.size() == 2)
-            {
                 strWalletPass = params[1].get_str().c_str();
-            }
             else
-            {
                 throw runtime_error("Your wallet is locked, passphrase is required\n");
-            }
 
             if(!pwalletMain->Unlock(strWalletPass))
-            {
                 return "incorrect passphrase";
-            }
         }
 
         std::string errorMessage;
+
         if(!activeMasternode.StopMasterNode(errorMessage))
-        {
             return "stop failed: " + errorMessage;
-        }
+
         pwalletMain->Lock();
 
-        if(activeMasternode.status == MASTERNODE_STOPPED) return "successfully stopped masternode";
-        if(activeMasternode.status == MASTERNODE_NOT_CAPABLE) return "not capable masternode";
+        if(activeMasternode.status == MASTERNODE_STOPPED)
+            return "successfully stopped masternode";
+
+        if(activeMasternode.status == MASTERNODE_NOT_CAPABLE)
+            return "not capable masternode";
 
         return "unknown";
     }
 
     if (strCommand == "stop-alias")
     {
-        if (params.size() < 2){
+        if (params.size() < 2)
             throw runtime_error("command needs at least 2 parameters\n");
-        }
 
         std::string alias = params[1].get_str().c_str();
 
@@ -203,18 +202,12 @@ Value masternode(const Array& params, bool fHelp)
             strWalletPass.reserve(100);
 
             if (params.size() == 3)
-            {
                 strWalletPass = params[2].get_str().c_str();
-            }
             else
-            {
                 throw runtime_error("Your wallet is locked, passphrase is required\n");
-            }
 
             if(!pwalletMain->Unlock(strWalletPass))
-            {
                 return "incorrect passphrase";
-            }
         }
 
         bool found = false;
@@ -231,9 +224,7 @@ Value masternode(const Array& params, bool fHelp)
                 statusObj.push_back(Pair("result", result ? "successful" : "failed"));
 
                 if(!result)
-                {
                     statusObj.push_back(Pair("errorMessage", errorMessage));
-                }
 
                 break;
             }
@@ -257,17 +248,12 @@ Value masternode(const Array& params, bool fHelp)
             strWalletPass.reserve(100);
 
             if (params.size() == 2)
-            {
                 strWalletPass = params[1].get_str().c_str();
-            }
             else
-            {
                 throw runtime_error("Your wallet is locked, passphrase is required\n");
-            }
 
-            if(!pwalletMain->Unlock(strWalletPass)){
+            if(!pwalletMain->Unlock(strWalletPass))
                 return "incorrect passphrase";
-            }
         }
 
         int total = 0;
@@ -286,9 +272,7 @@ Value masternode(const Array& params, bool fHelp)
             statusObj.push_back(Pair("result", result ? "successful" : "failed"));
 
             if(result)
-            {
                 successful++;
-            }
             else
             {
                 fail++;
@@ -305,8 +289,8 @@ Value masternode(const Array& params, bool fHelp)
             boost::lexical_cast<std::string>(successful) + " masternodes, failed to stop " +
             boost::lexical_cast<std::string>(fail) + ", total " +
             boost::lexical_cast<std::string>(total)));
-        returnObj.push_back(Pair("detail", resultsObj));
 
+        returnObj.push_back(Pair("detail", resultsObj));
         return returnObj;
     }
 
@@ -315,9 +299,7 @@ Value masternode(const Array& params, bool fHelp)
         std::string strCommand = "active";
 
         if (params.size() == 2)
-        {
             strCommand = params[1].get_str().c_str();
-        }
 
         if (strCommand != "active" && strCommand != "vin" && strCommand != "pubkey" &&
             strCommand != "lastseen" && strCommand != "activeseconds" &&
@@ -332,52 +314,64 @@ Value masternode(const Array& params, bool fHelp)
         {
             mn.Check();
 
-            if(strCommand == "active"){
-                obj.push_back(Pair(mn.addr.ToString().c_str(),       (int)mn.IsEnabled()));
-            } else if (strCommand == "vin") {
-                obj.push_back(Pair(mn.addr.ToString().c_str(),       mn.vin.prevout.hash.ToString().c_str()));
-            } else if (strCommand == "pubkey") {
+            if(strCommand == "active")
+            {
+                obj.push_back(Pair(mn.addr.ToString().c_str(), (int) mn.IsEnabled()));
+            }
+            else if (strCommand == "vin")
+            {
+                obj.push_back(Pair(mn.addr.ToString().c_str(), mn.vin.prevout.hash.ToString().c_str()));
+            }
+            else if (strCommand == "pubkey")
+            {
                 CScript pubkey;
                 pubkey =GetScriptForDestination(mn.pubkey.GetID());
                 CTxDestination address1;
                 ExtractDestination(pubkey, address1);
                 CBitcoinAddress address2(address1);
 
-                obj.push_back(Pair(mn.addr.ToString().c_str(),       address2.ToString().c_str()));
-            } else if (strCommand == "protocol") {
-                obj.push_back(Pair(mn.addr.ToString().c_str(),       (int64_t)mn.protocolVersion));
-            } else if (strCommand == "lastseen") {
-                obj.push_back(Pair(mn.addr.ToString().c_str(),       (int64_t)mn.lastTimeSeen));
-            } else if (strCommand == "activeseconds") {
-                obj.push_back(Pair(mn.addr.ToString().c_str(),       (int64_t)(mn.lastTimeSeen - mn.now)));
-            } else if (strCommand == "rank") {
-                obj.push_back(Pair(mn.addr.ToString().c_str(),       (int)(GetMasternodeRank(mn.vin, pindexBest->nHeight))));
+                obj.push_back(Pair(mn.addr.ToString().c_str(), address2.ToString().c_str()));
+            }
+            else if (strCommand == "protocol")
+            {
+                obj.push_back(Pair(mn.addr.ToString().c_str(), (int64_t) mn.protocolVersion));
+            }
+            else if (strCommand == "lastseen")
+            {
+                obj.push_back(Pair(mn.addr.ToString().c_str(), (int64_t) mn.lastTimeSeen));
+            }
+            else if (strCommand == "activeseconds")
+            {
+                obj.push_back(Pair(mn.addr.ToString().c_str(), (int64_t) (mn.lastTimeSeen - mn.now)));
+            }
+            else if (strCommand == "rank")
+            {
+                obj.push_back(Pair(mn.addr.ToString().c_str(), (int) (GetMasternodeRank(mn.vin, pindexBest->nHeight))));
             }
         }
 
         return obj;
     }
-    if (strCommand == "count") return (int)vecMasternodes.size();
+    if (strCommand == "count")
+        return (int) vecMasternodes.size();
 
     if (strCommand == "start")
     {
-        if(!fMasterNode) return "you must set masternode=1 in the configuration";
+        if(!fMasterNode)
+            return "you must set masternode=1 in the configuration";
 
         if(pwalletMain->IsLocked())
         {
             SecureString strWalletPass;
             strWalletPass.reserve(100);
 
-            if (params.size() == 2){
+            if (params.size() == 2)
                 strWalletPass = params[1].get_str().c_str();
-            } else {
-                throw runtime_error(
-                    "Your wallet is locked, passphrase is required\n");
-            }
+            else
+                throw runtime_error("Your wallet is locked, passphrase is required\n");
 
-            if(!pwalletMain->Unlock(strWalletPass)){
+            if(!pwalletMain->Unlock(strWalletPass))
                 return "incorrect passphrase";
-            }
         }
 
         if(activeMasternode.status != MASTERNODE_REMOTELY_ENABLED && activeMasternode.status != MASTERNODE_IS_CAPABLE)
@@ -400,9 +394,8 @@ Value masternode(const Array& params, bool fHelp)
 
     if (strCommand == "start-alias")
     {
-        if (params.size() < 2){
+        if (params.size() < 2)
             throw runtime_error("command needs at least 2 parameters\n");
-        }
 
         std::string alias = params[1].get_str().c_str();
 
@@ -412,18 +405,12 @@ Value masternode(const Array& params, bool fHelp)
             strWalletPass.reserve(100);
 
             if (params.size() == 3)
-            {
                 strWalletPass = params[2].get_str().c_str();
-            }
             else
-            {
                 throw runtime_error("Your wallet is locked, passphrase is required\n");
-            }
 
             if(!pwalletMain->Unlock(strWalletPass))
-            {
                 return "incorrect passphrase";
-            }
         }
 
         bool found = false;
@@ -436,13 +423,12 @@ Value masternode(const Array& params, bool fHelp)
             {
                 found = true;
                 std::string errorMessage;
-                bool result = activeMasternode.Register(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage);
+                bool result = activeMasternode.Register(mne.getIp(), mne.getPrivKey(), mne.getTxHash(),
+                                                        mne.getOutputIndex(), errorMessage);
                 statusObj.push_back(Pair("result", result ? "successful" : "failed"));
 
                 if(!result)
-                {
                     statusObj.push_back(Pair("errorMessage", errorMessage));
-                }
 
                 break;
             }
@@ -466,18 +452,12 @@ Value masternode(const Array& params, bool fHelp)
             strWalletPass.reserve(100);
 
             if (params.size() == 2)
-            {
                 strWalletPass = params[1].get_str().c_str();
-            }
             else
-            {
                 throw runtime_error("Your wallet is locked, passphrase is required\n");
-            }
 
             if(!pwalletMain->Unlock(strWalletPass))
-            {
                 return "incorrect passphrase";
-            }
         }
 
         std::vector<CMasternodeConfig::CMasternodeEntry> mnEntries;
@@ -492,16 +472,15 @@ Value masternode(const Array& params, bool fHelp)
         {
             total++;
             std::string errorMessage;
-            bool result = activeMasternode.Register(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage);
+            bool result = activeMasternode.Register(mne.getIp(), mne.getPrivKey(), mne.getTxHash(),
+                                                    mne.getOutputIndex(), errorMessage);
             Object statusObj;
 
             statusObj.push_back(Pair("alias", mne.getAlias()));
             statusObj.push_back(Pair("result", result ? "succesful" : "failed"));
 
             if(result)
-            {
                 successful++;
-            }
             else
             {
                 fail++;
@@ -518,8 +497,8 @@ Value masternode(const Array& params, bool fHelp)
             boost::lexical_cast<std::string>(successful) + " masternodes, failed to start " +
             boost::lexical_cast<std::string>(fail) + ", total " +
             boost::lexical_cast<std::string>(total)));
-        returnObj.push_back(Pair("detail", resultsObj));
 
+        returnObj.push_back(Pair("detail", resultsObj));
         return returnObj;
     }
 
@@ -538,27 +517,20 @@ Value masternode(const Array& params, bool fHelp)
         bool found = activeMasternode.GetMasterNodeVin(vin, pubkey, key);
 
         if(!found)
-        {
             return "Missing masternode input, please look at the documentation for instructions on masternode creation";
-        }
         else
-        {
             return "No problems were found";
-        }
     }
 
     if (strCommand == "create")
-    {
-
         return "Not implemented yet, please look at the documentation for instructions on masternode creation";
-    }
 
     if (strCommand == "current")
     {
         int winner = GetCurrentMasterNode(pindexBest->nHeight);
-        if(winner >= 0) {
+
+        if(winner >= 0)
             return vecMasternodes[winner].addr.ToString().c_str();
-        }
 
         return "unknown";
     }
@@ -587,7 +559,7 @@ Value masternode(const Array& params, bool fHelp)
             }
             else
             {
-                obj.push_back(Pair(boost::lexical_cast<std::string>(nHeight), ""));
+                obj.push_back(Pair(boost::lexical_cast<std::string>(nHeight), "Unknwon"));
             }
         }
 
@@ -595,35 +567,29 @@ Value masternode(const Array& params, bool fHelp)
     }
 
     if(strCommand == "enforce")
-    {
-        return (uint64_t)enforceMasternodePaymentsTime;
-    }
+        return (uint64_t) enforceMasternodePaymentsTime;
 
     if(strCommand == "connect")
     {
         std::string strAddress = "";
+
         if (params.size() == 2)
-        {
             strAddress = params[1].get_str().c_str();
-        } else
-        {
+        else
             throw runtime_error("Masternode address required\n");
-        }
 
         CService addr = CService(strAddress);
 
-        if(ConnectNode((CAddress)addr, NULL, true)){
+        if(ConnectNode((CAddress) addr, NULL, true))
             return "successfully connected";
-        } else {
+        else
             return "error connecting";
-        }
     }
 
     if(strCommand == "list-conf")
     {
         std::vector<CMasternodeConfig::CMasternodeEntry> mnEntries;
         mnEntries = masternodeConfig.getEntries();
-
         Object resultObj;
 
         BOOST_FOREACH(CMasternodeConfig::CMasternodeEntry mne, masternodeConfig.getEntries())
@@ -634,6 +600,7 @@ Value masternode(const Array& params, bool fHelp)
             mnObj.push_back(Pair("privateKey", mne.getPrivKey()));
             mnObj.push_back(Pair("txHash", mne.getTxHash()));
             mnObj.push_back(Pair("outputIndex", mne.getOutputIndex()));
+
             resultObj.push_back(Pair("masternode", mnObj));
         }
 
@@ -644,12 +611,10 @@ Value masternode(const Array& params, bool fHelp)
     {
         // Find possible candidates
         vector<COutput> possibleCoins = activeMasternode.SelectCoinsMasternode();
-
         Object obj;
+
         BOOST_FOREACH(COutput& out, possibleCoins)
-        {
             obj.push_back(Pair(out.tx->GetHash().ToString().c_str(), boost::lexical_cast<std::string>(out.i)));
-        }
 
         return obj;
     }
