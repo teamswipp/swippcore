@@ -1,4 +1,5 @@
 // Copyright (c) 2009-2012 The Bitcoin Developers.
+// Copyright (c) 2017-2018 The Swipp developers
 // Authored by Google, Inc.
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -27,13 +28,15 @@
 // together when too many files stack up.
 //
 // Learn more: http://code.google.com/p/leveldb/
+
 class CTxDB
 {
 public:
     CTxDB(const char* pszMode="r+");
-    ~CTxDB() {
-        // Note that this is not the same as Close() because it deletes only
-        // data scoped to this TxDB object.
+
+    ~CTxDB()
+    {
+        // Note that this is not the same as Close() because it deletes only data scoped to this TxDB object.
         delete activeBatch;
     }
 
@@ -43,8 +46,8 @@ public:
 private:
     leveldb::DB *pdb;  // Points to the global instance.
 
-    // A batch stores up writes and deletes for atomic application. When this
-    // field is non-NULL, writes/deletes go there instead of directly to disk.
+    // A batch stores up writes and deletes for atomic application. When this field is non-NULL, writes/deletes
+    // go there instead of directly to disk.
     leveldb::WriteBatch *activeBatch;
     leveldb::Options options;
     bool fReadOnly;
@@ -63,37 +66,45 @@ protected:
         ssKey.reserve(1000);
         ssKey << key;
         std::string strValue;
-
         bool readFromDb = true;
-        if (activeBatch) {
+
+        if (activeBatch)
+        {
             // First we must search for it in the currently pending set of
             // changes to the db. If not found in the batch, go on to read disk.
             bool deleted = false;
             readFromDb = ScanBatch(ssKey, &strValue, &deleted) == false;
-            if (deleted) {
+
+            if (deleted)
                 return false;
-            }
         }
-        if (readFromDb) {
-            leveldb::Status status = pdb->Get(leveldb::ReadOptions(),
-                                              ssKey.str(), &strValue);
-            if (!status.ok()) {
+
+        if (readFromDb)
+        {
+            leveldb::Status status = pdb->Get(leveldb::ReadOptions(), ssKey.str(), &strValue);
+
+            if (!status.ok())
+            {
                 if (status.IsNotFound())
                     return false;
-                // Some unexpected error.
+
+                // Some unexpected error
                 LogPrintf("LevelDB read failure: %s\n", status.ToString());
                 return false;
             }
         }
+
         // Unserialize value
-        try {
-            CDataStream ssValue(strValue.data(), strValue.data() + strValue.size(),
-                                SER_DISK, CLIENT_VERSION);
+        try
+        {
+            CDataStream ssValue(strValue.data(), strValue.data() + strValue.size(), SER_DISK, CLIENT_VERSION);
             ssValue >> value;
         }
-        catch (std::exception &e) {
+        catch (std::exception &e)
+        {
             return false;
         }
+
         return true;
     }
 
@@ -110,15 +121,20 @@ protected:
         ssValue.reserve(10000);
         ssValue << value;
 
-        if (activeBatch) {
+        if (activeBatch)
+        {
             activeBatch->Put(ssKey.str(), ssValue.str());
             return true;
         }
+
         leveldb::Status status = pdb->Put(leveldb::WriteOptions(), ssKey.str(), ssValue.str());
-        if (!status.ok()) {
+
+        if (!status.ok())
+        {
             LogPrintf("LevelDB write failure: %s\n", status.ToString());
             return false;
         }
+
         return true;
     }
 
@@ -127,16 +143,20 @@ protected:
     {
         if (!pdb)
             return false;
+
         if (fReadOnly)
             assert(!"Erase called on database in read-only mode");
 
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(1000);
         ssKey << key;
-        if (activeBatch) {
+
+        if (activeBatch)
+        {
             activeBatch->Delete(ssKey.str());
             return true;
         }
+
         leveldb::Status status = pdb->Delete(leveldb::WriteOptions(), ssKey.str());
         return (status.ok() || status.IsNotFound());
     }
@@ -149,22 +169,22 @@ protected:
         ssKey << key;
         std::string unused;
 
-        if (activeBatch) {
+        if (activeBatch)
+        {
             bool deleted;
-            if (ScanBatch(ssKey, &unused, &deleted) && !deleted) {
-                return true;
-            }
-        }
 
+            if (ScanBatch(ssKey, &unused, &deleted) && !deleted)
+                return true;
+        }
 
         leveldb::Status status = pdb->Get(leveldb::ReadOptions(), ssKey.str(), &unused);
         return status.IsNotFound() == false;
     }
 
-
 public:
     bool TxnBegin();
     bool TxnCommit();
+
     bool TxnAbort()
     {
         delete activeBatch;
@@ -204,9 +224,9 @@ public:
     bool ReadCheckpointPubKey(std::string& strPubKey);
     bool WriteCheckpointPubKey(const std::string& strPubKey);
     bool LoadBlockIndex();
+
 private:
     bool LoadBlockIndexGuts();
 };
-
 
 #endif // BITCOIN_DB_H
