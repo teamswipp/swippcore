@@ -1,12 +1,18 @@
+// Copyright (c) 2017-2018 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef OVERVIEWPAGE_H
 #define OVERVIEWPAGE_H
 
 #include <QWidget>
 #include <QTimer>
 
-namespace Ui {
+namespace Ui
+{
     class OverviewPage;
 }
+
 class ClientModel;
 class WalletModel;
 class TxViewDelegate;
@@ -16,7 +22,7 @@ QT_BEGIN_NAMESPACE
 class QModelIndex;
 QT_END_NAMESPACE
 
-/** Overview ("home") page widget */
+/* Overview ("home") page widget */
 class OverviewPage : public QWidget
 {
     Q_OBJECT
@@ -65,4 +71,4 @@ private slots:
     void updateAlerts(const QString &warnings);
 };
 
-#endif // OVERVIEWPAGE_H
+#endif
