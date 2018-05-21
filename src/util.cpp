@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1307,15 +1308,15 @@ void seed_insecure_rand(bool fDeterministic)
     }
 }
 
-string FormatVersion(int nVersion)
+std::string FormatVersion(int nVersion, bool includeBuild)
 {
-    if (nVersion%100 == 0)
-        return strprintf("%d.%d.%d", nVersion/1000000, (nVersion/10000)%100, (nVersion/100)%100);
-    else
+    if (includeBuild || nVersion % 100 != 0)
         return strprintf("%d.%d.%d.%d", nVersion/1000000, (nVersion/10000)%100, (nVersion/100)%100, nVersion%100);
+    else
+        return strprintf("%d.%d.%d", nVersion/1000000, (nVersion/10000)%100, (nVersion/100)%100);
 }
 
-string FormatFullVersion()
+std::string FormatFullVersion()
 {
     return CLIENT_BUILD;
 }
