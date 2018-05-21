@@ -146,13 +146,6 @@ public:
 }
 instance_of_cinit;
 
-
-
-
-
-
-
-
 void RandAddSeed()
 {
     // Seed with CPU performance counter
@@ -1390,5 +1383,3 @@ std::string DateTimeStrFormat(const char* pszFormat, int64_t nTime)
     ss << boost::posix_time::from_time_t(nTime);
     return ss.str();
 }
-
-

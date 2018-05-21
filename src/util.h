@@ -118,7 +118,6 @@ inline void MilliSleep(int64_t n)
 }
 
 //Dark features
-
 extern bool fMasterNode;
 extern bool fLiteMode;
 extern int nInstantXDepth;
@@ -131,7 +130,6 @@ extern std::string strMasterNodeAddr;
 extern int keysLoaded;
 extern bool fSucessfullyLoaded;
 extern std::vector<int64_t> darkSendDenominations;
-
 
 extern std::map<std::string, std::string> mapArgs;
 extern std::map<std::string, std::vector<std::string> > mapMultiArgs;
@@ -151,8 +149,6 @@ extern volatile bool fReopenDebugLog;
 
 void RandAddSeed();
 void RandAddSeedPerfmon();
-
-
 
 /* Return true if log accepts specified category */
 bool LogAcceptCategory(const char* category);
@@ -196,7 +192,6 @@ static inline bool error(const char* format)
     return false;
 }
 
-
 void PrintException(std::exception* pex, const char* pszThread);
 void PrintExceptionContinue(std::exception* pex, const char* pszThread);
 void ParseString(const std::string& str, char c, std::vector<std::string>& v);
@@ -238,9 +233,6 @@ std::string FormatVersion(int nVersion, bool includeBuild = true);
 std::string FormatFullVersion();
 std::string FormatSubVersion(const std::string& name, int nClientVersion, const std::vector<std::string>& comments);
 void runCommand(std::string strCommand);
-
-
-
 
 /**
  * Convert string to signed 32-bit integer with strict parse error feedback.
