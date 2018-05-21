@@ -31,6 +31,12 @@
 // Dump addresses to peers.dat every 15 minutes (900s)
 #define DUMP_ADDRESSES_INTERVAL 900
 
+// Check for release once every hour (3600s)
+#define FIND_RELEASES_INTERVAL 3600
+
+// Timeout (in seconds) for connecting to the releases atom feed
+#define CURL_CONNECT_TIMEOUT_RELEASES 5L
+
 using namespace std;
 using namespace boost;
 
@@ -1706,6 +1712,9 @@ void StartNode(boost::thread_group& threadGroup)
 
     // Dump network addresses
     threadGroup.create_thread(boost::bind(&LoopForever<void (*)()>, "dumpaddr", &DumpAddresses, DUMP_ADDRESSES_INTERVAL * 1000));
+
+    // Find and check for releases
+    threadGroup.create_thread(boost::bind(&LoopForever<void (*)()>, "findreleases", &FindReleases, FIND_RELEASES_INTERVAL * 1000));
 }
 
 bool StopNode()
@@ -2022,7 +2031,7 @@ static std::list<ComparableVersion> parse_releases(std::string result)
     return versions;
 }
 
-std::string GetLatestRelease()
+std::list<ComparableVersion> GetAllReleases()
 {
     CURL *curl;
     CURLcode res;
@@ -2033,6 +2042,7 @@ std::string GetLatestRelease()
     {
         curl_easy_setopt(curl, CURLOPT_URL, SWIPPCORE_RELEASES_ATOM_LOCATION);
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+        curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, CURL_CONNECT_TIMEOUT_RELEASES);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_chunk);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
         res = curl_easy_perform(curl);
@@ -2042,10 +2052,27 @@ std::string GetLatestRelease()
             LogPrintf("Download of Swipp core release list failed: %s\n", curl_easy_strerror(res));
         }
 
+
         curl_easy_cleanup(curl);
     }
 
     curl_global_cleanup();
-    std::list<ComparableVersion> versions = parse_releases(result);
+    return parse_releases(result);
+}
+
+std::string GetLatestRelease()
+{
+    std::list<ComparableVersion> versions = GetAllReleases();
     return versions.empty() ? "unknown" : "v" + versions.back().ToString();
+}
+
+void FindReleases()
+{
+    std::list<ComparableVersion> versions = GetAllReleases();
+    std::string latest_version = versions.back().ToString();
+
+    if(fDebug) {
+        LogPrintf("Latest version: %s\n", latest_version);
+        LogPrintf("Client version: %s\n", FormatVersion(CLIENT_VERSION, true));
+    }
 }
