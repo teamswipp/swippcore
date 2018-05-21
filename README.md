@@ -28,7 +28,7 @@ sudo apt-get install build-essential make g++
 
 After we have prepared the needed build environment, we also need to install a number of library dependencies used by the Swipp wallet:
 ```
-sudo apt-get install libboost-all-dev libssl1.0-dev libdb5.3++-dev libminiupnpc-dev libz-dev
+sudo apt-get install libboost-all-dev libssl1.0-dev libdb5.3++-dev libminiupnpc-dev libz-dev libcurl4-openssl-dev
 ```
 
 # Building the CLI/RPC version
