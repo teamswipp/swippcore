@@ -2075,4 +2075,9 @@ void FindReleases()
         LogPrintf("Latest version: %s\n", latest_version);
         LogPrintf("Client version: %s\n", FormatVersion(CLIENT_VERSION, true));
     }
+
+    if (latest_version > FormatVersion(CLIENT_VERSION, true))
+    {
+        uiInterface.ThreadSafeMessageBox("This wallet is outdated. Please update to the latest version!", "", CClientUIInterface::MSG_WARNING);
+    }
 }
