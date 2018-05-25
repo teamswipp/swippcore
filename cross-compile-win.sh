@@ -5,6 +5,7 @@ if [ ! -d "$1" ]; then
 	exit 1
 fi
 
+export PATH=$1/usr/bin:$PATH
 MXE_INCLUDE_PATH=$1/usr/i686-w64-mingw32.static/include
 MXE_LIB_PATH=$1/usr/i686-w64-mingw32.static/lib
 
