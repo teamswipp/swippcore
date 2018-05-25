@@ -6,6 +6,7 @@ if [ ! -d "$1" ]; then
 fi
 
 export PATH=$1/usr/bin:$PATH
+export PATH=$1/usr/i686-w64-mingw32.static/bin:$PATH
 MXE_INCLUDE_PATH=$1/usr/i686-w64-mingw32.static/include
 MXE_LIB_PATH=$1/usr/i686-w64-mingw32.static/lib
 
@@ -25,6 +26,7 @@ i686-w64-mingw32.static-qmake-qt5 \
 	BDB_LIB_PATH=$MXE_LIB_PATH \
 	MINIUPNPC_INCLUDE_PATH=$MXE_INCLUDE_PATH \
 	MINIUPNPC_LIB_PATH=$MXE_LIB_PATH \
+	CURL_LIB_PATH=$MXE_LIB_PATH \
 	QMAKE_LRELEASE=$1/usr/i686-w64-mingw32.static/qt5/bin/lrelease swipp.pro
 
 cd src/leveldb
