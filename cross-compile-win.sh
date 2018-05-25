@@ -30,10 +30,9 @@ i686-w64-mingw32.static-qmake-qt5 \
 	QMAKE_LRELEASE=$1/usr/i686-w64-mingw32.static/qt5/bin/lrelease swipp.pro
 
 cd src/leveldb
-TARGET_OS=NATIVE_WINDOWS make libleveldb.a libmemenv.a \
+TARGET_OS=NATIVE_WINDOWS make -j8 libleveldb.a libmemenv.a \
 	CC=$1/usr/bin/i686-w64-mingw32.static-gcc \
 	CXX=$1/usr/bin/i686-w64-mingw32.static-g++
-make -j8 -f leveldb/Makefile
 
 cd ../secp256k1
 ./autogen.sh
