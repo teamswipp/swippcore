@@ -33,7 +33,7 @@ TARGET_OS=NATIVE_WINDOWS make libleveldb.a libmemenv.a \
 make -j8 -f leveldb/Makefile
 
 cd ../secp256k1
-./auotgen.sh
+./autogen.sh
 ./configure --host=i686-w64-mingw32.static
 make -j8
 
