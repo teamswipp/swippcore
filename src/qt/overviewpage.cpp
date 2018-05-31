@@ -1,3 +1,5 @@
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2012 The Bitcoin developers
 // Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -345,6 +347,11 @@ void OverviewPage::updateDarksendProgress()
 
 void OverviewPage::darkSendStatus()
 {
+    /* By default, this function is called by a timer after exactly 60 seconds. In bad cases or
+       during slowdows or debugging, pindexBest can actually be NULL. */
+    if (pindexBest == NULL)
+        return;
+
     int nBestHeight = pindexBest->nHeight;
 
     if(nBestHeight != darkSendPool.cachedNumBlocks)
