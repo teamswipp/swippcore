@@ -354,7 +354,7 @@ void OverviewPage::darkSendStatus()
 
     int nBestHeight = pindexBest->nHeight;
 
-    if(nBestHeight != darkSendPool.cachedNumBlocks)
+    if(fEnableDarksend && nBestHeight != darkSendPool.cachedNumBlocks)
     {
         // We we're processing lots of blocks, we'll just leave
         if(GetTime() - lastNewBlock < 10)
