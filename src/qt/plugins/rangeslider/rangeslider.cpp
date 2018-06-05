@@ -4,6 +4,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <QApplication>
+
 #include "rangeslider.h"
 
 namespace
@@ -18,8 +20,8 @@ RangeSlider::RangeSlider(QWidget* aParent)
       mLowerValue(0), mUpperValue(100),
       mFirstHandlePressed(false), mSecondHandlePressed(false),
       mInterval(mMaximum - mMinimum),
-      mBackgroudColorEnabled(QColor(0x1E, 0x90, 0xFF)),
-      mBackgroudColorDisabled(Qt::darkGray),
+      mBackgroudColorEnabled(QApplication::palette().color(QPalette::Highlight)),
+      mBackgroudColorDisabled(QApplication::palette().color(QPalette::Dark)),
       mBackgroudColor(mBackgroudColorEnabled)
 {
     setMouseTracking(true);
@@ -32,19 +34,19 @@ void RangeSlider::paintEvent(QPaintEvent* aEvent)
 
     // Background
     QRectF backgroundRect = QRectF(scLeftRightMargin, (height() - scSliderBarHeight) / 2, width() - scLeftRightMargin * 2, scSliderBarHeight);
-    QPen pen(Qt::gray, 0.8);
+    QPen pen(QApplication::palette().color(QPalette::Mid), 0.8);
     painter.setPen(pen);
     painter.setRenderHint(QPainter::Qt4CompatiblePainting);
-    QBrush backgroundBrush(QColor(0xD0, 0xD0, 0xD0));
+    QBrush backgroundBrush(QApplication::palette().color(QPalette::Window));
     painter.setBrush(backgroundBrush);
     painter.drawRoundedRect(backgroundRect, 1, 1);
 
     // First value handle rect
-    pen.setColor(Qt::darkGray);
+    pen.setColor(QApplication::palette().color(QPalette::Dark));
     pen.setWidth(0.5);
     painter.setPen(pen);
     painter.setRenderHint(QPainter::Antialiasing);
-    QBrush handleBrush(QColor(0xFA, 0xFA, 0xFA));
+    QBrush handleBrush(QApplication::palette().color(QPalette::Button));
     painter.setBrush(handleBrush);
     QRectF leftHandleRect = firstHandleRect();
     painter.drawRoundedRect(leftHandleRect, 2, 2);
