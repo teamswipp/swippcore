@@ -1,3 +1,9 @@
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef WALLETMODEL_H
 #define WALLETMODEL_H
 
@@ -57,7 +63,7 @@ public:
         TransactionCommitFailed,
         NarrationTooLong,
         Aborted,
-	AnonymizeOnlyUnlocked
+        AnonymizeOnlyUnlocked
     };
 
     enum EncryptionStatus
@@ -65,7 +71,7 @@ public:
         Unencrypted,  // !wallet->IsCrypted()
         Locked,       // wallet->IsCrypted() && wallet->IsLocked()
         Unlocked,      // wallet->IsCrypted() && !wallet->IsLocked()
-	UnlockedForAnonymizationOnly
+        UnlockedForAnonymizationOnly
     };
 
     OptionsModel *getOptionsModel();
@@ -85,10 +91,9 @@ public:
     // Return status record for SendCoins, contains error id + information
     struct SendCoinsReturn
     {
-        SendCoinsReturn(StatusCode status=Aborted,
-                         qint64 fee=0,
-                         QString hex=QString()):
-            status(status), fee(fee), hex(hex) {}
+        SendCoinsReturn(StatusCode status=Aborted, qint64 fee=0, QString hex=QString()):
+                        status(status), fee(fee), hex(hex) { }
+
         StatusCode status;
         qint64 fee; // is used in case status is "AmountWithFeeExceedsBalance"
         QString hex; // is filled with the transaction hash if status is "OK"
@@ -99,11 +104,14 @@ public:
 
     // Wallet encryption
     bool setWalletEncrypted(bool encrypted, const SecureString &passphrase);
+
     // Passphrase only needed when unlocking
     bool setWalletLocked(bool locked, const SecureString &passPhrase=SecureString(), bool anonymizeOnly=false);
     bool changePassphrase(const SecureString &oldPass, const SecureString &newPass);
+
     // Is wallet unlocked for anonymization only?
     bool isAnonymizeOnlyUnlocked();
+
     // Wallet backup
     bool backupWallet(const QString &filename);
 
@@ -167,13 +175,16 @@ private:
 
 
 public slots:
-    /* Wallet status might have changed */
+    // Wallet status might have changed
     void updateStatus();
-    /* New transaction, or transaction changed status */
+
+    // New transaction, or transaction changed status
     void updateTransaction(const QString &hash, int status);
-    /* New, updated or removed address book entry */
+
+    // New, updated or removed address book entry
     void updateAddressBook(const QString &address, const QString &label, bool isMine, int status);
-    /* Current, immature or unconfirmed balance might have changed - emit 'balanceChanged' if so */
+
+    // Current, immature or unconfirmed balance might have changed - emit 'balanceChanged' if so
     void pollBalanceChanged();
 
 signals:
