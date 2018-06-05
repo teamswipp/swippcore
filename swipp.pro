@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = swipp-qt
 VERSION = 2.1.3
-INCLUDEPATH += src src/json src/qt src/qt/plugins/mrichtexteditor
+INCLUDEPATH += src src/json src/qt src/qt/plugins/mrichtexteditor src/qt/plugins/rangeslider
 DEFINES += ENABLE_WALLET
 DEFINES += BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
 CONFIG += no_include_pwd
@@ -305,10 +305,11 @@ HEADERS += src/qt/bitcoingui.h \
     src/qt/sendmessagesdialog.h \
     src/qt/sendmessagesentry.h \
     src/qt/plugins/mrichtexteditor/mrichtextedit.h \
+    src/qt/plugins/rangeslider/rangeslider.h \
     src/qt/qvalidatedtextedit.h \
-	src/bloom.h \
-	src/hashblock.h \
-	src/sph_skein.h \
+    src/bloom.h \
+    src/hashblock.h \
+    src/sph_skein.h \
     src/sph_keccak.h \
     src/sph_jh.h \
     src/sph_groestl.h \
@@ -424,6 +425,7 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/sendmessagesentry.cpp \
     src/qt/qvalidatedtextedit.cpp \
     src/qt/plugins/mrichtexteditor/mrichtextedit.cpp \
+    src/qt/plugins/rangeslider/rangeslider.cpp \
     src/rpcsmessage.cpp
 
 
