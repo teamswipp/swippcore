@@ -15,6 +15,8 @@
 #include "instantx.h"
 #include "wallet.h"
 
+#define BALANCE_POLL_INTERVAL 500 // 0.5 seconds
+
 class OptionsModel;
 class AddressTableModel;
 class TransactionTableModel;
