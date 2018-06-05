@@ -1,6 +1,8 @@
-/*
- * W.J. van der Laan 2011-2012
- */
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <QApplication>
 
@@ -16,6 +18,7 @@
 #include "wallet.h"
 #include "ui_interface.h"
 #include "paymentserver.h"
+
 #ifdef Q_OS_MAC
 #include "macdockiconhandler.h"
 #endif
@@ -49,13 +52,14 @@ static void ThreadSafeMessageBox(const std::string& message, const std::string& 
     if(guiref)
     {
         bool modal = (style & CClientUIInterface::MODAL);
+
         // In case of modal message, use blocking connection to wait for user to click a button
         QMetaObject::invokeMethod(guiref, "message",
-                                   modal ? GUIUtil::blockingGUIThreadConnection() : Qt::QueuedConnection,
-                                   Q_ARG(QString, QString::fromStdString(caption)),
-                                   Q_ARG(QString, QString::fromStdString(message)),
-                                   Q_ARG(bool, modal),
-                                   Q_ARG(unsigned int, style));
+                                  modal ? GUIUtil::blockingGUIThreadConnection() : Qt::QueuedConnection,
+                                  Q_ARG(QString, QString::fromStdString(caption)),
+                                  Q_ARG(QString, QString::fromStdString(message)),
+                                  Q_ARG(bool, modal),
+                                  Q_ARG(unsigned int, style));
     }
     else
     {
@@ -68,13 +72,15 @@ static bool ThreadSafeAskFee(int64_t nFeeRequired, const std::string& strCaption
 {
     if(!guiref)
         return false;
+
     if(nFeeRequired < MIN_TX_FEE || nFeeRequired <= nTransactionFee || fDaemon)
         return true;
+
     bool payFee = false;
 
     QMetaObject::invokeMethod(guiref, "askFee", GUIUtil::blockingGUIThreadConnection(),
-                               Q_ARG(qint64, nFeeRequired),
-                               Q_ARG(bool*, &payFee));
+                              Q_ARG(qint64, nFeeRequired),
+                              Q_ARG(bool*, &payFee));
 
     return payFee;
 }
@@ -86,27 +92,26 @@ static void InitMessage(const std::string &message)
         splashref->showMessage(QString::fromStdString(message), Qt::AlignBottom|Qt::AlignHCenter, QColor(0,0,0));
         QApplication::instance()->processEvents();
     }
+
     LogPrintf("init message: %s\n", message);
 }
 
-/*
-   Translate string to current locale using Qt.
- */
+// Translate string to current locale using Qt
 static std::string Translate(const char* psz)
 {
     return QCoreApplication::translate("bitcoin-core", psz).toStdString();
 }
 
-/* Handle runaway exceptions. Shows a message box with the problem and quits the program.
- */
+// Handle runaway exceptions. Shows a message box with the problem and quits the program
 static void handleRunawayException(std::exception *e)
 {
     PrintExceptionContinue(e, "Runaway exception");
-    QMessageBox::critical(0, "Runaway exception", BitcoinGUI::tr("A fatal error occurred. Swipp can no longer continue safely and will quit.") + QString("\n\n") + QString::fromStdString(strMiscWarning));
+    QMessageBox::critical(0, "Runaway exception", BitcoinGUI::tr("A fatal error occurred. Swipp can no longer continue safely and will quit.") +
+                          QString("\n\n") + QString::fromStdString(strMiscWarning));
     exit(1);
 }
 
-/* qDebug() message handler --> debug.log */
+// qDebug() message handler --> debug.log
 #if QT_VERSION < 0x050000
 void DebugMessageHandler(QtMsgType type, const char * msg)
 {
@@ -139,13 +144,15 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     // Do this early as we don't want to bother initializing if we are just calling IPC
-    // ... but do it after creating app, so QCoreApplication::arguments is initialized:
+    // but do it after creating app, so QCoreApplication::arguments is initialized
     if (PaymentServer::ipcSendCommandLine())
         exit(0);
+
     PaymentServer* paymentServer = new PaymentServer(&app);
 
     // Install global event filter that makes sure that long tooltips can be word-wrapped
     app.installEventFilter(new GUIUtil::ToolTipToRichTextFilter(TOOLTIP_WRAP_THRESHOLD, &app));
+
     // Install qDebug() message handler to route to debug.log
 #if QT_VERSION < 0x050000
     qInstallMsgHandler(DebugMessageHandler);
@@ -153,10 +160,10 @@ int main(int argc, char *argv[])
     qInstallMessageHandler(DebugMessageHandler);
 #endif
 
-    // Command-line options take precedence:
+    // Command-line options take precedence
     ParseParameters(argc, argv);
 
-    // ... then bitcoin.conf:
+    // ...then bitcoin.conf
     if (!boost::filesystem::is_directory(GetDataDir(false)))
     {
         // This message can not be translated, as translation is not initialized yet
@@ -177,19 +184,20 @@ int main(int argc, char *argv[])
     else
         app.setApplicationName("Swipp-Qt");
 
-    // ... then GUI settings:
+    // ...then GUI settings
     OptionsModel optionsModel;
 
     // Get desired locale (e.g. "de_DE") from command line or use system locale
     QString lang_territory = QString::fromStdString(GetArg("-lang", QLocale::system().name().toStdString()));
     QString lang = lang_territory;
+
     // Convert to "de" only by truncating "_DE"
     lang.truncate(lang_territory.lastIndexOf('_'));
 
     QTranslator qtTranslatorBase, qtTranslator, translatorBase, translator;
     // Load language files for configured locale:
-    // - First load the translator for the base language, without territory
-    // - Then load the more specific locale translator
+    // First load the translator for the base language, without territory
+    // Then load the more specific locale translator
 
     // Load e.g. qt_de.qm
     if (qtTranslatorBase.load("qt_" + lang, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
@@ -223,14 +231,14 @@ int main(int argc, char *argv[])
     }
 
 #ifdef Q_OS_MAC
-    // on mac, also change the icon now because it would look strange to have a testnet splash (green) and a std app icon (orange)
+    // on mac, also change the icon now because it would look strange to have
+    // a testnet splash (green) and a std app icon (orange)
     if(GetBoolArg("-testnet", false))
-    {
         MacDockIconHandler::instance()->setIcon(QIcon(":icons/bitcoin_testnet"));
-    }
 #endif
 
     QSplashScreen splash(QPixmap(":/images/splash"), 0);
+
     if (GetBoolArg("-splash", true) && !GetBoolArg("-min", false))
     {
         splash.show();
@@ -238,7 +246,6 @@ int main(int argc, char *argv[])
     }
 
     app.processEvents();
-
     app.setQuitOnLastWindowClosed(false);
 
     try
@@ -251,7 +258,6 @@ int main(int argc, char *argv[])
             GUIUtil::SetStartOnSystemStartup(true);
 
         boost::thread_group threadGroup;
-
         BitcoinGUI window;
         guiref = &window;
 
@@ -264,7 +270,6 @@ int main(int argc, char *argv[])
             {
                 // Put this in a block, so that the Model objects are cleaned up before
                 // calling Shutdown().
-
                 paymentServer->setOptionsModel(&optionsModel);
 
                 if (splashref)
@@ -272,21 +277,17 @@ int main(int argc, char *argv[])
 
                 ClientModel clientModel(&optionsModel);
                 WalletModel walletModel(pwalletMain, &optionsModel);
-		MessageModel messageModel(pwalletMain, &walletModel);
+                MessageModel messageModel(pwalletMain, &walletModel);
 
                 window.setClientModel(&clientModel);
                 window.setWalletModel(&walletModel);
-		window.setMessageModel(&messageModel);
+                window.setMessageModel(&messageModel);
 
                 // If -min option passed, start window minimized.
                 if(GetBoolArg("-min", false))
-                {
                     window.showMinimized();
-                }
                 else
-                {
                     window.show();
-                }
 
                 // Now that initialization/startup is done, process any command-line
                 // bitcoin: URIs
@@ -298,9 +299,10 @@ int main(int argc, char *argv[])
                 window.hide();
                 window.setClientModel(0);
                 window.setWalletModel(0);
-		window.setMessageModel(0);
+                window.setMessageModel(0);
                 guiref = 0;
             }
+
             // Shutdown the core and its threads, but don't exit Bitcoin-Qt here
             threadGroup.interrupt_all();
             threadGroup.join_all();
@@ -311,13 +313,19 @@ int main(int argc, char *argv[])
             threadGroup.interrupt_all();
             threadGroup.join_all();
             Shutdown();
+
             return 1;
         }
-    } catch (std::exception& e) {
+    }
+    catch (std::exception& e)
+    {
         handleRunawayException(&e);
-    } catch (...) {
+    }
+    catch (...)
+    {
         handleRunawayException(NULL);
     }
+
     return 0;
 }
 #endif // BITCOIN_QT_TEST
