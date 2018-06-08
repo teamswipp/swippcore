@@ -31,7 +31,7 @@ public:
     int GetUpperValue() const;
     void SetUpperValue(int aUpperValue);
 
-    void SetRange(int aMinimum, int aMaximum);
+    void setRange(int aMinimum, int aMaximum);
 
 protected:
     void paintEvent(QPaintEvent* aEvent) override;
