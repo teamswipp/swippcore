@@ -10,7 +10,7 @@
 
 namespace
 {
-    const int scHandleSideLength = 11;
+    const int scHandleSideLength = 15;
     const int scSliderBarHeight = 5;
     const int scLeftRightMargin = 1;
 }
@@ -34,26 +34,26 @@ void RangeSlider::paintEvent(QPaintEvent* aEvent)
 
     // Background
     QRectF backgroundRect = QRectF(scLeftRightMargin, (height() - scSliderBarHeight) / 2, width() - scLeftRightMargin * 2, scSliderBarHeight);
-    QPen pen(QApplication::palette().color(QPalette::Mid), 0.8);
+    QPen pen(QApplication::palette().color(QPalette::Dark), 0.8);
     painter.setPen(pen);
     painter.setRenderHint(QPainter::Qt4CompatiblePainting);
-    QBrush backgroundBrush(QApplication::palette().color(QPalette::Window));
+    QBrush backgroundBrush(QApplication::palette().color(QPalette::Mid));
     painter.setBrush(backgroundBrush);
     painter.drawRoundedRect(backgroundRect, 1, 1);
 
     // First value handle rect
     pen.setColor(QApplication::palette().color(QPalette::Dark));
-    pen.setWidth(0.5);
+    pen.setWidth(0.4);
     painter.setPen(pen);
     painter.setRenderHint(QPainter::Antialiasing);
-    QBrush handleBrush(QApplication::palette().color(QPalette::Button));
+    QBrush handleBrush(QApplication::palette().color(QPalette::Light));
     painter.setBrush(handleBrush);
     QRectF leftHandleRect = firstHandleRect();
-    painter.drawRoundedRect(leftHandleRect, 2, 2);
+    painter.drawRoundedRect(leftHandleRect, 6, 6);
 
     // Second value handle rect
     QRectF rightHandleRect = secondHandleRect();
-    painter.drawRoundedRect(rightHandleRect, 2, 2);
+    painter.drawRoundedRect(rightHandleRect, 6, 6);
 
     // Handles
     painter.setRenderHint(QPainter::Antialiasing, false);
