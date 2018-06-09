@@ -4,6 +4,9 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <boost/signals2.hpp>
+#include <future>
+
 #include "walletmodel.h"
 #include "guiconstants.h"
 #include "optionsmodel.h"
@@ -21,10 +24,11 @@
 #include <QTimer>
 #include <QDebug>
 
+boost::signals2::signal<void(WalletModel *)> signalCheckBalanceChanged;
+
 WalletModel::WalletModel(CWallet *wallet, OptionsModel *optionsModel, QObject *parent) :
     QObject(parent), wallet(wallet), optionsModel(optionsModel), addressTableModel(0),
-    transactionTableModel(0), cachedBalance(0), cachedStake(0), cachedUnconfirmedBalance(0),
-    cachedImmatureBalance(0), cachedEncryptionStatus(Unencrypted), cachedNumBlocks(0)
+    transactionTableModel(0), cachedEncryptionStatus(Unencrypted), cachedNumBlocks(0)
 {
     addressTableModel = new AddressTableModel(wallet, this);
     transactionTableModel = new TransactionTableModel(wallet, this);
@@ -34,6 +38,7 @@ WalletModel::WalletModel(CWallet *wallet, OptionsModel *optionsModel, QObject *p
     connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollBalanceChanged()));
     pollTimer->start(BALANCE_POLL_INTERVAL);
     subscribeToCoreSignals();
+    signalCheckBalanceChanged.connect([&](WalletModel *) { std::async(&ThreadCheckBalanceChanged, this); });
 }
 
 WalletModel::~WalletModel()
@@ -48,6 +53,7 @@ qint64 WalletModel::getBalance(const CCoinControl *coinControl) const
         qint64 nBalance = 0;
         std::vector<COutput> vCoins;
         wallet->AvailableCoins(vCoins, true, coinControl);
+
         BOOST_FOREACH(const COutput& out, vCoins)
             if(out.fSpendable)
                 nBalance += out.tx->vout[out.i].nValue;
@@ -87,6 +93,41 @@ void WalletModel::updateStatus()
         emit encryptionStatusChanged(newEncryptionStatus);
 }
 
+CCriticalSection balance_cache;
+
+static qint64 cachedBalance = 0;
+static qint64 cachedStake = 0;
+static qint64 cachedUnconfirmedBalance = 0;
+static qint64 cachedImmatureBalance = 0;
+static qint64 cachedAnonymizedBalance = 0;
+static int cachedTxLocks = 0;
+
+void ThreadCheckBalanceChanged(WalletModel *walletModel)
+{
+    qint64 newBalance = walletModel->getBalance();
+    qint64 newStake = walletModel->getStake();
+    qint64 newUnconfirmedBalance = walletModel->getUnconfirmedBalance();
+    qint64 newImmatureBalance = walletModel->getImmatureBalance();
+    qint64 newAnonymizedBalance = walletModel->getAnonymizedBalance();
+
+    if(cachedBalance != newBalance || cachedStake != newStake || cachedUnconfirmedBalance != newUnconfirmedBalance ||
+       cachedImmatureBalance != newImmatureBalance || cachedAnonymizedBalance != newAnonymizedBalance ||
+       cachedTxLocks != nCompleteTXLocks)
+    {
+        {
+            LOCK(balance_cache);
+
+            cachedBalance = newBalance;
+            cachedStake = newStake;
+            cachedUnconfirmedBalance = newUnconfirmedBalance;
+            cachedImmatureBalance = newImmatureBalance;
+            cachedAnonymizedBalance = newAnonymizedBalance;
+            cachedTxLocks = nCompleteTXLocks;
+        }
+        emit walletModel->balanceChanged(newBalance, newStake, newUnconfirmedBalance, newImmatureBalance, newAnonymizedBalance);
+    }
+}
+
 void WalletModel::pollBalanceChanged()
 {
     // Get required locks upfront. This avoids the GUI from getting stuck on
@@ -106,32 +147,10 @@ void WalletModel::pollBalanceChanged()
     {
         // Balance and number of transactions might have changed
         cachedNumBlocks = nBestHeight;
-        checkBalanceChanged();
+        signalCheckBalanceChanged(this);
 
         if(transactionTableModel)
             transactionTableModel->updateConfirmations();
-    }
-}
-
-void WalletModel::checkBalanceChanged()
-{
-    qint64 newBalance = getBalance();
-    qint64 newStake = getStake();
-    qint64 newUnconfirmedBalance = getUnconfirmedBalance();
-    qint64 newImmatureBalance = getImmatureBalance();
-    qint64 newAnonymizedBalance = getAnonymizedBalance();
-
-    if(cachedBalance != newBalance || cachedStake != newStake || cachedUnconfirmedBalance != newUnconfirmedBalance ||
-       cachedImmatureBalance != newImmatureBalance || cachedAnonymizedBalance != newAnonymizedBalance ||
-       cachedTxLocks != nCompleteTXLocks)
-    {
-        cachedBalance = newBalance;
-        cachedStake = newStake;
-        cachedUnconfirmedBalance = newUnconfirmedBalance;
-        cachedImmatureBalance = newImmatureBalance;
-        cachedAnonymizedBalance = newAnonymizedBalance;
-        cachedTxLocks = nCompleteTXLocks;
-        emit balanceChanged(newBalance, newStake, newUnconfirmedBalance, newImmatureBalance, newAnonymizedBalance);
     }
 }
 
@@ -141,7 +160,7 @@ void WalletModel::updateTransaction(const QString &hash, int status)
         transactionTableModel->updateTransaction(hash, status);
 
     // Balance and number of transactions might have changed
-    checkBalanceChanged();
+    signalCheckBalanceChanged(this);
 }
 
 void WalletModel::updateAddressBook(const QString &address, const QString &label, bool isMine, int status)
@@ -483,7 +502,8 @@ static void NotifyKeyStoreStatusChanged(WalletModel *walletmodel, CCryptoKeyStor
     QMetaObject::invokeMethod(walletmodel, "updateStatus", Qt::QueuedConnection);
 }
 
-static void NotifyAddressBookChanged(WalletModel *walletmodel, CWallet *wallet, const CTxDestination &address, const std::string &label, bool isMine, ChangeType status)
+static void NotifyAddressBookChanged(WalletModel *walletmodel, CWallet *wallet, const CTxDestination &address, const std::string &label,
+                                     bool isMine, ChangeType status)
 {
     if (address.type() == typeid(CStealthAddress))
     {

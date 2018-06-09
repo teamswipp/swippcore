@@ -158,13 +158,7 @@ private:
     TransactionTableModel *transactionTableModel;
 
     // Cache some values to be able to detect changes
-    qint64 cachedBalance;
-    qint64 cachedStake;
-    qint64 cachedUnconfirmedBalance;
-    qint64 cachedImmatureBalance;
-    qint64 cachedAnonymizedBalance;
     qint64 cachedNumTransactions;
-    int cachedTxLocks;
     int cachedDarksendRounds;
     EncryptionStatus cachedEncryptionStatus;
     int cachedNumBlocks;
@@ -173,8 +167,6 @@ private:
 
     void subscribeToCoreSignals();
     void unsubscribeFromCoreSignals();
-    void checkBalanceChanged();
-
 
 public slots:
     // Wallet status might have changed
@@ -204,5 +196,7 @@ signals:
     // Asynchronous message notification
     void message(const QString &title, const QString &message, bool modal, unsigned int style);
 };
+
+extern void ThreadCheckBalanceChanged(WalletModel *walletModel);
 
 #endif // WALLETMODEL_H
