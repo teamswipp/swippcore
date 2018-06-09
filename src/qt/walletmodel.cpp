@@ -50,6 +50,8 @@ qint64 WalletModel::getBalance(const CCoinControl *coinControl) const
 {
     if (coinControl)
     {
+        LOCK(wallet->cs_wallet);
+
         qint64 nBalance = 0;
         std::vector<COutput> vCoins;
         wallet->AvailableCoins(vCoins, true, coinControl);
@@ -93,7 +95,7 @@ void WalletModel::updateStatus()
         emit encryptionStatusChanged(newEncryptionStatus);
 }
 
-CCriticalSection balance_cache;
+static CCriticalSection cs_balance_cache;
 
 static qint64 cachedBalance = 0;
 static qint64 cachedStake = 0;
@@ -115,7 +117,7 @@ void ThreadCheckBalanceChanged(WalletModel *walletModel)
        cachedTxLocks != nCompleteTXLocks)
     {
         {
-            LOCK(balance_cache);
+            LOCK(cs_balance_cache);
 
             cachedBalance = newBalance;
             cachedStake = newStake;
@@ -128,29 +130,30 @@ void ThreadCheckBalanceChanged(WalletModel *walletModel)
     }
 }
 
+static CCriticalSection cs_poll_balance_changed;
+
 void WalletModel::pollBalanceChanged()
 {
-    // Get required locks upfront. This avoids the GUI from getting stuck on
-    // periodical polls if the core is holding the locks for a longer time,
-    // for example, during a wallet rescan
-    TRY_LOCK(cs_main, lockMain);
-
-    if(!lockMain)
-        return;
-
-    TRY_LOCK(wallet->cs_wallet, lockWallet);
-
-    if(!lockWallet)
-        return;
-
-    if(nBestHeight != cachedNumBlocks)
+    // If we are already locked, the thread is already running
+    TRY_LOCK(cs_poll_balance_changed, lockPollBalanceChanged);
     {
-        // Balance and number of transactions might have changed
-        cachedNumBlocks = nBestHeight;
-        signalCheckBalanceChanged(this);
+        TRY_LOCK(cs_main, lockMain);
 
-        if(transactionTableModel)
-            transactionTableModel->updateConfirmations();
+        if (!lockMain)
+            return;
+    }
+
+    if(lockPollBalanceChanged)
+    {
+        if(nBestHeight != cachedNumBlocks)
+        {
+            // Balance and number of transactions might have changed
+            cachedNumBlocks = nBestHeight;
+            signalCheckBalanceChanged(this);
+
+            //if(transactionTableModel)
+            //    transactionTableModel->updateConfirmations();
+        }
     }
 }
 
