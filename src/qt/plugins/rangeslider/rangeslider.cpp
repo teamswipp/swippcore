@@ -15,8 +15,7 @@ namespace
     const int scLeftRightMargin = 1;
 }
 
-RangeSlider::RangeSlider(QWidget* aParent)
-    : QWidget(aParent), mMinimum(0), mMaximum(100),
+RangeSlider::RangeSlider(QWidget* aParent) : QWidget(aParent), mMinimum(0), mMaximum(100),
       mLowerValue(0), mUpperValue(100),
       mFirstHandlePressed(false), mSecondHandlePressed(false),
       mInterval(mMaximum - mMinimum),
@@ -195,19 +194,9 @@ int RangeSlider::GetMinimun() const
     return mMinimum;
 }
 
-void RangeSlider::SetMinimum(int aMinimum)
-{
-    setMinimum(aMinimum);
-}
-
 int RangeSlider::GetMaximun() const
 {
     return mMaximum;
-}
-
-void RangeSlider::SetMaximum(int aMaximum)
-{
-    setMaximum(aMaximum);
 }
 
 int RangeSlider::GetLowerValue() const
@@ -215,22 +204,7 @@ int RangeSlider::GetLowerValue() const
     return mLowerValue;
 }
 
-void RangeSlider::SetLowerValue(int aLowerValue)
-{
-    setLowerValue(aLowerValue);
-}
-
-int RangeSlider::GetUpperValue() const
-{
-    return mUpperValue;
-}
-
-void RangeSlider::SetUpperValue(int aUpperValue)
-{
-    setUpperValue(aUpperValue);
-}
-
-void RangeSlider::setLowerValue(int aLowerValue)
+void RangeSlider::setLowerValue(int aLowerValue, bool fireEvent)
 {
     if(aLowerValue > mMaximum)
         aLowerValue = mMaximum;
@@ -242,7 +216,12 @@ void RangeSlider::setLowerValue(int aLowerValue)
     update();
 }
 
-void RangeSlider::setUpperValue(int aUpperValue)
+int RangeSlider::GetUpperValue() const
+{
+    return mUpperValue;
+}
+
+void RangeSlider::setUpperValue(int aUpperValue, bool fireEvent)
 {
     if(aUpperValue > mMaximum)
         aUpperValue = mMaximum;

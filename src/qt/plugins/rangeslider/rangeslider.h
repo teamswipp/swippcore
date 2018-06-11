@@ -20,16 +20,9 @@ public:
     QSize minimumSizeHint() const override;
 
     int GetMinimun() const;
-    void SetMinimum(int aMinimum);
-
     int GetMaximun() const;
-    void SetMaximum(int aMaximum);
-
     int GetLowerValue() const;
-    void SetLowerValue(int aLowerValue);
-
     int GetUpperValue() const;
-    void SetUpperValue(int aUpperValue);
 
     void setRange(int aMinimum, int aMaximum);
 
@@ -51,8 +44,8 @@ signals:
     void rangeChanged(int aMin, int aMax);
 
 public slots:
-    void setLowerValue(int aLowerValue);
-    void setUpperValue(int aUpperValue);
+    void setLowerValue(int aLowerValue, bool fireEvent = true);
+    void setUpperValue(int aUpperValue, bool fireEvent = true);
     void setMinimum(int aMinimum);
     void setMaximum(int aMaximum);
 
