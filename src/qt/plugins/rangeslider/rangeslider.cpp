@@ -159,6 +159,16 @@ void RangeSlider::mouseMoveEvent(QMouseEvent* aEvent)
 void RangeSlider::mouseReleaseEvent(QMouseEvent* aEvent)
 {
     Q_UNUSED(aEvent);
+
+    if (mFirstHandlePressed)
+    {
+        emit lowerValueChanged(mLowerValue);
+    }
+    else if (mSecondHandlePressed)
+    {
+        emit upperValueChanged(mUpperValue);
+    }
+
     mFirstHandlePressed = false;
     mSecondHandlePressed = false;
 }
@@ -230,7 +240,6 @@ void RangeSlider::setLowerValue(int aLowerValue)
         aLowerValue = mMinimum;
 
     mLowerValue = aLowerValue;
-    emit lowerValueChanged(mLowerValue);
     update();
 }
 
@@ -243,7 +252,6 @@ void RangeSlider::setUpperValue(int aUpperValue)
         aUpperValue = mMinimum;
 
     mUpperValue = aUpperValue;
-    emit upperValueChanged(mUpperValue);
     update();
 }
 
