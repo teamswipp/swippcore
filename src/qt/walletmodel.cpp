@@ -28,7 +28,7 @@ boost::signals2::signal<void(WalletModel *)> signalCheckBalanceChanged;
 
 WalletModel::WalletModel(CWallet *wallet, OptionsModel *optionsModel, QObject *parent) :
     QObject(parent), wallet(wallet), optionsModel(optionsModel), addressTableModel(0),
-    transactionTableModel(0), cachedEncryptionStatus(Unencrypted), cachedNumBlocks(0)
+    transactionTableModel(0), cachedEncryptionStatus(Unencrypted)
 {
     addressTableModel = new AddressTableModel(wallet, this);
     transactionTableModel = new TransactionTableModel(wallet, this);
@@ -95,72 +95,69 @@ void WalletModel::updateStatus()
         emit encryptionStatusChanged(newEncryptionStatus);
 }
 
-static CCriticalSection cs_balance_cache;
-
+static CCriticalSection cs_balance_changed;
 static qint64 cachedBalance = 0;
 static qint64 cachedStake = 0;
 static qint64 cachedUnconfirmedBalance = 0;
 static qint64 cachedImmatureBalance = 0;
 static qint64 cachedAnonymizedBalance = 0;
+static int cachedNumBlocks = 0;
 static int cachedTxLocks = 0;
 
 void ThreadCheckBalanceChanged(WalletModel *walletModel)
 {
-    qint64 newBalance = walletModel->getBalance();
-    qint64 newStake = walletModel->getStake();
-    qint64 newUnconfirmedBalance = walletModel->getUnconfirmedBalance();
-    qint64 newImmatureBalance = walletModel->getImmatureBalance();
-    qint64 newAnonymizedBalance = walletModel->getAnonymizedBalance();
+    // If we are already locked, the thread is already running
+    TRY_LOCK(cs_balance_changed, lockBalanceChanged);
+    TRY_LOCK(cs_main, lockMain);
+    TRY_LOCK(walletModel->wallet->cs_wallet, lockWallet);
 
-    if(cachedBalance != newBalance || cachedStake != newStake || cachedUnconfirmedBalance != newUnconfirmedBalance ||
-       cachedImmatureBalance != newImmatureBalance || cachedAnonymizedBalance != newAnonymizedBalance ||
-       cachedTxLocks != nCompleteTXLocks)
+    if(lockBalanceChanged && lockMain && lockWallet)
     {
-        {
-            LOCK(cs_balance_cache);
+        qint64 newBalance = walletModel->getBalance();
+        qint64 newStake = walletModel->getStake();
+        qint64 newUnconfirmedBalance = walletModel->getUnconfirmedBalance();
+        qint64 newImmatureBalance = walletModel->getImmatureBalance();
+        qint64 newAnonymizedBalance = walletModel->getAnonymizedBalance();
 
+        if(cachedBalance != newBalance || cachedStake != newStake || cachedUnconfirmedBalance != newUnconfirmedBalance ||
+           cachedImmatureBalance != newImmatureBalance || cachedAnonymizedBalance != newAnonymizedBalance ||
+           cachedTxLocks != nCompleteTXLocks)
+        {
+            cachedNumBlocks = nBestHeight;
             cachedBalance = newBalance;
             cachedStake = newStake;
             cachedUnconfirmedBalance = newUnconfirmedBalance;
             cachedImmatureBalance = newImmatureBalance;
             cachedAnonymizedBalance = newAnonymizedBalance;
             cachedTxLocks = nCompleteTXLocks;
+
+            emit walletModel->balanceChanged(newBalance, newStake, newUnconfirmedBalance, newImmatureBalance, newAnonymizedBalance);
         }
-        emit walletModel->balanceChanged(newBalance, newStake, newUnconfirmedBalance, newImmatureBalance, newAnonymizedBalance);
     }
 }
 
-static CCriticalSection cs_poll_balance_changed;
-
 void WalletModel::pollBalanceChanged()
 {
-    // If we are already locked, the thread is already running
-    TRY_LOCK(cs_poll_balance_changed, lockPollBalanceChanged);
+    if(nBestHeight != cachedNumBlocks)
     {
-        TRY_LOCK(cs_main, lockMain);
+        // Balance and number of transactions might have changed
+        signalCheckBalanceChanged(this);
 
-        if (!lockMain)
-            return;
-    }
-
-    if(lockPollBalanceChanged)
-    {
-        if(nBestHeight != cachedNumBlocks)
-        {
-            // Balance and number of transactions might have changed
-            cachedNumBlocks = nBestHeight;
-            signalCheckBalanceChanged(this);
-
-            //if(transactionTableModel)
-            //    transactionTableModel->updateConfirmations();
-        }
+        if(transactionTableModel)
+            transactionTableModel->updateConfirmations();
     }
 }
 
 void WalletModel::updateTransaction(const QString &hash, int status)
 {
     if(transactionTableModel)
-        transactionTableModel->updateTransaction(hash, status);
+    {
+        TRY_LOCK(cs_main, lockMain);
+        TRY_LOCK(wallet->cs_wallet, lockWallet);
+
+        if (lockMain && lockWallet)
+            transactionTableModel->updateTransaction(hash, status);
+    }
 
     // Balance and number of transactions might have changed
     signalCheckBalanceChanged(this);

@@ -147,9 +147,9 @@ public:
     void unlockCoin(COutPoint& output);
     void listLockedCoins(std::vector<COutPoint>& vOutpts);
 
-private:
     CWallet *wallet;
 
+private:
     // Wallet has an options model for wallet-specific options
     // (transaction fee, for example)
     OptionsModel *optionsModel;
@@ -161,7 +161,6 @@ private:
     qint64 cachedNumTransactions;
     int cachedDarksendRounds;
     EncryptionStatus cachedEncryptionStatus;
-    int cachedNumBlocks;
 
     QTimer *pollTimer;
 
