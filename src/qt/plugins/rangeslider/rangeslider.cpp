@@ -135,19 +135,20 @@ void RangeSlider::mouseMoveEvent(QMouseEvent* aEvent)
         if(mFirstHandlePressed)
         {
             if(aEvent->pos().x() - mDelta + scHandleSideLength / 2 <= secondHandleRect().x())
-                setLowerValue((aEvent->pos().x() - mDelta - scLeftRightMargin - scHandleSideLength / 2) * 1.0 / validWidth() * mInterval + mMinimum);
+                setLowerValue((aEvent->pos().x() - mDelta - scLeftRightMargin -
+                              scHandleSideLength / 2) * 1.0 / validWidth() * mInterval + mMinimum, false);
             else
-                setLowerValue(mUpperValue);
+                setLowerValue(mUpperValue, false);
         }
         else if(mSecondHandlePressed)
         {
             if(firstHandleRect().x() + scHandleSideLength * 1.5 <= aEvent->pos().x() - mDelta)
             {
                 setUpperValue((aEvent->pos().x() - mDelta - scLeftRightMargin -
-                              scHandleSideLength / 2 - scHandleSideLength) * 1.0 / validWidth() * mInterval + mMinimum);
+                              scHandleSideLength / 2 - scHandleSideLength) * 1.0 / validWidth() * mInterval + mMinimum, false);
             }
             else
-                setUpperValue(mLowerValue);
+                setUpperValue(mLowerValue, false);
         }
     }
 }
@@ -213,6 +214,13 @@ void RangeSlider::setLowerValue(int aLowerValue, bool fireEvent)
         aLowerValue = mMinimum;
 
     mLowerValue = aLowerValue;
+
+    if (fireEvent)
+    {
+        emit lowerValueChanged(mLowerValue);
+        emit valueChanged(mLowerValue, mUpperValue);
+    }
+
     update();
 }
 
@@ -230,6 +238,13 @@ void RangeSlider::setUpperValue(int aUpperValue, bool fireEvent)
         aUpperValue = mMinimum;
 
     mUpperValue = aUpperValue;
+
+    if (fireEvent)
+    {
+        emit lowerValueChanged(mLowerValue);
+        emit valueChanged(mLowerValue, mUpperValue);
+    }
+
     update();
 }
 
