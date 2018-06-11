@@ -47,6 +47,7 @@ protected:
 signals:
     void lowerValueChanged(int aLowerValue);
     void upperValueChanged(int aUpperValue);
+    void valueChanged(int aLowerValue, int aUpperValue);
     void rangeChanged(int aMin, int aMax);
 
 public slots:

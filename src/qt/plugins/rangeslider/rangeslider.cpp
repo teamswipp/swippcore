@@ -88,6 +88,7 @@ void RangeSlider::mousePressEvent(QMouseEvent* aEvent)
     {
         mSecondHandlePressed = secondHandleRect().contains(aEvent->pos());
         mFirstHandlePressed = !mSecondHandlePressed && firstHandleRect().contains(aEvent->pos());
+
         if(mFirstHandlePressed)
         {
             mDelta = aEvent->pos().x() - (firstHandleRect().x() + scHandleSideLength / 2);
@@ -96,8 +97,8 @@ void RangeSlider::mousePressEvent(QMouseEvent* aEvent)
         {
             mDelta = aEvent->pos().x() - (secondHandleRect().x() + scHandleSideLength / 2);
         }
-        if(aEvent->pos().y() >= 2
-           && aEvent->pos().y() <= height()- 2)
+
+        if(aEvent->pos().y() >= 2 && aEvent->pos().y() <= height()- 2)
         {
             int step = mInterval / 10 < 1 ? 1 : mInterval / 10;
             if(aEvent->pos().x() < firstHandleRect().x())
@@ -135,13 +136,9 @@ void RangeSlider::mouseMoveEvent(QMouseEvent* aEvent)
         if(mFirstHandlePressed)
         {
             if(aEvent->pos().x() - mDelta + scHandleSideLength / 2 <= secondHandleRect().x())
-            {
                 setLowerValue((aEvent->pos().x() - mDelta - scLeftRightMargin - scHandleSideLength / 2) * 1.0 / validWidth() * mInterval + mMinimum);
-            }
             else
-            {
                 setLowerValue(mUpperValue);
-            }
         }
         else if(mSecondHandlePressed)
         {
@@ -163,10 +160,12 @@ void RangeSlider::mouseReleaseEvent(QMouseEvent* aEvent)
     if (mFirstHandlePressed)
     {
         emit lowerValueChanged(mLowerValue);
+        emit valueChanged(mLowerValue, mUpperValue);
     }
     else if (mSecondHandlePressed)
     {
         emit upperValueChanged(mUpperValue);
+        emit valueChanged(mLowerValue, mUpperValue);
     }
 
     mFirstHandlePressed = false;
