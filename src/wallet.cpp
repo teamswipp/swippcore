@@ -1273,6 +1273,55 @@ int64_t CWallet::GetBalance() const
     return nTotal;
 }
 
+// Merges the following calls into one;
+// GetBalance(), GetStake(), GetUnconfirmedBalance(), GetImmatureBalance(), GetAnonymizedBalance();
+// This avoids us from having to loop through the hashes in the wallet over and over again.
+CWallet::Balances CWallet::GetBalances() const
+{
+    Balances balances = { 0, 0, 0, 0, 0 };
+
+    {
+        LOCK2(cs_main, cs_wallet);
+
+        for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it)
+        {
+            const CWalletTx* pcoin = &(*it).second;
+
+            if (pcoin->IsTrusted())
+            {
+                int nDepth = pcoin->GetDepthInMainChain();
+                balances.balance += pcoin->GetAvailableCredit();
+
+                for (unsigned int i = 0; i < pcoin->vout.size(); i++)
+                {
+                    bool mine = IsMine(pcoin->vout[i]);
+                    COutput out = COutput(pcoin, i, nDepth, mine);
+                    CTxIn vin = CTxIn(out.tx->GetHash(), out.i);
+
+                    if(pcoin->IsSpent(i) || !IsMine(pcoin->vout[i]) || !IsDenominated(vin))
+                        continue;
+
+                    int rounds = GetInputDarksendRounds(vin);
+
+                    if(rounds >= nDarksendRounds)
+                        balances.anonymizedBalance += pcoin->vout[i].nValue;
+                }
+            }
+
+            if (pcoin->IsCoinBase() && pcoin->GetBlocksToMaturity() > 0 && pcoin->IsInMainChain())
+                balances.immatureBalance += GetCredit(*pcoin);
+
+            if (!IsFinalTx(*pcoin) || (!pcoin->IsTrusted() && pcoin->GetDepthInMainChain() == 0))
+                balances.unconfirmedBalance += pcoin->GetAvailableCredit();
+
+            if (pcoin->IsCoinStake() && pcoin->GetBlocksToMaturity() > 0 && pcoin->GetDepthInMainChain() > 0)
+                balances.stake += CWallet::GetCredit(*pcoin);
+        }
+    }
+
+    return balances;
+}
+
 int64_t CWallet::GetBalanceNoLocks() const
 {
     int64_t nTotal = 0;
@@ -1912,7 +1961,7 @@ bool CWallet::SelectCoinsMinConfByCoinAge(int64_t nTargetValue, unsigned int nSp
             // We lose too much coin value through the approximation, i.e. the residual of the previous recalculation is too large
             // Since the partitioning of the previously sorted list is stable, we can just pick the first coin outputs in the
             // list until we have a valid target value
-            for (; nBeginCoinValues < nTotalCoinValues && (nTargetValue - nValueRe7t)/denom >= nTotalValue; ++nBeginCoinValues)
+            for (; nBeginCoinValues < nTotalCoinValues && (nTargetValue - nValueRet)/denom >= nTotalValue; ++nBeginCoinValues)
             {
                 if (nBeginCoinValues >= nBeginBundles)
                 {

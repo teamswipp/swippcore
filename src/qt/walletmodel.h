@@ -81,6 +81,7 @@ public:
     TransactionTableModel *getTransactionTableModel();
 
     qint64 getBalance(const CCoinControl *coinControl=NULL) const;
+    CWallet::Balances getBalances() const;
     qint64 getStake() const;
     qint64 getUnconfirmedBalance() const;
     qint64 getImmatureBalance() const;

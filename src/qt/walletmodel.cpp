@@ -68,6 +68,11 @@ qint64 WalletModel::getBalance(const CCoinControl *coinControl) const
     return wallet->GetBalance();
 }
 
+CWallet::Balances WalletModel::getBalances() const
+{
+    return wallet->GetBalances();
+}
+
 qint64 WalletModel::getUnconfirmedBalance() const
 {
     return wallet->GetUnconfirmedBalance();
@@ -114,25 +119,21 @@ void ThreadCheckBalanceChanged(WalletModel *walletModel)
     if(lockBalanceChanged)
     {
         LOCK2(cs_main, walletModel->wallet->cs_wallet);
-        qint64 newBalance = walletModel->getBalance();
-        qint64 newStake = walletModel->getStake();
-        qint64 newUnconfirmedBalance = walletModel->getUnconfirmedBalance();
-        qint64 newImmatureBalance = walletModel->getImmatureBalance();
-        qint64 newAnonymizedBalance = walletModel->getAnonymizedBalance();
+        CWallet::Balances balances = walletModel->getBalances();
 
-        if(cachedBalance != newBalance || cachedStake != newStake || cachedUnconfirmedBalance != newUnconfirmedBalance ||
-           cachedImmatureBalance != newImmatureBalance || cachedAnonymizedBalance != newAnonymizedBalance ||
+        if(cachedBalance != balances.balance || cachedStake != balances.stake || cachedUnconfirmedBalance != balances.unconfirmedBalance ||
+           cachedImmatureBalance != balances.immatureBalance || cachedAnonymizedBalance != balances.anonymizedBalance ||
            cachedTxLocks != nCompleteTXLocks)
         {
-            cachedNumBlocks = nBestHeight;
-            cachedBalance = newBalance;
-            cachedStake = newStake;
-            cachedUnconfirmedBalance = newUnconfirmedBalance;
-            cachedImmatureBalance = newImmatureBalance;
-            cachedAnonymizedBalance = newAnonymizedBalance;
+            cachedBalance = balances.balance;
+            cachedStake = balances.stake;
+            cachedUnconfirmedBalance = balances.unconfirmedBalance;
+            cachedImmatureBalance = balances.immatureBalance;
+            cachedAnonymizedBalance = balances.anonymizedBalance;
             cachedTxLocks = nCompleteTXLocks;
 
-            emit walletModel->balanceChanged(newBalance, newStake, newUnconfirmedBalance, newImmatureBalance, newAnonymizedBalance);
+            emit walletModel->balanceChanged(balances.balance, balances.stake, balances.unconfirmedBalance,
+                                             balances.immatureBalance, balances.anonymizedBalance);
         }
     }
 }

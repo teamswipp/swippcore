@@ -273,8 +273,19 @@ public:
     int ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate = false);
     void ReacceptWalletTransactions();
     void ResendWalletTransactions(bool fForce = false);
+
+    struct Balances
+    {
+        int64_t balance;
+        int64_t anonymizedBalance;
+        int64_t immatureBalance;
+        int64_t unconfirmedBalance;
+        int64_t stake;
+    };
+
     int64_t GetBalance() const;
     int64_t GetBalanceNoLocks() const;
+    Balances GetBalances() const;
     int64_t GetUnconfirmedBalance() const;
     int64_t GetImmatureBalance() const;
     int64_t GetStake() const;
