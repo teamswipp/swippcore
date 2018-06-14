@@ -23,6 +23,7 @@
 #include <QSet>
 #include <QTimer>
 #include <QDebug>
+#include <thread>
 
 boost::signals2::signal<void(WalletModel *)> signalCheckBalanceChanged;
 
@@ -35,10 +36,11 @@ WalletModel::WalletModel(CWallet *wallet, OptionsModel *optionsModel, QObject *p
 
     // This timer will be fired repeatedly to update the balance
     pollTimer = new QTimer(this);
-    connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollBalanceChanged()));
+    connect(pollTimer, SIGNAL(timeout()), this, SLOT(pollBalanceChanged()), Qt::UniqueConnection);
     pollTimer->start(BALANCE_POLL_INTERVAL);
     subscribeToCoreSignals();
-    signalCheckBalanceChanged.connect([&](WalletModel *) { std::async(&ThreadCheckBalanceChanged, this); });
+
+    signalCheckBalanceChanged.connect([&](WalletModel *) { auto t = std::thread(&ThreadCheckBalanceChanged, this); t.detach(); });
 }
 
 WalletModel::~WalletModel()
@@ -108,11 +110,10 @@ void ThreadCheckBalanceChanged(WalletModel *walletModel)
 {
     // If we are already locked, the thread is already running
     TRY_LOCK(cs_balance_changed, lockBalanceChanged);
-    TRY_LOCK(cs_main, lockMain);
-    TRY_LOCK(walletModel->wallet->cs_wallet, lockWallet);
 
-    if(lockBalanceChanged && lockMain && lockWallet)
+    if(lockBalanceChanged)
     {
+        LOCK2(cs_main, walletModel->wallet->cs_wallet);
         qint64 newBalance = walletModel->getBalance();
         qint64 newStake = walletModel->getStake();
         qint64 newUnconfirmedBalance = walletModel->getUnconfirmedBalance();
@@ -140,6 +141,8 @@ void WalletModel::pollBalanceChanged()
 {
     if(nBestHeight != cachedNumBlocks)
     {
+        cachedNumBlocks = nBestHeight;
+
         // Balance and number of transactions might have changed
         signalCheckBalanceChanged(this);
 
@@ -156,11 +159,13 @@ void WalletModel::updateTransaction(const QString &hash, int status)
         TRY_LOCK(wallet->cs_wallet, lockWallet);
 
         if (lockMain && lockWallet)
+        {
             transactionTableModel->updateTransaction(hash, status);
-    }
 
-    // Balance and number of transactions might have changed
-    signalCheckBalanceChanged(this);
+            // Balance and number of transactions might have changed
+            signalCheckBalanceChanged(this);
+        }
+    }
 }
 
 void WalletModel::updateAddressBook(const QString &address, const QString &label, bool isMine, int status)
