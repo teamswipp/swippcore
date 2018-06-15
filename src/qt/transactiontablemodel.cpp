@@ -1,3 +1,9 @@
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include "transactiontablemodel.h"
 
 #include "guiutil.h"
@@ -12,6 +18,7 @@
 #include "wallet.h"
 #include "ui_interface.h"
 
+#include <iterator>
 #include <QList>
 #include <QColor>
 #include <QIcon>
@@ -43,6 +50,8 @@ struct TxLessThan
         return a < b.hash;
     }
 };
+
+#include <stdio.h>
 
 // Private implementation
 class TransactionTablePriv
@@ -110,6 +119,7 @@ public:
             {
                 if(showTransaction && !inModel)
                     status = CT_NEW; /* Not in model, but want to show, treat as new */
+
                 if(!showTransaction && inModel)
                     status = CT_DELETED; /* In model, but want to hide, treat as deleted */
             }
@@ -134,17 +144,19 @@ public:
                 if(showTransaction)
                 {
                     // Added -- insert at the right position
-                    QList<TransactionRecord> toInsert =
-                            TransactionRecord::decomposeTransaction(wallet, mi->second);
+                    QList<TransactionRecord> toInsert = TransactionRecord::decomposeTransaction(wallet, mi->second);
+
                     if(!toInsert.isEmpty()) /* only if something to insert */
                     {
                         parent->beginInsertRows(QModelIndex(), lowerIndex, lowerIndex+toInsert.size()-1);
                         int insert_idx = lowerIndex;
+
                         foreach(const TransactionRecord &rec, toInsert)
                         {
                             cachedWallet.insert(insert_idx, rec);
                             insert_idx += 1;
                         }
+
                         parent->endInsertRows();
                     }
                 }
@@ -195,9 +207,7 @@ public:
                     std::map<uint256, CWalletTx>::iterator mi = wallet->mapWallet.find(rec->hash);
 
                     if(mi != wallet->mapWallet.end())
-                    {
                         rec->updateStatus(mi->second);
-                    }
                 }
             }
             return rec;
@@ -223,15 +233,12 @@ public:
 };
 
 TransactionTableModel::TransactionTableModel(CWallet* wallet, WalletModel *parent):
-        QAbstractTableModel(parent),
-        wallet(wallet),
-        walletModel(parent),
+        QAbstractTableModel(parent), lowerIndex(0), upperIndex(0), fetchedRows(0),
+        wallet(wallet), walletModel(parent),
         priv(new TransactionTablePriv(wallet, this))
 {
     columns << QString() << tr("Date") << tr("Type") << tr("Address") << tr("Amount");
-
     priv->refreshWallet();
-
     connect(walletModel->getOptionsModel(), SIGNAL(displayUnitChanged(int)), this, SLOT(updateDisplayUnit()));
 }
 
@@ -244,18 +251,15 @@ void TransactionTableModel::updateTransaction(const QString &hash, int status)
 {
     uint256 updated;
     updated.SetHex(hash.toStdString());
-
     priv->updateWallet(updated, status);
 }
 
 void TransactionTableModel::updateConfirmations()
 {
-    // Blocks came in since last poll.
-    // Invalidate status (number of confirmations) and (possibly) description
-    //  for all rows. Qt is smart enough to only actually request the data for the
-    //  visible rows.
-    emit dataChanged(index(0, Status), index(priv->size()-1, Status));
-    emit dataChanged(index(0, ToAddress), index(priv->size()-1, ToAddress));
+    // Blocks came in since last poll. Invalidate status (number of confirmations)
+    // and (possibly) description for all rows.
+    updateCells(Status);
+    updateCells(ToAddress);
 }
 
 int TransactionTableModel::rowCount(const QModelIndex &parent) const
@@ -321,6 +325,17 @@ QString TransactionTableModel::formatTxDate(const TransactionRecord *wtx) const
     {
         return QString();
     }
+}
+
+void TransactionTableModel::updateCells(enum ColumnIndex column)
+{
+    int lower = lowerIndex * MAX_BLOCKS_PER_PAGE;
+    int upper = upperIndex * (MAX_BLOCKS_PER_PAGE + 1);
+
+    // Loop is a workaround for the following bug, https://bugreports.qt.io/browse/QTBUG-58580
+    // It's probably best to keep it as-is in order to cover as many QT versions as possible.
+    //for (int i = lower; i < upper; i++)
+    emit dataChanged(index(lower, column), index(upper, column));
 }
 
 /* Look up address in address book, if found return label (address)
@@ -464,6 +479,7 @@ QVariant TransactionTableModel::txStatusDecoration(const TransactionRecord *wtx)
     case TransactionStatus::NotAccepted:
         return QIcon(":/icons/transaction_0");
     }
+
     return QColor(0,0,0);
 }
 
@@ -482,6 +498,7 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
 {
     if(!index.isValid())
         return QVariant();
+
     TransactionRecord *rec = static_cast<TransactionRecord*>(index.internalPointer());
 
     switch(role)
@@ -531,21 +548,13 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
     case Qt::ForegroundRole:
         // Non-confirmed (but not immature) as transactions are grey
         if(!rec->status.countsForBalance && rec->status.status != TransactionStatus::Immature)
-        {
             return COLOR_UNCONFIRMED;
-        }
-        if(index.column() == Amount && (rec->credit+rec->debit) < 0)
-        {
+        else if(index.column() == Amount && (rec->credit+rec->debit) < 0)
             return COLOR_NEGATIVE;
-        }
-        if(index.column() == Amount && rec->type != TransactionRecord::Generated && (rec->credit+rec->debit) > 0)
-        {
+        else if(index.column() == Amount && rec->type != TransactionRecord::Generated && (rec->credit+rec->debit) > 0)
             return fUseBlackTheme ? QColor(0, 255, 0) : QColor(0, 128, 0);
-        }
-        if(index.column() == ToAddress)
-        {
+        else if(index.column() == ToAddress)
             return addressColor(rec);
-        }
         break;
     case TypeRole:
         return rec->type;
@@ -567,7 +576,10 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         return formatTxAmount(rec, false);
     case StatusRole:
         return rec->status.status;
+    case DepthRole:
+        return rec->status.depth;
     }
+
     return QVariant();
 }
 
@@ -576,13 +588,10 @@ QVariant TransactionTableModel::headerData(int section, Qt::Orientation orientat
     if(orientation == Qt::Horizontal)
     {
         if(role == Qt::DisplayRole)
-        {
             return columns[section];
-        }
         else if (role == Qt::TextAlignmentRole)
-        {
             return column_alignments[section];
-        } else if (role == Qt::ToolTipRole)
+        else if (role == Qt::ToolTipRole)
         {
             switch(section)
             {
@@ -599,6 +608,7 @@ QVariant TransactionTableModel::headerData(int section, Qt::Orientation orientat
             }
         }
     }
+
     return QVariant();
 }
 
@@ -606,18 +616,15 @@ QModelIndex TransactionTableModel::index(int row, int column, const QModelIndex 
 {
     Q_UNUSED(parent);
     TransactionRecord *data = priv->index(row);
+
     if(data)
-    {
         return createIndex(row, column, priv->index(row));
-    }
     else
-    {
         return QModelIndex();
-    }
 }
 
 void TransactionTableModel::updateDisplayUnit()
 {
-    // emit dataChanged to update Amount column with the current unit
-    emit dataChanged(index(0, Amount), index(priv->size()-1, Amount));
+    // Update Amount column with the current unit
+    updateCells(Amount);
 }

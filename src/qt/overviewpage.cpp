@@ -97,7 +97,7 @@ OverviewPage::OverviewPage(QWidget *parent) : QWidget(parent), ui(new Ui::Overvi
                                               currentImmatureBalance(-1), txdelegate(new TxViewDelegate()), filter(0)
 {
     ui->setupUi(this);
-    ui->frameDarksend->setVisible(false); // Hide darksend features
+    ui->frameDarksend->setVisible(false); // FIXME: Hide darksend features
 
     QScroller::grabGesture(ui->scrollArea, QScroller::LeftMouseButtonGesture);
     ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -115,6 +115,7 @@ OverviewPage::OverviewPage(QWidget *parent) : QWidget(parent), ui(new Ui::Overvi
     ui->listTransactions->setMinimumWidth(350);
 
     connect(ui->listTransactions, SIGNAL(clicked(QModelIndex)), this, SLOT(handleTransactionClicked(QModelIndex)));
+    ui->listTransactions->update();
 
     // Init "out of sync" warning labels
     ui->labelWalletStatus->setText("(" + tr("out of sync") + ")");

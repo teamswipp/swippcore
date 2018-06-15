@@ -90,8 +90,7 @@ qint64 WalletModel::getImmatureBalance() const
 
 qint64 WalletModel::getAnonymizedBalance() const
 {
-    qint64 ret = wallet->GetAnonymizedBalance();
-    return ret;
+    return wallet->GetAnonymizedBalance();
 }
 
 void WalletModel::updateStatus()
@@ -115,10 +114,11 @@ void ThreadCheckBalanceChanged(WalletModel *walletModel)
 {
     // If we are already locked, the thread is already running
     TRY_LOCK(cs_balance_changed, lockBalanceChanged);
+    TRY_LOCK(cs_main, lockMain);
+    TRY_LOCK(walletModel->wallet->cs_wallet, lockWallet);
 
-    if(lockBalanceChanged)
+    if(lockBalanceChanged && lockMain && lockWallet)
     {
-        LOCK2(cs_main, walletModel->wallet->cs_wallet);
         CWallet::Balances balances = walletModel->getBalances();
 
         if(cachedBalance != balances.balance || cachedStake != balances.stake || cachedUnconfirmedBalance != balances.unconfirmedBalance ||

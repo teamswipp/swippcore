@@ -1,21 +1,30 @@
-#include "transactionfilterproxy.h"
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <QDateTime>
+#include <cstdlib>
+
+#include "transactionfilterproxy.h"
 #include "transactiontablemodel.h"
 #include "transactionrecord.h"
 
-#include <QDateTime>
-
-#include <cstdlib>
-
+#ifdef USE_OLDSTYLE_DATE_SELECTION
 // Earliest date that can be represented (far in the past)
 const QDateTime TransactionFilterProxy::MIN_DATE = QDateTime::fromTime_t(0);
 // Last date that can be represented (far in the future)
 const QDateTime TransactionFilterProxy::MAX_DATE = QDateTime::fromTime_t(0xFFFFFFFF);
+#endif
 
 TransactionFilterProxy::TransactionFilterProxy(QObject *parent) :
     QSortFilterProxyModel(parent),
+#ifdef USE_OLDSTYLE_DATE_SELECTION
     dateFrom(MIN_DATE),
     dateTo(MAX_DATE),
+#else
+#endif
     addrPrefix(),
     typeFilter(ALL_TYPES),
     minAmount(0),
@@ -34,27 +43,46 @@ bool TransactionFilterProxy::filterAcceptsRow(int sourceRow, const QModelIndex &
     QString label = index.data(TransactionTableModel::LabelRole).toString();
     qint64 amount = llabs(index.data(TransactionTableModel::AmountRole).toLongLong());
     int status = index.data(TransactionTableModel::StatusRole).toInt();
+    qint64 depth = index.data(TransactionTableModel::DepthRole).toLongLong();
 
     if(!showInactive && (status == TransactionStatus::Conflicted || status == TransactionStatus::NotAccepted))
         return false;
-    if(!(TYPE(type) & typeFilter))
+    else if(!(TYPE(type) & typeFilter))
         return false;
-    if(datetime < dateFrom || datetime > dateTo)
+    else if (!address.contains(addrPrefix, Qt::CaseInsensitive) && !label.contains(addrPrefix, Qt::CaseInsensitive))
         return false;
-    if (!address.contains(addrPrefix, Qt::CaseInsensitive) && !label.contains(addrPrefix, Qt::CaseInsensitive))
+    else if(amount < minAmount)
         return false;
-    if(amount < minAmount)
+#ifdef USE_OLDSTYLE_DATE_SELECTION
+    else if(datetime < dateFrom || datetime > dateTo)
         return false;
+#else
+    else if (depth == 0)
+        return false;
+    //else if (depth == -1)
+    //    return true;
+    else if (depth < depthMin || depth > depthMax)
+        return false;
+#endif
 
     return true;
 }
 
+#ifdef USE_OLDSTYLE_DATE_SELECTION
 void TransactionFilterProxy::setDateRange(const QDateTime &from, const QDateTime &to)
 {
     this->dateFrom = from;
     this->dateTo = to;
     invalidateFilter();
 }
+#else
+void TransactionFilterProxy::setRange(int min, int max)
+{
+    this->depthMin = min * MAX_BLOCKS_PER_PAGE;
+    this->depthMax = max * MAX_BLOCKS_PER_PAGE;
+    invalidateFilter();
+}
+#endif
 
 void TransactionFilterProxy::setAddressPrefix(const QString &addrPrefix)
 {
@@ -89,11 +117,7 @@ void TransactionFilterProxy::setShowInactive(bool showInactive)
 int TransactionFilterProxy::rowCount(const QModelIndex &parent) const
 {
     if(limitRows != -1)
-    {
         return std::min(QSortFilterProxyModel::rowCount(parent), limitRows);
-    }
     else
-    {
         return QSortFilterProxyModel::rowCount(parent);
-    }
 }

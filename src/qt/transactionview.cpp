@@ -17,6 +17,7 @@
 #include "editaddressdialog.h"
 #include "optionsmodel.h"
 #include "guiutil.h"
+#include "rangeslider.h"
 
 #include <QScrollBar>
 #include <QComboBox>
@@ -33,23 +34,26 @@
 #include <QDateTimeEdit>
 #include <QStyledItemDelegate>
 
+extern CWallet* pwalletMain;
+
 TransactionView::TransactionView(QWidget *parent) :
     QWidget(parent), model(0), transactionProxyModel(0),
     transactionView(0)
 {
     // Build filter row
     setContentsMargins(0,0,0,0);
-
     QHBoxLayout *hlayout = new QHBoxLayout();
     hlayout->setContentsMargins(0,0,0,0);
+
 #ifdef Q_OS_MAC
     hlayout->setSpacing(5);
-    hlayout->addSpacing(26);
 #else
-    hlayout->setSpacing(0);
-    hlayout->addSpacing(23);
+    hlayout->setSpacing(3);
 #endif
 
+    hlayout->setContentsMargins(0,5,0,10);
+
+#ifdef USE_OLDSTYLE_DATE_SELECTION
     dateWidget = new QComboBox(this);
     dateWidget->setItemDelegate(new QStyledItemDelegate());
 #ifdef Q_OS_MAC
@@ -64,6 +68,10 @@ TransactionView::TransactionView(QWidget *parent) :
     dateWidget->addItem(tr("Last month"), LastMonth);
     dateWidget->addItem(tr("This year"), ThisYear);
     dateWidget->addItem(tr("Range..."), Range);
+#else
+    dateWidget = new RangeSlider(this);
+    dateWidget->setFixedWidth(220);
+#endif
     hlayout->addWidget(dateWidget);
 
     typeWidget = new QComboBox(this);
@@ -76,51 +84,59 @@ TransactionView::TransactionView(QWidget *parent) :
 
     typeWidget->addItem(tr("All"), TransactionFilterProxy::ALL_TYPES);
     typeWidget->addItem(tr("Received with"), TransactionFilterProxy::TYPE(TransactionRecord::RecvWithAddress) |
-                                        TransactionFilterProxy::TYPE(TransactionRecord::RecvFromOther));
+                        TransactionFilterProxy::TYPE(TransactionRecord::RecvFromOther));
     typeWidget->addItem(tr("Sent to"), TransactionFilterProxy::TYPE(TransactionRecord::SendToAddress) |
-                                  TransactionFilterProxy::TYPE(TransactionRecord::SendToOther));
+                        TransactionFilterProxy::TYPE(TransactionRecord::SendToOther));
     typeWidget->addItem(tr("To yourself"), TransactionFilterProxy::TYPE(TransactionRecord::SendToSelf));
     typeWidget->addItem(tr("Mined"), TransactionFilterProxy::TYPE(TransactionRecord::Generated));
     typeWidget->addItem(tr("Other"), TransactionFilterProxy::TYPE(TransactionRecord::Other));
 
     hlayout->addWidget(typeWidget);
-
     addressWidget = new QLineEdit(this);
+
 #if QT_VERSION >= 0x040700
     /* Do not move this to the XML file, Qt before 4.7 will choke on it */
     addressWidget->setPlaceholderText(tr("Enter address or label to search"));
 #endif
-    hlayout->addWidget(addressWidget);
 
+    hlayout->addWidget(addressWidget);
     amountWidget = new QLineEdit(this);
+
 #if QT_VERSION >= 0x040700
     /* Do not move this to the XML file, Qt before 4.7 will choke on it */
     amountWidget->setPlaceholderText(tr("Min amount"));
 #endif
+
 #ifdef Q_OS_MAC
     amountWidget->setFixedWidth(97);
 #else
     amountWidget->setFixedWidth(100);
 #endif
+
     amountWidget->setValidator(new QDoubleValidator(0, 1e20, 8, this));
     hlayout->addWidget(amountWidget);
 
     QVBoxLayout *vlayout = new QVBoxLayout(this);
     vlayout->setContentsMargins(0,0,0,0);
     vlayout->setSpacing(0);
-
     QTableView *view = new QTableView(this);
     vlayout->addLayout(hlayout);
+
+#ifdef USE_OLDSTYLE_DATE_SELECTION
     vlayout->addWidget(createDateRangeWidget());
+#endif
+
     vlayout->addWidget(view);
     vlayout->setSpacing(0);
     int width = view->verticalScrollBar()->sizeHint().width();
     // Cover scroll bar width with spacing
+
 #ifdef Q_OS_MAC
     hlayout->addSpacing(width+2);
 #else
     hlayout->addSpacing(width);
 #endif
+
     // Always show scroll bar
     view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setTabKeyNavigation(false);
@@ -145,7 +161,10 @@ TransactionView::TransactionView(QWidget *parent) :
     contextMenu->addAction(showDetailsAction);
 
     // Connect actions
+#ifdef USE_OLDSTYLE_DATE_SELECTION
     connect(dateWidget, SIGNAL(activated(int)), this, SLOT(chooseDate(int)));
+#endif
+
     connect(typeWidget, SIGNAL(activated(int)), this, SLOT(chooseType(int)));
     connect(addressWidget, SIGNAL(textChanged(QString)), this, SLOT(changedPrefix(QString)));
     connect(amountWidget, SIGNAL(textChanged(QString)), this, SLOT(changedAmount(QString)));
@@ -164,6 +183,7 @@ TransactionView::TransactionView(QWidget *parent) :
 void TransactionView::setModel(WalletModel *model)
 {
     this->model = model;
+
     if(model)
     {
         transactionProxyModel = new TransactionFilterProxy(this);
@@ -171,8 +191,15 @@ void TransactionView::setModel(WalletModel *model)
         transactionProxyModel->setDynamicSortFilter(true);
         transactionProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
         transactionProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-
         transactionProxyModel->setSortRole(Qt::EditRole);
+
+#ifndef USE_OLDSTYLE_DATE_SELECTION
+        connect(dateWidget, SIGNAL(valueChanged(int, int)), this, SLOT(chooseRangeSelection(int, int)));
+        connect(model->getTransactionTableModel(), SIGNAL(updateTransaction(const QString &hash, int status)),
+                this, SLOT(chooseRange()));
+        chooseRange();
+        dateWidget->setUpperValue(1);
+#endif
 
         transactionView->setModel(transactionProxyModel);
         transactionView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -189,12 +216,15 @@ void TransactionView::setModel(WalletModel *model)
     }
 }
 
+#ifdef USE_OLDSTYLE_DATE_SELECTION
 void TransactionView::chooseDate(int idx)
 {
     if(!transactionProxyModel)
         return;
+
     QDate current = QDate::currentDate();
     dateRangeWidget->setVisible(false);
+
     switch(dateWidget->itemData(idx).toInt())
     {
     case All:
@@ -236,19 +266,32 @@ void TransactionView::chooseDate(int idx)
         break;
     }
 }
+#else
+void TransactionView::chooseRangeSelection(int aMin, int aMax)
+{
+    transactionProxyModel->setRange(aMin, aMax);
+}
+
+void TransactionView::chooseRange()
+{
+    int pages = nBestHeight / (MAX_BLOCKS_PER_PAGE + 1);
+    dateWidget->setRange(0, pages);
+}
+#endif
 
 void TransactionView::chooseType(int idx)
 {
     if(!transactionProxyModel)
         return;
-    transactionProxyModel->setTypeFilter(
-        typeWidget->itemData(idx).toInt());
+
+    transactionProxyModel->setTypeFilter(typeWidget->itemData(idx).toInt());
 }
 
 void TransactionView::changedPrefix(const QString &prefix)
 {
     if(!transactionProxyModel)
         return;
+
     transactionProxyModel->setAddressPrefix(prefix);
 }
 
@@ -256,15 +299,13 @@ void TransactionView::changedAmount(const QString &amount)
 {
     if(!transactionProxyModel)
         return;
+
     qint64 amount_parsed = 0;
+
     if(BitcoinUnits::parse(model->getOptionsModel()->getDisplayUnit(), amount, &amount_parsed))
-    {
         transactionProxyModel->setMinAmount(amount_parsed);
-    }
     else
-    {
         transactionProxyModel->setMinAmount(0);
-    }
 }
 
 void TransactionView::exportClicked()
@@ -348,13 +389,13 @@ void TransactionView::editLabel()
         {
             // Edit sending / receiving address
             QModelIndex modelIdx = addressBook->index(idx, 0, QModelIndex());
+
             // Determine type of address, launch appropriate editor dialog type
             QString type = modelIdx.data(AddressTableModel::TypeRole).toString();
 
             EditAddressDialog dlg(type==AddressTableModel::Receive
                                          ? EditAddressDialog::EditReceivingAddress
-                                         : EditAddressDialog::EditSendingAddress,
-                                  this);
+                                         : EditAddressDialog::EditSendingAddress, this);
             dlg.setModel(addressBook);
             dlg.loadRow(idx);
             dlg.exec();
@@ -375,7 +416,9 @@ void TransactionView::showDetails()
 {
     if(!transactionView->selectionModel())
         return;
+
     QModelIndexList selection = transactionView->selectionModel()->selectedRows();
+
     if(!selection.isEmpty())
     {
         TransactionDescDialog dlg(selection.at(0));
@@ -383,6 +426,7 @@ void TransactionView::showDetails()
     }
 }
 
+#ifdef USE_OLDSTYLE_DATE_SELECTION
 QWidget *TransactionView::createDateRangeWidget()
 {
     dateRangeWidget = new QFrame();
@@ -415,7 +459,6 @@ QWidget *TransactionView::createDateRangeWidget()
     // Notify on change
     connect(dateFrom, SIGNAL(dateChanged(QDate)), this, SLOT(dateRangeChanged()));
     connect(dateTo, SIGNAL(dateChanged(QDate)), this, SLOT(dateRangeChanged()));
-
     return dateRangeWidget;
 }
 
@@ -423,15 +466,17 @@ void TransactionView::dateRangeChanged()
 {
     if(!transactionProxyModel)
         return;
-    transactionProxyModel->setDateRange(
-            QDateTime(dateFrom->date()),
-            QDateTime(dateTo->date()).addDays(1));
+
+    transactionProxyModel->setDateRange(QDateTime(dateFrom->date()),
+                                        QDateTime(dateTo->date()).addDays(1));
 }
+#endif
 
 void TransactionView::focusTransaction(const QModelIndex &idx)
 {
     if(!transactionProxyModel)
         return;
+
     QModelIndex targetIdx = transactionProxyModel->mapFromSource(idx);
     transactionView->scrollTo(targetIdx);
     transactionView->setCurrentIndex(targetIdx);

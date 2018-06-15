@@ -1,13 +1,24 @@
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef TRANSACTIONTABLEMODEL_H
 #define TRANSACTIONTABLEMODEL_H
 
 #include <QAbstractTableModel>
+#include <QBasicTimer>
 #include <QStringList>
 
 class CWallet;
 class TransactionTablePriv;
 class TransactionRecord;
 class WalletModel;
+
+#ifndef USE_OLDSTYLE_DATE_SELECTION
+#define MAX_BLOCKS_PER_PAGE 50000
+#endif
 
 /** UI model for the transaction table of a wallet.
  */
@@ -50,7 +61,8 @@ public:
         /** Formatted amount, without brackets when unconfirmed */
         FormattedAmountRole,
         /** Transaction status (TransactionRecord::Status) */
-        StatusRole
+        StatusRole,
+        DepthRole
     };
 
     int rowCount(const QModelIndex &parent) const;
@@ -60,11 +72,16 @@ public:
     QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const;
 
 private:
+    int lowerIndex;
+    int upperIndex;
+    int fetchedRows;
+
     CWallet* wallet;
     WalletModel *walletModel;
     QStringList columns;
     TransactionTablePriv *priv;
 
+    void updateCells(enum ColumnIndex column);
     QString lookupAddress(const std::string &address, bool tooltip) const;
     QVariant addressColor(const TransactionRecord *wtx) const;
     QString formatTxStatus(const TransactionRecord *wtx) const;

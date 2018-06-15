@@ -48,7 +48,7 @@ public:
 
     // Reported status
     Status status;
-    int64_t depth;
+    qint64 depth;
 
     // < Timestamp if status==OpenUntilDate, otherwise number of additional blocks that need to be mined before finalization
     int64_t open_for;
