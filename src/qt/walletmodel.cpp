@@ -5,6 +5,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/signals2.hpp>
+#include <boost/thread.hpp>
 #include <future>
 
 #include "walletmodel.h"
@@ -40,7 +41,7 @@ WalletModel::WalletModel(CWallet *wallet, OptionsModel *optionsModel, QObject *p
     pollTimer->start(BALANCE_POLL_INTERVAL);
     subscribeToCoreSignals();
 
-    signalCheckBalanceChanged.connect([&](WalletModel *) { auto t = std::thread(&ThreadCheckBalanceChanged, this); t.detach(); });
+    signalCheckBalanceChanged.connect([&](WalletModel *) { auto t = boost::thread(&ThreadCheckBalanceChanged, this); t.detach(); });
 }
 
 WalletModel::~WalletModel()
