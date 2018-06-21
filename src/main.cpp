@@ -2606,8 +2606,9 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
 
         if(statement)
         {
-            if (!masternodePayments.ProcessBlock(pindex->nHeight + 1) && fDebug)
-                LogPrintf("CheckBlock() : Masternode block processing failed at height %d\n", pindexBest->nHeight + 1);
+            //TODO: Enable again! Was this causing a crash under certain Windows versions ?
+            //if (!masternodePayments.ProcessBlock(pindex->nHeight + 1) && fDebug)
+            //    LogPrintf("CheckBlock() : Masternode block processing failed at height %d\n", pindexBest->nHeight + 1);
 
             int vtxIndex = IsProofOfStake() ? 1 : 0;
 
