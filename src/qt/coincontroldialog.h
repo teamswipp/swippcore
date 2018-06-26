@@ -1,3 +1,9 @@
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef COINCONTROLDIALOG_H
 #define COINCONTROLDIALOG_H
 
@@ -13,6 +19,7 @@
 namespace Ui {
     class CoinControlDialog;
 }
+
 class WalletModel;
 class CCoinControl;
 
@@ -26,7 +33,7 @@ public:
 
     void setModel(WalletModel *model);
 
-    // static because also called from sendcoinsdialog
+    // Static - Also called from sendcoinsdialog
     static void updateLabels(WalletModel*, QDialog*);
     static QString getPriorityLabel(double);
 
@@ -42,6 +49,7 @@ private:
     QMenu *contextMenu;
     QTreeWidgetItem *contextMenuItem;
     QAction *copyTransactionHashAction;
+
     //QAction *lockAction;
     //QAction *unlockAction;
 
@@ -70,8 +78,10 @@ private slots:
     void copyLabel();
     void copyAddress();
     void copyTransactionHash();
+
     //void lockCoin();
     //void unlockCoin();
+
     void clipboardQuantity();
     void clipboardAmount();
     void clipboardFee();
@@ -86,6 +96,7 @@ private slots:
     void headerSectionClicked(int);
     void buttonBoxClicked(QAbstractButton*);
     void buttonSelectAllClicked();
+
     //void updateLabelLocked();
 };
 
