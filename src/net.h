@@ -3,6 +3,7 @@
 // Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef BITCOIN_NET_H
 #define BITCOIN_NET_H
 
@@ -219,12 +220,12 @@ public:
 class CNode
 {
 public:
-    // socket
+    // Socket
     uint64_t nServices;
     SOCKET hSocket;
     CDataStream ssSend;
-    size_t nSendSize; // total size of all vSendMsg entries
-    size_t nSendOffset; // offset inside the first vSendMsg already sent
+    size_t nSendSize;   // Total size of all vSendMsg entries
+    size_t nSendOffset; // Offset inside the first vSendMsg already sent
     uint64_t nSendBytes;
     std::deque<CSerializeData> vSendMsg;
     CCriticalSection cs_vSend;
@@ -243,17 +244,20 @@ public:
     std::string addrName;
     CService addrLocal;
     int nVersion;
+
     // strSubVer is whatever byte array we read from the wire. However, this field is intended
     // to be printed out, displayed to humans in various forms and so on. So we sanitize it and
     // store the sanitized version in cleanSubVer. The original should be used when dealing with
     // the network or wire types and the cleaned string used when displayed or logged.
     std::string strSubVer, cleanSubVer;
+
     bool fOneShot;
     bool fClient;
     bool fInbound;
     bool fNetworkNode;
     bool fSuccessfullyConnected;
     bool fDisconnect;
+
     // We use fRelayTxes for two purposes -
     // a) it allows us to not relay tx invs before receiving the peer's version message
     // b) the peer may tell us in their version message that we should not relay tx invs
@@ -270,7 +274,6 @@ protected:
     static std::map<CNetAddr, int64_t> setBanned;
     static CCriticalSection cs_setBanned;
 
-
     std::vector<std::string> vecRequestsFulfilled; //keep track of what client has asked for
 
 public:
@@ -281,14 +284,14 @@ public:
     int nStartingHeight;
     bool fStartSync;
 
-    // flood relay
+    // Flood relay
     std::vector<CAddress> vAddrToSend;
     mruset<CAddress> setAddrKnown;
     bool fGetAddr;
     std::set<uint256> setKnown;
-    uint256 hashCheckpointKnown; // ppcoin: known sent sync-checkpoint
+    uint256 hashCheckpointKnown; // Known sent sync-checkpoint
 
-    // inventory based relay
+    // Inventory based relay
     mruset<CInv> setInventoryKnown;
     std::vector<CInv> vInventoryToSend;
     CCriticalSection cs_inventory;
@@ -299,14 +302,18 @@ public:
     // Ping time measurement:
     // The pong reply we're expecting, or 0 if no pong expected.
     uint64_t nPingNonceSent;
+
     // Time (in usec) the last ping was sent, or 0 if no ping was ever sent.
     int64_t nPingUsecStart;
+
     // Last measured round-trip time.
     int64_t nPingUsecTime;
+
     // Whether a ping is requested.
     bool fPingQueued;
 
-    CNode(SOCKET hSocketIn, CAddress addrIn, std::string addrNameIn = "", bool fInboundIn=false) : ssSend(SER_NETWORK, INIT_PROTO_VERSION), setAddrKnown(5000)
+    CNode(SOCKET hSocketIn, CAddress addrIn, std::string addrNameIn = "", bool fInboundIn=false) :
+        ssSend(SER_NETWORK, INIT_PROTO_VERSION), setAddrKnown(5000)
     {
         nServices = 0;
         hSocket = hSocketIn;
@@ -316,13 +323,15 @@ public:
         nSendBytes = 0;
         nRecvBytes = 0;
         nTimeConnected = GetTime();
-        //nTimeOffset = 0;
+
+        // nTimeOffset = 0;
+
         addr = addrIn;
         addrName = addrNameIn == "" ? addr.ToStringIPPort() : addrNameIn;
         nVersion = 0;
         strSubVer = "";
         fOneShot = false;
-        fClient = false; // set by version message
+        fClient = false; // Set by version message
         fInbound = fInboundIn;
         fNetworkNode = false;
         fSuccessfullyConnected = false;
@@ -384,22 +393,25 @@ public:
         return nRefCount;
     }
 
-    // requires LOCK(cs_vRecvMsg)
+    // Requires LOCK(cs_vRecvMsg)
     unsigned int GetTotalRecvSize()
     {
         unsigned int total = 0;
+
         BOOST_FOREACH(const CNetMessage &msg, vRecvMsg) 
             total += msg.vRecv.size() + 24;
+
         return total;
     }
 
-    // requires LOCK(cs_vRecvMsg)
+    // Requires LOCK(cs_vRecvMsg)
     bool ReceiveMsgBytes(const char *pch, unsigned int nBytes);
 
-    // requires LOCK(cs_vRecvMsg)
+    // Requires LOCK(cs_vRecvMsg)
     void SetRecvVersion(int nVersionIn)
     {
         nRecvVersion = nVersionIn;
+
         BOOST_FOREACH(CNetMessage &msg, vRecvMsg)
             msg.SetVersion(nVersionIn);
     }
@@ -415,8 +427,6 @@ public:
         nRefCount--;
     }
 
-
-
     void AddAddressKnown(const CAddress& addr)
     {
         setAddrKnown.insert(addr);
@@ -431,7 +441,6 @@ public:
             vAddrToSend.push_back(addr);
     }
 
-
     void AddInventoryKnown(const CInv& inv)
     {
         {
@@ -444,6 +453,7 @@ public:
     {
         {
             LOCK(cs_inventory);
+
             if (!setInventoryKnown.count(inv))
                 vInventoryToSend.push_back(inv);
         }
@@ -459,6 +469,7 @@ public:
         // Make sure not to reuse time indexes to keep things in the same order
         int64_t nNow = (GetTime() - 1) * 1000000;
         static int64_t nLastTime;
+
         ++nLastTime;
         nNow = std::max(nNow, nLastTime);
         nLastTime = nNow;
@@ -467,8 +478,6 @@ public:
         nRequestTime = std::max(nRequestTime + 2 * 60 * 1000000, nNow);
         mapAskFor.insert(std::make_pair(nRequestTime, inv));
     }
-
-
 
     // TODO: Document the postcondition of this function.  Is cs_vSend locked?
     void BeginMessage(const char* pszCommand) EXCLUSIVE_LOCK_FUNCTION(cs_vSend)
@@ -483,9 +492,7 @@ public:
     void AbortMessage() UNLOCK_FUNCTION(cs_vSend)
     {
         ssSend.clear();
-
         LEAVE_CRITICAL_SECTION(cs_vSend);
-
         LogPrint("net", "(aborted)\n");
     }
 
@@ -527,7 +534,6 @@ public:
     }
 
     void PushVersion();
-
 
     void PushMessage(const char* pszCommand)
     {
@@ -656,7 +662,8 @@ public:
     }
 
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8>
-    void PushMessage(const char* pszCommand, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7, const T8& a8)
+    void PushMessage(const char* pszCommand, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6,
+                     const T7& a7, const T8& a8)
     {
         try
         {
@@ -672,7 +679,8 @@ public:
     }
 
     template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7, typename T8, typename T9>
-    void PushMessage(const char* pszCommand, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6, const T7& a7, const T8& a8, const T9& a9)
+    void PushMessage(const char* pszCommand, const T1& a1, const T2& a2, const T3& a3, const T4& a4, const T5& a5, const T6& a6,
+                     const T7& a7, const T8& a8, const T9& a9)
     {
         try
         {
@@ -776,7 +784,7 @@ void RelayDarkSendMasterNodeContestant();
 std::string GetLatestRelease();
 void FindReleases();
 
-/** Access to the (IP) address database (peers.dat) */
+// Access to the (IP) address database (peers.dat)
 class CAddrDB
 {
 private:
