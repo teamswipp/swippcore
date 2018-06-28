@@ -57,10 +57,8 @@ bool TransactionFilterProxy::filterAcceptsRow(int sourceRow, const QModelIndex &
     else if(datetime < dateFrom || datetime > dateTo)
         return false;
 #else
-    else if (depth == 0)
-        return false;
-    //else if (depth == -1)
-    //    return true;
+    else if (depth == 0 || depth == -1)
+        return true;
     else if (depth < depthMin || depth > depthMax)
         return false;
 #endif
