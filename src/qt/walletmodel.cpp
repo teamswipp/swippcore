@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017 The Swipp developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -157,16 +157,10 @@ void WalletModel::updateTransaction(const QString &hash, int status)
 {
     if(transactionTableModel)
     {
-        TRY_LOCK(cs_main, lockMain);
-        TRY_LOCK(wallet->cs_wallet, lockWallet);
+        transactionTableModel->updateTransaction(hash, status);
 
-        if (lockMain && lockWallet)
-        {
-            transactionTableModel->updateTransaction(hash, status);
-
-            // Balance and number of transactions might have changed
-            signalCheckBalanceChanged(this);
-        }
+        // Balance and number of transactions might have changed
+        signalCheckBalanceChanged(this);
     }
 }
 
