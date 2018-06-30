@@ -316,7 +316,8 @@ void TransactionView::exportClicked()
             tr("Export Transaction Data"), QString(),
             tr("Comma separated file (*.csv)"));
 
-    if (filename.isNull()) return;
+    if (filename.isNull())
+        return;
 
     CSVModelWriter writer(filename);
 
@@ -374,17 +375,22 @@ void TransactionView::editLabel()
     if(!selection.isEmpty())
     {
         AddressTableModel *addressBook = model->getAddressTableModel();
+
         if(!addressBook)
             return;
+
         QString address = selection.at(0).data(TransactionTableModel::AddressRole).toString();
+
         if(address.isEmpty())
         {
             // If this transaction has no associated address, exit
             return;
         }
+
         // Is address in address book? Address book can miss address when a transaction is
         // sent from outside the UI.
         int idx = addressBook->lookupAddress(address);
+
         if(idx != -1)
         {
             // Edit sending / receiving address
@@ -393,9 +399,8 @@ void TransactionView::editLabel()
             // Determine type of address, launch appropriate editor dialog type
             QString type = modelIdx.data(AddressTableModel::TypeRole).toString();
 
-            EditAddressDialog dlg(type==AddressTableModel::Receive
-                                         ? EditAddressDialog::EditReceivingAddress
-                                         : EditAddressDialog::EditSendingAddress, this);
+            EditAddressDialog dlg(type==AddressTableModel::Receive ? EditAddressDialog::EditReceivingAddress :
+                                  EditAddressDialog::EditSendingAddress, this);
             dlg.setModel(addressBook);
             dlg.loadRow(idx);
             dlg.exec();
@@ -403,8 +408,7 @@ void TransactionView::editLabel()
         else
         {
             // Add sending address
-            EditAddressDialog dlg(EditAddressDialog::NewSendingAddress,
-                                  this);
+            EditAddressDialog dlg(EditAddressDialog::NewSendingAddress, this);
             dlg.setModel(addressBook);
             dlg.setAddress(address);
             dlg.exec();
