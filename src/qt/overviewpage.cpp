@@ -115,7 +115,6 @@ OverviewPage::OverviewPage(QWidget *parent) : QWidget(parent), ui(new Ui::Overvi
     ui->listTransactions->setMinimumWidth(350);
 
     connect(ui->listTransactions, SIGNAL(clicked(QModelIndex)), this, SLOT(handleTransactionClicked(QModelIndex)));
-    ui->listTransactions->update();
 
     // Init "out of sync" warning labels
     ui->labelWalletStatus->setText("(" + tr("out of sync") + ")");
@@ -159,6 +158,10 @@ OverviewPage::OverviewPage(QWidget *parent) : QWidget(parent), ui(new Ui::Overvi
         ui->labelImmature->setStyleSheet(whiteLabelQSS);
         ui->labelTotal->setStyleSheet(whiteLabelQSS);
     }
+
+    // If we are syncing, disable the overview page
+    if (IsInitialBlockDownload())
+        this->setEnabled(false);
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex &index)
@@ -175,29 +178,39 @@ OverviewPage::~OverviewPage()
 void OverviewPage::setBalance(qint64 balance, qint64 stake, qint64 unconfirmedBalance,
                               qint64 immatureBalance, qint64 anonymizedBalance)
 {
-    int unit = walletModel->getOptionsModel()->getDisplayUnit();
-    currentBalance = balance;
-    currentStake = stake;
-    currentUnconfirmedBalance = unconfirmedBalance;
-    currentImmatureBalance = immatureBalance;
-    currentAnonymizedBalance = anonymizedBalance;
-    ui->labelBalance->setText(BitcoinUnits::formatWithUnit(unit, balance));
-    ui->labelStake->setText(BitcoinUnits::formatWithUnit(unit, stake));
-    ui->labelUnconfirmed->setText(BitcoinUnits::formatWithUnit(unit, unconfirmedBalance));
-    ui->labelImmature->setText(BitcoinUnits::formatWithUnit(unit, immatureBalance));
-    ui->labelTotal->setText(BitcoinUnits::formatWithUnit(unit, balance + stake + unconfirmedBalance + immatureBalance));
-    ui->labelAnonymized->setText(BitcoinUnits::formatWithUnit(unit, anonymizedBalance));
-
-    // Only show immature (newly mined) balance if it's non-zero, so as not to complicate things
-    // for the non-mining users
-    bool showImmature = immatureBalance != 0;
-    ui->labelImmature->setVisible(showImmature);
-    ui->labelImmatureText->setVisible(showImmature);
-
-    if(cachedTxLocks != nCompleteTXLocks)
+    // If we are syncing, disable the overview page and do not set any values.
+    if (IsInitialBlockDownload())
+        this->setEnabled(false);
+    else
     {
-        cachedTxLocks = nCompleteTXLocks;
-        ui->listTransactions->update();
+        int unit = walletModel->getOptionsModel()->getDisplayUnit();
+
+        currentBalance = balance;
+        currentStake = stake;
+        currentUnconfirmedBalance = unconfirmedBalance;
+        currentImmatureBalance = immatureBalance;
+        currentAnonymizedBalance = anonymizedBalance;
+        ui->labelBalance->setText(BitcoinUnits::formatWithUnit(unit, balance));
+        ui->labelStake->setText(BitcoinUnits::formatWithUnit(unit, stake));
+        ui->labelUnconfirmed->setText(BitcoinUnits::formatWithUnit(unit, unconfirmedBalance));
+        ui->labelImmature->setText(BitcoinUnits::formatWithUnit(unit, immatureBalance));
+        ui->labelTotal->setText(BitcoinUnits::formatWithUnit(unit, balance + stake + unconfirmedBalance + immatureBalance));
+        ui->labelAnonymized->setText(BitcoinUnits::formatWithUnit(unit, anonymizedBalance));
+
+        // Only show immature (newly mined) balance if it's non-zero, so as not to complicate things
+        // for the non-mining users
+        bool showImmature = immatureBalance != 0;
+
+        ui->labelImmature->setVisible(showImmature);
+        ui->labelImmatureText->setVisible(showImmature);
+
+        if(cachedTxLocks != nCompleteTXLocks)
+        {
+            cachedTxLocks = nCompleteTXLocks;
+            ui->listTransactions->update();
+        }
+
+        this->setEnabled(true);
     }
 }
 
@@ -216,6 +229,7 @@ void OverviewPage::setClientModel(ClientModel *model)
 void OverviewPage::setWalletModel(WalletModel *model)
 {
     this->walletModel = model;
+
     if(model && model->getOptionsModel())
     {
         // Set up transaction list
