@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017 The Swipp developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -34,7 +34,9 @@ namespace Checkpoints
         ( 215000, uint256("00000000000073b140f1bcc473e7682d0dd3e76f838968b61bb277f95173e7d2"))
         ( 250000, uint256("000000000002b5d8f396e133908c3fcaa46b8e462ea24f220e585ea2677cb41f"))
         ( 300000, uint256("496468e6e9d554d92f07321a683e29ef4f2b3b10826af931674f165af4fd9846"))
-        ( 350000, uint256("d9b8b964eeb8d1931495de2e2488f07a7d4fba50f9fdbefe8e7c23eba11a25d1"));
+        ( 350000, uint256("d9b8b964eeb8d1931495de2e2488f07a7d4fba50f9fdbefe8e7c23eba11a25d1"))
+        ( 400000, uint256("b1a87f4e91903d4e5adff4498d97be8fc4fe7b59506fc913bdb585df07b22acb"))
+        ( 412500, uint256("000000000006cd1fc6577888a54952b4bb4a033ddcbb54d7d2d436e534d27308"));
 
     // TestNet has no checkpoints
     static MapCheckpoints mapCheckpointsTestnet;
