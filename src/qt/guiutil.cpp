@@ -1,3 +1,9 @@
+// Copyright (c) 2009-2010 Satoshi Nakamoto
+// Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include <QApplication>
 
 #include "guiutil.h"
@@ -14,7 +20,7 @@
 #include <QFont>
 #include <QLineEdit>
 #include <QUrl>
-#include <QTextDocument> // For Qt::escape
+#include <QTextDocument>
 #include <QAbstractItemView>
 #include <QClipboard>
 #include <QFileDialog>
@@ -90,10 +96,13 @@ bool parseBitcoinURI(const QUrl &uri, SendCoinsRecipient *out)
     SendCoinsRecipient rv;
     rv.address = uri.path();
     rv.amount = 0;
+
     QList<QPair<QString, QString> > items = uri.queryItems();
+
     for (QList<QPair<QString, QString> >::iterator i = items.begin(); i != items.end(); i++)
     {
         bool fShouldReturnFalse = false;
+
         if (i->first.startsWith("req-"))
         {
             i->first.remove(0, 4);
@@ -110,33 +119,30 @@ bool parseBitcoinURI(const QUrl &uri, SendCoinsRecipient *out)
             if(!i->second.isEmpty())
             {
                 if(!BitcoinUnits::parse(BitcoinUnits::BTC, i->second, &rv.amount))
-                {
                     return false;
-                }
             }
+
             fShouldReturnFalse = false;
         }
 
         if (fShouldReturnFalse)
             return false;
     }
+
     if(out)
-    {
         *out = rv;
-    }
+
     return true;
 }
 
 bool parseBitcoinURI(QString uri, SendCoinsRecipient *out)
 {
     // Convert Swipp:// to Swipp:
-    //
-    //    Cannot handle this later, because bitcoin:// will cause Qt to see the part after // as host,
-    //    which will lower-case it (and thus invalidate the address).
+    // Cannot handle this later, because bitcoin:// will cause Qt to see the part after // as host,
+    // which will lower-case it (and thus invalidate the address).
     if(uri.startsWith("Swipp://"))
-    {
         uri.replace(0, 12, "Swipp:");
-    }
+
     QUrl uriInstance(uri);
     return parseBitcoinURI(uriInstance, out);
 }
@@ -144,10 +150,10 @@ bool parseBitcoinURI(QString uri, SendCoinsRecipient *out)
 QString HtmlEscape(const QString& str, bool fMultiLine)
 {
     QString escaped = Qt::escape(str);
+
     if(fMultiLine)
-    {
         escaped = escaped.replace("\n", "<br>\n");
-    }
+
     return escaped;
 }
 
@@ -160,77 +166,70 @@ void copyEntryData(QAbstractItemView *view, int column, int role)
 {
     if(!view || !view->selectionModel())
         return;
+
     QModelIndexList selection = view->selectionModel()->selectedRows(column);
 
     if(!selection.isEmpty())
-    {
-        // Copy first item
         QApplication::clipboard()->setText(selection.at(0).data(role).toString());
-    }
 }
 
-QString getSaveFileName(QWidget *parent, const QString &caption,
-                                 const QString &dir,
-                                 const QString &filter,
-                                 QString *selectedSuffixOut)
+QString getSaveFileName(QWidget *parent, const QString &caption, const QString &dir,
+                        const QString &filter, QString *selectedSuffixOut)
 {
     QString selectedFilter;
     QString myDir;
+
     if(dir.isEmpty()) // Default to user documents location
-    {
         myDir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
-    }
     else
-    {
         myDir = dir;
-    }
+
     QString result = QFileDialog::getSaveFileName(parent, caption, myDir, filter, &selectedFilter);
 
-    /* Extract first suffix from filter pattern "Description (*.foo)" or "Description (*.foo *.bar ...) */
+    // Extract first suffix from filter pattern "Description (*.foo)" or "Description (*.foo *.bar ...)
     QRegExp filter_re(".* \\(\\*\\.(.*)[ \\)]");
     QString selectedSuffix;
-    if(filter_re.exactMatch(selectedFilter))
-    {
-        selectedSuffix = filter_re.cap(1);
-    }
 
-    /* Add suffix if needed */
+    if(filter_re.exactMatch(selectedFilter))
+        selectedSuffix = filter_re.cap(1);
+
+    // Add suffix if needed
     QFileInfo info(result);
+
     if(!result.isEmpty())
     {
         if(info.suffix().isEmpty() && !selectedSuffix.isEmpty())
         {
-            /* No suffix specified, add selected suffix */
+            // No suffix specified, add selected suffix
             if(!result.endsWith("."))
                 result.append(".");
+
             result.append(selectedSuffix);
         }
     }
 
-    /* Return selected suffix if asked to */
+    // Return selected suffix if asked to
     if(selectedSuffixOut)
-    {
         *selectedSuffixOut = selectedSuffix;
-    }
+
     return result;
 }
 
 Qt::ConnectionType blockingGUIThreadConnection()
 {
     if(QThread::currentThread() != QCoreApplication::instance()->thread())
-    {
         return Qt::BlockingQueuedConnection;
-    }
     else
-    {
         return Qt::DirectConnection;
-    }
 }
 
 bool checkPoint(const QPoint &p, const QWidget *w)
 {
     QWidget *atW = qApp->widgetAt(w->mapToGlobal(p));
-    if (!atW) return false;
+
+    if (!atW)
+        return false;
+
     return atW->topLevelWidget() == w;
 }
 
@@ -247,16 +246,13 @@ void openDebugLogfile()
 {
     boost::filesystem::path pathDebug = GetDataDir() / "debug.log";
 
-    /* Open debug.log with the associated application */
+    // Open debug.log with the associated application
     if (boost::filesystem::exists(pathDebug))
         QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(pathDebug.string())));
 }
 
 ToolTipToRichTextFilter::ToolTipToRichTextFilter(int size_threshold, QObject *parent) :
-    QObject(parent), size_threshold(size_threshold)
-{
-
-}
+                                                 QObject(parent), size_threshold(size_threshold) { }
 
 bool ToolTipToRichTextFilter::eventFilter(QObject *obj, QEvent *evt)
 {
@@ -264,15 +260,18 @@ bool ToolTipToRichTextFilter::eventFilter(QObject *obj, QEvent *evt)
     {
         QWidget *widget = static_cast<QWidget*>(obj);
         QString tooltip = widget->toolTip();
+
         if(tooltip.size() > size_threshold && !tooltip.startsWith("<qt>") && !Qt::mightBeRichText(tooltip))
         {
             // Prefix <qt/> to make sure Qt detects this as rich text
             // Escape the current message as HTML and replace \n by <br>
             tooltip = "<qt>" + HtmlEscape(tooltip, true) + "<qt/>";
             widget->setToolTip(tooltip);
+
             return true;
         }
     }
+
     return QObject::eventFilter(obj, evt);
 }
 
@@ -299,6 +298,7 @@ bool SetStartOnSystemStartup(bool fAutoStart)
 
         // Get a pointer to the IShellLink interface.
         IShellLink* psl = NULL;
+
         HRESULT hres = CoCreateInstance(CLSID_ShellLink, NULL,
                                 CLSCTX_INPROC_SERVER, IID_IShellLink,
                                 reinterpret_cast<void**>(&psl));
@@ -326,20 +326,26 @@ bool SetStartOnSystemStartup(bool fAutoStart)
             if (SUCCEEDED(hres))
             {
                 WCHAR pwsz[MAX_PATH];
+
                 // Ensure that the string is ANSI.
                 MultiByteToWideChar(CP_ACP, 0, StartupShortcutPath().string().c_str(), -1, pwsz, MAX_PATH);
+
                 // Save the link by calling IPersistFile::Save.
                 hres = ppf->Save(pwsz, TRUE);
                 ppf->Release();
                 psl->Release();
                 CoUninitialize();
+
                 return true;
             }
+
             psl->Release();
         }
+
         CoUninitialize();
         return false;
     }
+
     return true;
 }
 
@@ -353,9 +359,15 @@ boost::filesystem::path static GetAutostartDir()
     namespace fs = boost::filesystem;
 
     char* pszConfigHome = getenv("XDG_CONFIG_HOME");
-    if (pszConfigHome) return fs::path(pszConfigHome) / "autostart";
+
+    if (pszConfigHome)
+        return fs::path(pszConfigHome) / "autostart";
+
     char* pszHome = getenv("HOME");
-    if (pszHome) return fs::path(pszHome) / ".config" / "autostart";
+
+    if (pszHome)
+        return fs::path(pszHome) / ".config" / "autostart";
+
     return fs::path();
 }
 
@@ -367,19 +379,22 @@ boost::filesystem::path static GetAutostartFilePath()
 bool GetStartOnSystemStartup()
 {
     boost::filesystem::ifstream optionFile(GetAutostartFilePath());
+
     if (!optionFile.good())
         return false;
+
     // Scan through file for "Hidden=true":
     std::string line;
+
     while (!optionFile.eof())
     {
         getline(optionFile, line);
-        if (line.find("Hidden") != std::string::npos &&
-            line.find("true") != std::string::npos)
+
+        if (line.find("Hidden") != std::string::npos && line.find("true") != std::string::npos)
             return false;
     }
-    optionFile.close();
 
+    optionFile.close();
     return true;
 }
 
@@ -390,15 +405,18 @@ bool SetStartOnSystemStartup(bool fAutoStart)
     else
     {
         char pszExePath[MAX_PATH+1];
+
         memset(pszExePath, 0, sizeof(pszExePath));
+
         if (readlink("/proc/self/exe", pszExePath, sizeof(pszExePath)-1) == -1)
             return false;
 
         boost::filesystem::create_directories(GetAutostartDir());
-
         boost::filesystem::ofstream optionFile(GetAutostartFilePath(), std::ios_base::out|std::ios_base::trunc);
+
         if (!optionFile.good())
             return false;
+
         // Write a bitcoin.desktop file to the autostart directory:
         optionFile << "[Desktop Entry]\n";
         optionFile << "Type=Application\n";
@@ -408,6 +426,7 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         optionFile << "Hidden=false\n";
         optionFile.close();
     }
+
     return true;
 }
 #else
@@ -420,13 +439,12 @@ bool SetStartOnSystemStartup(bool fAutoStart) { return false; }
 
 #endif
 
-HelpMessageBox::HelpMessageBox(QWidget *parent) :
-    QMessageBox(parent)
+HelpMessageBox::HelpMessageBox(QWidget *parent) : QMessageBox(parent)
 {
     header = tr("Swipp-Qt") + " " + tr("version") + " " +
-        QString::fromStdString(FormatFullVersion()) + "\n\n" +
-        tr("Usage:") + "\n" +
-        "  swipp-qt [" + tr("command-line options") + "]                     " + "\n";
+             QString::fromStdString(FormatFullVersion()) + "\n\n" +
+             tr("Usage:") + "\n" +
+             "  swipp-qt [" + tr("command-line options") + "]                     " + "\n";
 
     coreOptions = QString::fromStdString(HelpMessage());
 
@@ -437,6 +455,7 @@ HelpMessageBox::HelpMessageBox(QWidget *parent) :
 
     setWindowTitle(tr("Swipp-Qt"));
     setTextFormat(Qt::PlainText);
+
     // setMinimumWidth is ignored for QMessageBox so put in non-breaking spaces to make it wider.
     setText(header + QString(QChar(0x2003)).repeated(50));
     setDetailedText(coreOptions + "\n" + uiOptions);
@@ -494,6 +513,3 @@ void SetBlackThemeQSS(QApplication& app)
 }
 
 } // namespace GUIUtil
-
-//QPushButton    { background: rgb(224,55,63); //red color
-//QToolButton:checked: rgb(224,55,63); //red color
