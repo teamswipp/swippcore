@@ -1,10 +1,10 @@
-/* $Id: luffa.c 219 2010-06-08 17:24:41Z tp $ */
 /*
  * Luffa implementation.
  *
  * ==========================(LICENSE BEGIN)============================
  *
  * Copyright (c) 2007-2010  Projet RNRT SAPHIR
+ * Copyright (c) 2017-2018  The Swipp developers
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -28,6 +28,7 @@
  * ===========================(LICENSE END)=============================
  *
  * @author   Thomas Pornin <thomas.pornin@cryptolog.com>
+ * @author   The Swipp developers <info@swippcoin.com>
  */
 
 #include <stddef.h>
@@ -46,6 +47,13 @@ extern "C"{
 
 #ifdef _MSC_VER
 #pragma warning (disable: 4146)
+#endif
+
+#define GCC_DIAGNOSTIC_AWARE ((__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2)) || defined(__clang__))
+
+#if GCC_DIAGNOSTIC_AWARE
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-const-variable"
 #endif
 
 static const sph_u32 V_INIT[5][8] = {
@@ -183,6 +191,10 @@ static const sph_u32 RC44[8] = {
 	SPH_C32(0x29131ab6), SPH_C32(0x0fc053c3),
 	SPH_C32(0x3f014f0c), SPH_C32(0xfc053c31)
 };
+
+#if GCC_DIAGNOSTIC_AWARE
+#pragma GCC diagnostic pop
+#endif
 
 #define DECL_TMP8(w) \
 	sph_u32 w ## 0, w ## 1, w ## 2, w ## 3, w ## 4, w ## 5, w ## 6, w ## 7;
