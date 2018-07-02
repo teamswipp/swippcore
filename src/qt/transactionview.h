@@ -95,6 +95,8 @@ public slots:
     void chooseRange();
 #endif
 
+    void setDisabledIfNotSyncing();
+
     void chooseType(int idx);
     void changedPrefix(const QString &prefix);
     void changedAmount(const QString &amount);

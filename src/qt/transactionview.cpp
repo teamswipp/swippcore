@@ -178,6 +178,8 @@ TransactionView::TransactionView(QWidget *parent) :
     connect(copyTxIDAction, SIGNAL(triggered()), this, SLOT(copyTxID()));
     connect(editLabelAction, SIGNAL(triggered()), this, SLOT(editLabel()));
     connect(showDetailsAction, SIGNAL(triggered()), this, SLOT(showDetails()));
+
+    setDisabledIfNotSyncing();
 }
 
 void TransactionView::setModel(WalletModel *model)
@@ -213,6 +215,9 @@ void TransactionView::setModel(WalletModel *model)
         transactionView->horizontalHeader()->resizeSection(TransactionTableModel::Type, 120);
         transactionView->horizontalHeader()->setResizeMode(TransactionTableModel::ToAddress, QHeaderView::Stretch);
         transactionView->horizontalHeader()->resizeSection(TransactionTableModel::Amount, 100);
+
+        connect(model->getTransactionTableModel(), SIGNAL(updateTransaction(const QString &hash, int status)),
+                this, SLOT(setDisabledIfNotSyncing()));
     }
 }
 
@@ -278,6 +283,12 @@ void TransactionView::chooseRange()
     dateWidget->setRange(0, pages);
 }
 #endif
+
+void TransactionView::setDisabledIfNotSyncing()
+{
+    // If we are syncing, disable the transactionview page and do not set any values.
+    this->setEnabled(IsInitialBlockDownload() ? false : true);
+}
 
 void TransactionView::chooseType(int idx)
 {

@@ -115,10 +115,8 @@ void ThreadCheckBalanceChanged(WalletModel *walletModel)
 {
     // If we are already locked, the thread is already running
     TRY_LOCK(cs_balance_changed, lockBalanceChanged);
-    TRY_LOCK(cs_main, lockMain);
-    TRY_LOCK(walletModel->wallet->cs_wallet, lockWallet);
 
-    if(lockBalanceChanged && lockMain && lockWallet)
+    if(lockBalanceChanged)
     {
         CWallet::Balances balances = walletModel->getBalances();
 
@@ -141,7 +139,7 @@ void ThreadCheckBalanceChanged(WalletModel *walletModel)
 
 void WalletModel::pollBalanceChanged()
 {
-    if(nBestHeight != cachedNumBlocks)
+    if(nBestHeight != cachedNumBlocks && !IsInitialBlockDownload())
     {
         cachedNumBlocks = nBestHeight;
 
@@ -155,7 +153,8 @@ void WalletModel::pollBalanceChanged()
 
 void WalletModel::updateTransaction(const QString &hash, int status)
 {
-    if(transactionTableModel)
+    // If we are syncing, most views are disabled, so there is no need to update them.
+    if(transactionTableModel && !IsInitialBlockDownload())
     {
         transactionTableModel->updateTransaction(hash, status);
 
