@@ -1,3 +1,8 @@
+# Copyright (c) 2009-2010 Satoshi Nakamoto
+# Copyright (c) 2017-2018 The Swipp developers
+# Distributed under the MIT/X11 software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 TEMPLATE = app
 TARGET = swipp-qt
 VERSION = 2.1.3
@@ -17,27 +22,28 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 
 
 win32 {
-windows:LIBS += -lshlwapi
-LIBS += $$join(BOOST_LIB_PATH,,-L,) $$join(BDB_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,) $$join(QRENCODE_LIB_PATH,,-L,)
-LIBS += -lssl -lcrypto -lcurl $$system(curl-config --static-libs) -ldb_cxx$$BDB_LIB_SUFFIX
-windows:LIBS += -lws2_32 -lole32 -loleaut32 -luuid -lgdi32
-LIBS += -lboost_system$$BOOST_LIB_SUFFIX -lboost_filesystem$$BOOST_LIB_SUFFIX -lboost_program_options$$BOOST_LIB_SUFFIX -lboost_thread$$BOOST_THREAD_LIB_SUFFIX
-BOOST_INCLUDE_PATH=C:/deps/boost_1_57_0
-BOOST_LIB_PATH=C:/deps/boost_1_57_0/stage/lib
-BDB_INCLUDE_PATH=C:/deps/db-4.8.30.NC/build_unix
-BDB_LIB_PATH=C:/deps/db-4.8.30.NC/build_unix
-OPENSSL_INCLUDE_PATH=C:/deps/openssl-1.0.1m/include
-OPENSSL_LIB_PATH=C:/deps/openssl-1.0.1m
-MINIUPNPC_INCLUDE_PATH=C:/deps/
-MINIUPNPC_LIB_PATH=C:/deps/miniupnpc
-LIBPNG_INCLUDE_PATH=C:/deps/libpng-1.6.16
-LIBPNG_LIB_PATH=C:/deps/libpng-1.6.16/.libs
-QRENCODE_INCLUDE_PATH=C:/deps/qrencode-3.4.4
-QRENCODE_LIB_PATH=C:/deps/qrencode-3.4.4/.libs
-SECP256K1_LIB_PATH = $$PWD/src/secp256k1/.libs
-SECP256K1_INCLUDE_PATH = $$PWD/src/secp256k1/include
-#GMP_INCLUDE_PATH=C:/deps/gmp-6.0.0
-#GMP_LIB_PATH=C:/deps/gmp-6.0.0/.libs
+    windows:LIBS += -lshlwapi
+    LIBS += $$join(BOOST_LIB_PATH,,-L,) $$join(BDB_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,) $$join(QRENCODE_LIB_PATH,,-L,)
+    LIBS += -lssl -lcrypto -lcurl $$system(curl-config --static-libs) -ldb_cxx$$BDB_LIB_SUFFIX
+    windows:LIBS += -lws2_32 -lole32 -loleaut32 -luuid -lgdi32
+    LIBS += -lboost_system$$BOOST_LIB_SUFFIX -lboost_filesystem$$BOOST_LIB_SUFFIX -lboost_program_options$$BOOST_LIB_SUFFIX -lboost_thread$$BOOST_THREAD_LIB_SUFFIX
+    BOOST_INCLUDE_PATH=C:/deps/boost_1_57_0
+    BOOST_LIB_PATH=C:/deps/boost_1_57_0/stage/lib
+    BDB_INCLUDE_PATH=C:/deps/db-4.8.30.NC/build_unix
+    BDB_LIB_PATH=C:/deps/db-4.8.30.NC/build_unix
+    OPENSSL_INCLUDE_PATH=C:/deps/openssl-1.0.1m/include
+    OPENSSL_LIB_PATH=C:/deps/openssl-1.0.1m
+    MINIUPNPC_INCLUDE_PATH=C:/deps/
+    MINIUPNPC_LIB_PATH=C:/deps/miniupnpc
+    LIBPNG_INCLUDE_PATH=C:/deps/libpng-1.6.16
+    LIBPNG_LIB_PATH=C:/deps/libpng-1.6.16/.libs
+    QRENCODE_INCLUDE_PATH=C:/deps/qrencode-3.4.4
+    QRENCODE_LIB_PATH=C:/deps/qrencode-3.4.4/.libs
+    SECP256K1_LIB_PATH = $$PWD/src/secp256k1/.libs
+    SECP256K1_INCLUDE_PATH = $$PWD/src/secp256k1/include
+
+    #GMP_INCLUDE_PATH=C:/deps/gmp-6.0.0
+    #GMP_LIB_PATH=C:/deps/gmp-6.0.0/.libs
 }
 
 
@@ -62,12 +68,11 @@ UI_DIR = build
 
 # use: qmake "RELEASE=1"
 contains(RELEASE, 1) {
-    # Mac: compile for maximum compatibility (10.5, 32-bit)
+    # Mac: compile for maximum compatibility (10.7, 32-bit)
     macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
     macx:QMAKE_CFLAGS += -mmacosx-version-min=10.7 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
     macx:QMAKE_LFLAGS += -mmacosx-version-min=10.7 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
     macx:QMAKE_OBJECTIVE_CFLAGS += -mmacosx-version-min=10.7 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
-
 
     !windows:!macx {
         # Linux: static link
@@ -76,14 +81,17 @@ contains(RELEASE, 1) {
 }
 
 !win32 {
-# for extra security against potential buffer overflows: enable GCCs Stack Smashing Protection
-QMAKE_CXXFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
-QMAKE_LFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
-# We need to exclude this for Windows cross compile with MinGW 4.2.x, as it will result in a non-working executable!
-# This can be enabled for Windows, when we switch to MinGW >= 4.4.x.
+    # for extra security against potential buffer overflows: enable GCCs Stack Smashing Protection
+    QMAKE_CXXFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
+    QMAKE_LFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
+
+    # We need to exclude this for Windows cross compile with MinGW 4.2.x, as it will result in a non-working executable!
+    # This can be enabled for Windows, when we switch to MinGW >= 4.4.x.
 }
+
 # for extra security on Windows: enable ASLR and DEP via GCC linker flags
 win32:QMAKE_LFLAGS *= -Wl,--dynamicbase -Wl,--nxcompat
+
 # on win32: enable GCC large address aware linker flag
 win32:QMAKE_LFLAGS *= -Wl,--large-address-aware -static
 win32:QMAKE_LFLAGS += -static-libgcc -static-libstdc++
@@ -109,6 +117,7 @@ contains(USE_UPNP, -) {
 linux:count(USE_DBUS, 0) {
     USE_DBUS=1
 }
+
 contains(USE_DBUS, 1) {
     message(Building with DBUS (Freedesktop notifications) support)
     DEFINES += USE_DBUS
@@ -126,7 +135,7 @@ contains(BITCOIN_NEED_QT_PLUGINS, 1) {
 INCLUDEPATH += src/leveldb/include src/leveldb/helpers
 LIBS += $$PWD/src/leveldb/out-static/libleveldb.a $$PWD/src/leveldb/out-static/libmemenv.a
 SOURCES += src/txdb-leveldb.cpp \
-	src/bloom.cpp \
+    src/bloom.cpp \
     src/hash.cpp \
     src/aes_helper.c \
     src/blake.c \
@@ -149,13 +158,17 @@ SOURCES += src/txdb-leveldb.cpp \
     isEmpty(QMAKE_RANLIB) {
         QMAKE_RANLIB = $$replace(QMAKE_STRIP, strip, ranlib)
     }
+
     LIBS += -lshlwapi
     #genleveldb.commands = cd $$PWD/src/leveldb && CC=$$QMAKE_CC CXX=$$QMAKE_CXX TARGET_OS=OS_WINDOWS_CROSSCOMPILE $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" out-static/libleveldb.a out-static/libmemenv.a && $$QMAKE_RANLIB $$PWD/src/leveldb/out-static/libleveldb.a && $$QMAKE_RANLIB $$PWD/src/leveldb/out-static/libmemenv.a
 }
+
 genleveldb.target = $$PWD/src/leveldb/out-static/libleveldb.a
 genleveldb.depends = FORCE
+
 PRE_TARGETDEPS += $$PWD/src/leveldb/out-static/libleveldb.a
 QMAKE_EXTRA_TARGETS += genleveldb
+
 # Gross ugly hack that depends on qmake internals, unfortunately there is no other way to do it.
 QMAKE_CLEAN += $$PWD/src/leveldb/out-static/libleveldb.a; cd $$PWD/src/leveldb ; $(MAKE) clean
 
@@ -320,9 +333,10 @@ HEADERS += src/qt/bitcoingui.h \
     src/sph_shavite.h \
     src/sph_simd.h \
     src/sph_types.h \
-	src/txdb-leveldb.h
+    src/txdb-leveldb.h
 
-SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
+SOURCES += src/qt/bitcoin.cpp \
+    src/qt/bitcoingui.cpp \
     src/qt/transactiontablemodel.cpp \
     src/qt/addresstablemodel.cpp \
     src/qt/optionsdialog.cpp \
@@ -428,7 +442,6 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/plugins/rangeslider/rangeslider.cpp \
     src/rpcsmessage.cpp
 
-
 RESOURCES += \
     src/qt/bitcoin.qrc
 
@@ -455,9 +468,9 @@ FORMS += \
     src/qt/plugins/mrichtexteditor/mrichtextedit.ui
 
 contains(USE_QRCODE, 1) {
-HEADERS += src/qt/qrcodedialog.h
-SOURCES += src/qt/qrcodedialog.cpp
-FORMS += src/qt/forms/qrcodedialog.ui
+    HEADERS += src/qt/qrcodedialog.h
+    SOURCES += src/qt/qrcodedialog.cpp
+    FORMS += src/qt/forms/qrcodedialog.ui
 }
 
 CODECFORTR = UTF-8
@@ -470,7 +483,9 @@ isEmpty(QMAKE_LRELEASE) {
     win32:QMAKE_LRELEASE = $$[QT_INSTALL_BINS]\\lrelease.exe
     else:QMAKE_LRELEASE = $$[QT_INSTALL_BINS]/lrelease
 }
+
 isEmpty(QM_DIR):QM_DIR = $$PWD/src/qt/locale
+
 # automatically build translations, so they can be included in resource file
 TSQM.name = lrelease ${QMAKE_FILE_IN}
 TSQM.input = TRANSLATIONS
@@ -546,6 +561,7 @@ macx:QMAKE_INFO_PLIST = share/qt/Info.plist
 INCLUDEPATH += $$SECP256K1_INCLUDE_PATH $$BOOST_INCLUDE_PATH $$BDB_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH $$QRENCODE_INCLUDE_PATH
 LIBS += $$join(SECP256K1_LIB_PATH,,-L,) $$join(BOOST_LIB_PATH,,-L,) $$join(BDB_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,) $$join(QRENCODE_LIB_PATH,,-L,)
 LIBS += -lssl -lcrypto -lcurl -ldb_cxx$$BDB_LIB_SUFFIX
+
 # -lgdi32 has to happen after -lcrypto (see  #681)
 windows:LIBS += -lws2_32 -lshlwapi -lmswsock -lole32 -loleaut32 -luuid -lgdi32
 windows:LIBS += -lsecp256k1
