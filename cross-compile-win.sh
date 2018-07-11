@@ -1,4 +1,21 @@
 #!/bin/bash
+#
+# Copyright (c) 2017-2018 The Swipp developers
+#
+# Distributed under the MIT/X11 software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+#
+# Cross compilation script for Swipp using MXE (M cross environment)
+# To run this script, you need to have a complete MXE distribution
+# installed with the following dependencies compiled:
+#
+# make MXE_TARGETS="i686-w64-mingw32.static" boost
+# make MXE_TARGETS="i686-w64-mingw32.static" qtbase
+# make MXE_TARGETS="i686-w64-mingw32.static" qttools
+# make MXE_TARGETS="i686-w64-mingw32.static" curl
+#
+# Then just run this script the following way:
+# ./cross-compile-win.sh <path-to-mxe>
 
 if [ ! -d "$1" ]; then
 	echo ERROR: The directory $1 does not exist
