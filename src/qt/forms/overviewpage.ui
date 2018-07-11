@@ -145,7 +145,7 @@
                <string>Your current spendable balance</string>
               </property>
               <property name="text">
-               <string notr="true">0 BC</string>
+               <string notr="true">0 SWP</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -277,7 +277,7 @@
                <string>Your current total balance</string>
               </property>
               <property name="text">
-               <string notr="true">0 BTC</string>
+               <string notr="true">0 SWP</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
