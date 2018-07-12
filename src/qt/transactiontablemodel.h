@@ -17,7 +17,7 @@ class TransactionRecord;
 class WalletModel;
 
 #ifndef USE_OLDSTYLE_DATE_SELECTION
-#define MAX_BLOCKS_PER_PAGE 20000
+#define MAX_BLOCKS_PER_PAGE 10000
 #endif
 
 /** UI model for the transaction table of a wallet.
