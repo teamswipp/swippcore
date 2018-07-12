@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2013 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -20,22 +21,22 @@ typedef unsigned char MessageStartChars[MESSAGE_START_SIZE];
 class CAddress;
 class CBlock;
 
-struct CDNSSeedData {
+struct CDNSSeedData
+{
     string name, host;
     CDNSSeedData(const string &strName, const string &strHost) : name(strName), host(strHost) {}
 };
 
-/**
- * CChainParams defines various tweakable parameters of a given instance of the
- * Bitcoin system. There are three: the main network on which people trade goods
- * and services, the public test network which gets reset from time to time and
- * a regression test mode which is intended for private networks only. It has
- * minimal difficulty to ensure that blocks can be found instantly.
- */
+// Defines various tweakable parameters of a given instance of the
+// Swipp system. There are three: the main network on which people trade goods
+// and services, the public test network which gets reset from time to time and
+// a regression test mode which is intended for private networks only. It has
+// minimal difficulty to ensure that blocks can be found instantly.
 class CChainParams
 {
 public:
-    enum Network {
+    enum Network
+    {
         MAIN,
         TESTNET,
         REGTEST,
@@ -43,7 +44,8 @@ public:
         MAX_NETWORK_TYPES
     };
 
-    enum Base58Type {
+    enum Base58Type
+    {
         PUBKEY_ADDRESS,
         SCRIPT_ADDRESS,
         SECRET_KEY,
@@ -85,23 +87,17 @@ protected:
     int nLastPOWBlock;
 };
 
-/**
- * Return the currently selected parameters. This won't change after app startup
- * outside of the unit tests.
- */
+// Return the currently selected parameters. This won't change after app startup outside of the unit tests
 const CChainParams &Params();
 
-/** Sets the params returned by Params() to those for the given network. */
+// Sets the params returned by Params() to those for the given network
 void SelectParams(CChainParams::Network network);
 
-/**
- * Looks for -regtest or -testnet and then calls SelectParams as appropriate.
- * Returns false if an invalid combination is given.
- */
 bool SelectParamsFromCommandLine();
 
-inline bool TestNet() {
-    // Note: it's deliberate that this returns "false" for regression test mode.
+inline bool TestNet()
+{
+    // NOTE: it's deliberate that this returns "false" for regression test mode.
     return Params().NetworkID() == CChainParams::TESTNET;
 }
 
