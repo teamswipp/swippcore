@@ -262,8 +262,12 @@ void RangeSlider::setMinimum(int aMinimum)
     mInterval = mMaximum - mMinimum;
     update();
 
-    setLowerValue(mMinimum);
-    setUpperValue(mMaximum);
+    if (mLowerValue < mMinimum)
+        setLowerValue(mMinimum);
+
+    if (mUpperValue > mMaximum)
+        setUpperValue(mMaximum);
+
     emit rangeChanged(mMinimum, mMaximum);
 }
 
@@ -281,8 +285,12 @@ void RangeSlider::setMaximum(int aMaximum)
     mInterval = mMaximum - mMinimum;
     update();
 
-    setLowerValue(mMinimum);
-    setUpperValue(mMaximum);
+    if (mLowerValue < mMinimum)
+        setLowerValue(mMinimum);
+
+    if (mUpperValue > mMaximum)
+        setUpperValue(mMaximum);
+
     emit rangeChanged(mMinimum, mMaximum);
 }
 
