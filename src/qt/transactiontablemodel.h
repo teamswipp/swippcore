@@ -93,6 +93,9 @@ private:
     QVariant txStatusDecoration(const TransactionRecord *wtx) const;
     QVariant txAddressDecoration(const TransactionRecord *wtx) const;
 
+signals:
+    void updated();
+
 public slots:
     void updateTransaction(const QString &hash, int status);
     void updateConfirmations();

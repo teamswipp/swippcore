@@ -197,8 +197,7 @@ void TransactionView::setModel(WalletModel *model)
 
 #ifndef USE_OLDSTYLE_DATE_SELECTION
         connect(dateWidget, SIGNAL(valueChanged(int, int)), this, SLOT(chooseRangeSelection(int, int)));
-        connect(model->getTransactionTableModel(), SIGNAL(updateTransaction(const QString &hash, int status)),
-                this, SLOT(chooseRange()));
+        connect(model->getTransactionTableModel(), SIGNAL(updated()), this, SLOT(chooseRange()));
         chooseRange();
         dateWidget->setUpperValue(1);
 #endif
@@ -216,8 +215,7 @@ void TransactionView::setModel(WalletModel *model)
         transactionView->horizontalHeader()->setResizeMode(TransactionTableModel::ToAddress, QHeaderView::Stretch);
         transactionView->horizontalHeader()->resizeSection(TransactionTableModel::Amount, 100);
 
-        connect(model->getTransactionTableModel(), SIGNAL(updateTransaction(const QString &hash, int status)),
-                this, SLOT(setDisabledIfNotSyncing()));
+        connect(model->getTransactionTableModel(), SIGNAL(updated()), this, SLOT(setDisabledIfNotSyncing()));
     }
 }
 

@@ -172,6 +172,8 @@ public:
                 break;
             }
         }
+
+        emit parent->updated();
     }
 
     int size()
