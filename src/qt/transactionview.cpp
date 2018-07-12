@@ -51,8 +51,6 @@ TransactionView::TransactionView(QWidget *parent) :
     hlayout->setSpacing(3);
 #endif
 
-    hlayout->setContentsMargins(0,5,0,10);
-
 #ifdef USE_OLDSTYLE_DATE_SELECTION
     dateWidget = new QComboBox(this);
     dateWidget->setItemDelegate(new QStyledItemDelegate());
@@ -70,9 +68,7 @@ TransactionView::TransactionView(QWidget *parent) :
     dateWidget->addItem(tr("Range..."), Range);
 #else
     dateWidget = new RangeSlider(this);
-    dateWidget->setFixedWidth(220);
 #endif
-    hlayout->addWidget(dateWidget);
 
     typeWidget = new QComboBox(this);
     typeWidget->setItemDelegate(new QStyledItemDelegate());
@@ -118,16 +114,16 @@ TransactionView::TransactionView(QWidget *parent) :
 
     QVBoxLayout *vlayout = new QVBoxLayout(this);
     vlayout->setContentsMargins(0,0,0,0);
-    vlayout->setSpacing(0);
+    vlayout->setSpacing(5);
     QTableView *view = new QTableView(this);
     vlayout->addLayout(hlayout);
+    vlayout->addWidget(dateWidget);
 
 #ifdef USE_OLDSTYLE_DATE_SELECTION
     vlayout->addWidget(createDateRangeWidget());
 #endif
 
     vlayout->addWidget(view);
-    vlayout->setSpacing(0);
     int width = view->verticalScrollBar()->sizeHint().width();
     // Cover scroll bar width with spacing
 
