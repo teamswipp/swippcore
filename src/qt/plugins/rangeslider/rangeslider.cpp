@@ -291,8 +291,8 @@ int RangeSlider::validWidth() const
     return width() - scLeftRightMargin * 2 - scHandleSideLength * 2;
 }
 
-void RangeSlider::setRange(int aMinimum, int mMaximum)
+void RangeSlider::setRange(int aMinimum, int aMaximum)
 {
     setMinimum(aMinimum);
-    setMaximum(mMaximum);
+    setMaximum(aMaximum);
 }
