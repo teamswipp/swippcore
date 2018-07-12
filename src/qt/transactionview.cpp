@@ -178,8 +178,6 @@ TransactionView::TransactionView(QWidget *parent) :
     connect(copyTxIDAction, SIGNAL(triggered()), this, SLOT(copyTxID()));
     connect(editLabelAction, SIGNAL(triggered()), this, SLOT(editLabel()));
     connect(showDetailsAction, SIGNAL(triggered()), this, SLOT(showDetails()));
-
-    setDisabledIfNotSyncing();
 }
 
 void TransactionView::setModel(WalletModel *model)
@@ -216,6 +214,7 @@ void TransactionView::setModel(WalletModel *model)
         transactionView->horizontalHeader()->resizeSection(TransactionTableModel::Amount, 100);
 
         connect(model->getTransactionTableModel(), SIGNAL(updated()), this, SLOT(setDisabledIfNotSyncing()));
+        setDisabledIfNotSyncing();
     }
 }
 
