@@ -28,6 +28,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
     int64_t nCredit = wtx.GetCredit(true);
     int64_t nDebit = wtx.GetDebit();
     int64_t nNet = nCredit - nDebit;
+    int64_t nOrderPos = wtx.nOrderPos;
     uint256 hash = wtx.GetHash(), hashPrev = 0;
     std::map<std::string, std::string> mapValue = wtx.mapValue;
 
@@ -38,7 +39,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         {
             if(wallet->IsMine(txout))
             {
-                TransactionRecord sub(hash, nTime);
+                TransactionRecord sub(hash, nTime, nOrderPos);
                 CTxDestination address;
                 sub.idx = parts.size(); // Sequence number
                 sub.credit = txout.nValue;
@@ -92,7 +93,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             int64_t nChange = wtx.GetChange();
 
             parts.append(TransactionRecord(hash, nTime, TransactionRecord::SendToSelf, "",
-                         -(nDebit - nChange), nCredit - nChange));
+                         -(nDebit - nChange), nCredit - nChange, nOrderPos));
         }
         else if (fAllFromMe)
         {
@@ -102,7 +103,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
             for (unsigned int nOut = 0; nOut < wtx.vout.size(); nOut++)
             {
                 const CTxOut& txout = wtx.vout[nOut];
-                TransactionRecord sub(hash, nTime);
+                TransactionRecord sub(hash, nTime, nOrderPos);
                 sub.idx = parts.size();
 
                 if(wallet->IsMine(txout))
@@ -143,7 +144,7 @@ QList<TransactionRecord> TransactionRecord::decomposeTransaction(const CWallet *
         else
         {
             // Mixed debit transaction, can't break down payees
-            parts.append(TransactionRecord(hash, nTime, TransactionRecord::Other, "", nNet, 0));
+            parts.append(TransactionRecord(hash, nTime, TransactionRecord::Other, "", nNet, 0, nOrderPos));
         }
     }
 
@@ -168,6 +169,7 @@ void TransactionRecord::updateStatus(const CWalletTx &wtx)
     status.countsForBalance = wtx.IsTrusted() && !(wtx.GetBlocksToMaturity() > 0);
     status.depth = wtx.GetDepthInMainChain();
     status.cur_num_blocks = nBestHeight;
+    orderPos = wtx.nOrderPos;
 
     if (!IsFinalTx(wtx, nBestHeight + 1))
     {

@@ -43,7 +43,10 @@ bool TransactionFilterProxy::filterAcceptsRow(int sourceRow, const QModelIndex &
     QString label = index.data(TransactionTableModel::LabelRole).toString();
     qint64 amount = llabs(index.data(TransactionTableModel::AmountRole).toLongLong());
     int status = index.data(TransactionTableModel::StatusRole).toInt();
-    qint64 depth = index.data(TransactionTableModel::DepthRole).toLongLong();
+
+    // This effectively reverses the transaction position to take into account the reversed ordering of the list
+    int orderPos = ((TransactionTableModel *) sourceModel())->getWalletSize() -
+                   index.data(TransactionTableModel::TransactionOrderPosRole).toInt();
 
     if(!showInactive && (status == TransactionStatus::Conflicted || status == TransactionStatus::NotAccepted))
         return false;
@@ -57,9 +60,9 @@ bool TransactionFilterProxy::filterAcceptsRow(int sourceRow, const QModelIndex &
     else if(datetime < dateFrom || datetime > dateTo)
         return false;
 #else
-    else if (depth == 0 || depth == -1)
-        return true;
-    else if (depth < depthMin || depth > depthMax)
+    else if ((orderPos < orderPosMin || orderPos > orderPosMax) && orderPos >= 0)
+        return false;
+    else if (orderPosMin > 0 && orderPos < 0)
         return false;
 #endif
 
@@ -76,8 +79,8 @@ void TransactionFilterProxy::setDateRange(const QDateTime &from, const QDateTime
 #else
 void TransactionFilterProxy::setRange(int min, int max)
 {
-    this->depthMin = min * MAX_BLOCKS_PER_PAGE;
-    this->depthMax = max * MAX_BLOCKS_PER_PAGE;
+    this->orderPosMin = min * MAX_TRANSACTIONS_PER_TICK;
+    this->orderPosMax = max * MAX_TRANSACTIONS_PER_TICK;
     invalidateFilter();
 }
 #endif

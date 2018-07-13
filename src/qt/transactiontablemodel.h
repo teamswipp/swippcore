@@ -17,7 +17,7 @@ class TransactionRecord;
 class WalletModel;
 
 #ifndef USE_OLDSTYLE_DATE_SELECTION
-#define MAX_BLOCKS_PER_PAGE 10000
+#define MAX_TRANSACTIONS_PER_TICK 1000
 #endif
 
 // UI model for the transaction table of a wallet.
@@ -50,7 +50,7 @@ public:
         ConfirmedRole,           // Is transaction confirmed?
         FormattedAmountRole,     // Formatted amount, without brackets when unconfirmed
         StatusRole,              // Transaction status (TransactionRecord::Status)
-        TransactionIndexRole     // Wallet index (position) of transaction
+        TransactionOrderPosRole  // Position in ordered transaction list
     };
 
     int rowCount(const QModelIndex &parent) const;
@@ -58,6 +58,8 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const;
+
+    int getWalletSize() const;
 
 private:
     int lowerIndex;

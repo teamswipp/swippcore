@@ -327,8 +327,8 @@ QString TransactionTableModel::formatTxDate(const TransactionRecord *wtx) const
 
 void TransactionTableModel::updateCells(enum ColumnIndex column)
 {
-    int lower = lowerIndex * MAX_BLOCKS_PER_PAGE;
-    int upper = upperIndex * (MAX_BLOCKS_PER_PAGE + 1);
+    int lower = lowerIndex * MAX_TRANSACTIONS_PER_TICK;
+    int upper = upperIndex * (MAX_TRANSACTIONS_PER_TICK + 1);
 
     // Loop is a workaround for the following bug, https://bugreports.qt.io/browse/QTBUG-58580
     // It's probably best to keep it as-is in order to cover as many QT versions as possible.
@@ -408,6 +408,11 @@ QString TransactionTableModel::formatTxToAddress(const TransactionRecord *wtx, b
     default:
         return tr("(n/a)");
     }
+}
+
+int TransactionTableModel::getWalletSize() const
+{
+    return wallet->mapWallet.size();
 }
 
 QVariant TransactionTableModel::addressColor(const TransactionRecord *wtx) const
@@ -578,8 +583,8 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         return formatTxAmount(rec, false);
     case StatusRole:
         return rec->status.status;
-    case TransactionIndexRole:
-        return rec->status.idx;
+    case TransactionOrderPosRole:
+        return rec->orderPos;
     }
 
     return QVariant();

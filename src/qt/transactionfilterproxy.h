@@ -10,7 +10,7 @@
 #include <QSortFilterProxyModel>
 #include <QDateTime>
 
-/** Filter the transaction list according to pre-specified rules. */
+// Filter the transaction list according to pre-specified rules
 class TransactionFilterProxy : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -48,8 +48,8 @@ private:
     QDateTime dateFrom;
     QDateTime dateTo;
 #else
-    int64_t depthMin;
-    int64_t depthMax;
+    int orderPosMin;
+    int orderPosMax;
 #endif
     QString addrPrefix;
     quint32 typeFilter;

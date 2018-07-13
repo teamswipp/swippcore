@@ -272,7 +272,7 @@ void TransactionView::chooseRangeSelection(int aMin, int aMax)
 
 void TransactionView::chooseRange()
 {
-    int pages = nBestHeight / (MAX_BLOCKS_PER_PAGE + 1);
+    int pages = model->wallet->mapWallet.size() / MAX_TRANSACTIONS_PER_TICK + 1;
     dateWidget->setRange(0, pages);
 }
 #endif
