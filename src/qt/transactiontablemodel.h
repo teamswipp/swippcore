@@ -20,8 +20,7 @@ class WalletModel;
 #define MAX_BLOCKS_PER_PAGE 10000
 #endif
 
-/** UI model for the transaction table of a wallet.
- */
+// UI model for the transaction table of a wallet.
 class TransactionTableModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -38,31 +37,20 @@ public:
         Amount = 4
     };
 
-    /** Roles to get specific information from a transaction row.
-        These are independent of column.
-    */
+    // Roles to get specific information from a transaction row.
+    // These are independent of column.
     enum RoleIndex {
-        /** Type of transaction */
-        TypeRole = Qt::UserRole,
-        /** Date and time this transaction was created */
-        DateRole,
-        /** Long description (HTML format) */
-        LongDescriptionRole,
-        /** Address of transaction */
-        AddressRole,
-        /** Label of address related to transaction */
-        LabelRole,
-        /** Net amount of transaction */
-        AmountRole,
-        /** Unique identifier */
-        TxIDRole,
-        /** Is transaction confirmed? */
-        ConfirmedRole,
-        /** Formatted amount, without brackets when unconfirmed */
-        FormattedAmountRole,
-        /** Transaction status (TransactionRecord::Status) */
-        StatusRole,
-        DepthRole
+        TypeRole = Qt::UserRole, // Type of transaction
+        DateRole,                // Date and time this transaction was created
+        LongDescriptionRole,     // Long description (HTML format)
+        AddressRole,             // Address of transaction
+        LabelRole,               // Label of address related to transaction
+        AmountRole,              // Net amount of transaction
+        TxIDRole,                // Unique identifier
+        ConfirmedRole,           // Is transaction confirmed?
+        FormattedAmountRole,     // Formatted amount, without brackets when unconfirmed
+        StatusRole,              // Transaction status (TransactionRecord::Status)
+        TransactionIndexRole     // Wallet index (position) of transaction
     };
 
     int rowCount(const QModelIndex &parent) const;
