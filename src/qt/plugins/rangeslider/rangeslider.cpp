@@ -215,6 +215,9 @@ void RangeSlider::setLowerValue(int aLowerValue, bool fireEvent)
 
     mLowerValue = aLowerValue;
 
+    if (mLowerValue == mUpperValue)
+        mLowerValue--;
+
     if (fireEvent)
     {
         emit lowerValueChanged(mLowerValue);
@@ -238,6 +241,9 @@ void RangeSlider::setUpperValue(int aUpperValue, bool fireEvent)
         aUpperValue = mMinimum;
 
     mUpperValue = aUpperValue;
+
+    if (mUpperValue == mLowerValue)
+        mUpperValue++;
 
     if (fireEvent)
     {
