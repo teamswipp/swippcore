@@ -72,7 +72,7 @@ Once completed, you should end up with an executable "swipp-qt-x86_64.AppImage" 
 
 
 # IMPORTANT!
-<b>The master branch is  our main development branch</b>. When you run or update to a new Swipp version, we recommend you that you only
+<b>The master branch is  our main development branch</b>. When you run or update to a new Swipp version, we recommend that you only
 use commits where a new version has been tagged. We tag new versions at regular intervals - even when we do not make an official
 release. Any tagged release can be considered stable and safe to run. <b>Running any other version at any other commit in-between
 is not supported and done at your own risk.</b>
