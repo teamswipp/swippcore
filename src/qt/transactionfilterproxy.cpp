@@ -24,6 +24,8 @@ TransactionFilterProxy::TransactionFilterProxy(QObject *parent) :
     dateFrom(MIN_DATE),
     dateTo(MAX_DATE),
 #else
+    orderPosMin(-1),
+    orderPosMax(-1),
 #endif
     addrPrefix(),
     typeFilter(ALL_TYPES),
