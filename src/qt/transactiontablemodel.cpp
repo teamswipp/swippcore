@@ -153,6 +153,8 @@ public:
                         parent->endInsertRows();
                     }
                 }
+
+                emit parent->updated();
                 break;
 
             case CT_DELETED:
@@ -165,6 +167,8 @@ public:
                 parent->beginRemoveRows(QModelIndex(), lowerIndex, upperIndex-1);
                 cachedWallet.erase(lower, upper);
                 parent->endRemoveRows();
+
+                emit parent->updated();
                 break;
 
             case CT_UPDATED:
@@ -173,8 +177,6 @@ public:
                 break;
             }
         }
-
-        emit parent->updated();
     }
 
     int size()

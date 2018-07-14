@@ -40,6 +40,9 @@ public:
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
+public slots:
+    void invalidateFilter();
+
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex & source_parent) const;
 

@@ -124,3 +124,8 @@ int TransactionFilterProxy::rowCount(const QModelIndex &parent) const
     else
         return QSortFilterProxyModel::rowCount(parent);
 }
+
+void TransactionFilterProxy::invalidateFilter()
+{
+	QSortFilterProxyModel::invalidateFilter();
+}

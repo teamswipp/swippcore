@@ -192,6 +192,7 @@ void TransactionView::setModel(WalletModel *model)
 #ifndef USE_OLDSTYLE_DATE_SELECTION
         connect(dateWidget, SIGNAL(valueChanged(int, int)), this, SLOT(chooseRangeSelection(int, int)));
         connect(model->getTransactionTableModel(), SIGNAL(updated()), this, SLOT(chooseRange()));
+        connect(model->getTransactionTableModel(), SIGNAL(updated()), transactionProxyModel, SLOT(invalidateFilter()));
         chooseRange();
         dateWidget->setUpperValue(1);
 #endif
