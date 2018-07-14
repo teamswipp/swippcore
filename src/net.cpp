@@ -1672,8 +1672,10 @@ void static Discover(boost::thread_group& threadGroup)
         vector<CNetAddr> vaddr;
 
         if (LookupHost(pszHostName, vaddr))
+        {
             BOOST_FOREACH (const CNetAddr &addr, vaddr)
                 AddLocal(addr, LOCAL_IF);
+        }
     }
 #else
     // Get local host IP
@@ -2106,6 +2108,11 @@ std::list<ComparableVersion> GetAllReleases()
         curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, CURL_CONNECT_TIMEOUT_RELEASES);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_chunk);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+#ifdef WIN32
+        // NOTE: The data here is not critical, so disabling verification should not have any unforseen consequences.
+        // However, we only do this under Windows, as certificates are usually bundled with Linux and OS X distributions.
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+#endif
         res = curl_easy_perform(curl);
 
         if(res != CURLE_OK)
