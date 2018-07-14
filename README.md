@@ -60,8 +60,19 @@ make -j8
 
 If successful, this should generate an executable file "swipp-qt" in the current directory.
 
+# Building a distribution-independent QT version
+You can generate a distribution-independent <b>AppImage executable</b> by following the instructions in the [section above](#Building-the-QT-version).
+
+Next, you simply execute the following script:
+```
+./swipp-linuxdeployqt.sh
+```
+
+Once completed, you should end up with an executable "swipp-qt-x86_64.AppImage" file in the current directory. This executable is completely distribution-independent and should run on any recent linux variant and version.
+
+
 # IMPORTANT!
-The master branch is  our main development branch. When you run or update to a new Swipp version, we recommend you that you only
+<b>The master branch is  our main development branch</b>. When you run or update to a new Swipp version, we recommend you that you only
 use commits where a new version has been tagged. We tag new versions at regular intervals - even when we do not make an official
 release. Any tagged release can be considered stable and safe to run. <b>Running any other version at any other commit in-between
 is not supported and done at your own risk.</b>
