@@ -6,6 +6,7 @@
 
 #include <QDateTime>
 #include <cstdlib>
+#include <climits>
 
 #include "transactionfilterproxy.h"
 #include "transactiontablemodel.h"
@@ -24,8 +25,8 @@ TransactionFilterProxy::TransactionFilterProxy(QObject *parent) :
     dateFrom(MIN_DATE),
     dateTo(MAX_DATE),
 #else
-    orderPosMin(-1),
-    orderPosMax(-1),
+    orderPosMin(INT_MIN),
+    orderPosMax(INT_MAX),
 #endif
     addrPrefix(),
     typeFilter(ALL_TYPES),
