@@ -3406,7 +3406,7 @@ struct CImportingNow
 
 void ThreadImport(std::vector<boost::filesystem::path> vImportFiles)
 {
-    RenameThread("Cream-loadblk");
+    RenameThread("Swipp-loadblk");
     CImportingNow imp;
 
     // -loadblock=

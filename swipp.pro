@@ -5,7 +5,7 @@
 
 TEMPLATE = app
 TARGET = swipp-qt
-VERSION = 2.1.3
+VERSION = 2.1.4
 INCLUDEPATH += src src/json src/qt src/qt/plugins/mrichtexteditor src/qt/plugins/rangeslider
 DEFINES += ENABLE_WALLET
 DEFINES += BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
