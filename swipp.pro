@@ -20,7 +20,6 @@ greaterThan(QT_MAJOR_VERSION, 4) {
     DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0
 }
 
-
 win32 {
     windows:LIBS += -lshlwapi
     LIBS += $$join(BOOST_LIB_PATH,,-L,) $$join(BDB_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,) $$join(QRENCODE_LIB_PATH,,-L,)
@@ -45,7 +44,6 @@ win32 {
     #GMP_INCLUDE_PATH=C:/deps/gmp-6.0.0
     #GMP_LIB_PATH=C:/deps/gmp-6.0.0/.libs
 }
-
 
 linux {
     SECP256K1_LIB_PATH = /usr/local/lib
@@ -333,7 +331,8 @@ HEADERS += src/qt/bitcoingui.h \
     src/sph_shavite.h \
     src/sph_simd.h \
     src/sph_types.h \
-    src/txdb-leveldb.h
+    src/txdb-leveldb.h \
+    src/geoposition.h
 
 SOURCES += src/qt/bitcoin.cpp \
     src/qt/bitcoingui.cpp \
@@ -440,7 +439,8 @@ SOURCES += src/qt/bitcoin.cpp \
     src/qt/qvalidatedtextedit.cpp \
     src/qt/plugins/mrichtexteditor/mrichtextedit.cpp \
     src/qt/plugins/rangeslider/rangeslider.cpp \
-    src/rpcsmessage.cpp
+    src/rpcsmessage.cpp \
+    src/geoposition.cpp
 
 RESOURCES += \
     src/qt/bitcoin.qrc
