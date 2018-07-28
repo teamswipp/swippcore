@@ -559,7 +559,7 @@ Value masternode(const Array& params, bool fHelp)
             }
             else
             {
-                obj.push_back(Pair(boost::lexical_cast<std::string>(nHeight), "Unknwon"));
+                obj.push_back(Pair(boost::lexical_cast<std::string>(nHeight), "Unknown"));
             }
         }
 
