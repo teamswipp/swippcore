@@ -2606,10 +2606,6 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
 
         if(statement)
         {
-            //TODO: Enable again! Was this causing a crash under certain Windows versions ?
-            //if (!masternodePayments.ProcessBlock(pindex->nHeight + 1) && fDebug)
-            //    LogPrintf("CheckBlock() : Masternode block processing failed at height %d\n", pindexBest->nHeight + 1);
-
             int vtxIndex = IsProofOfStake() ? 1 : 0;
 
             if(pindex->GetBlockHash() == hashPrevBlock)
@@ -3041,6 +3037,21 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
         }
 
         mapOrphanBlocksByPrev.erase(hashPrev);
+    }
+
+    if(!IsInitialBlockDownload())
+    {
+        if (!fImporting && !fReindex && pindexBest->nHeight > Checkpoints::GetTotalBlocksEstimate())
+        {
+            // Disable darksend features without disabling masternodes
+            if (!fLiteMode)
+            {
+                darkSendPool.CheckTimeout();
+                darkSendPool.NewBlock();
+            }
+
+            masternodePayments.ProcessBlock(pindexBest->nHeight + 10);
+        }
     }
 
     LogPrintf("ProcessBlock: ACCEPTED\n");
