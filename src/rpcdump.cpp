@@ -1,4 +1,5 @@
 // Copyright (c) 2009-2012 Bitcoin Developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -149,7 +150,7 @@ Value importprivkey(const Array& params, bool fHelp)
         pwalletMain->nTimeFirstKey = 1; // 0 would be considered 'no value'
 
         if (fRescan) {
-            pwalletMain->ScanForWalletTransactions(pindexGenesisBlock, true);
+            pwalletMain->ScanForWalletTransactions(pindexGenesisBlock, -1, true);
             pwalletMain->ReacceptWalletTransactions();
         }
     }

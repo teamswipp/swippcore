@@ -2011,7 +2011,7 @@ Value scanforalltxns(const Array& params, bool fHelp)
     {
         LOCK2(cs_main, pwalletMain->cs_wallet);
         pwalletMain->MarkDirty();
-        pwalletMain->ScanForWalletTransactions(pindex, true);
+        pwalletMain->ScanForWalletTransactions(pindex, -1, true);
         pwalletMain->ReacceptWalletTransactions();
     }
 

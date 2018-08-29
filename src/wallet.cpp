@@ -1062,7 +1062,7 @@ bool CWalletTx::WriteToDisk()
 // Scan the block chain (starting in pindexStart) for transactions
 // from or to us. If fUpdate is true, found transactions that already
 // exist in the wallet will be updated.
-int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate)
+int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, int height, bool fUpdate)
 {
     int ret = 0;
     CBlockIndex* pindex = pindexStart;
@@ -1070,7 +1070,7 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate)
     {
         LOCK2(cs_main, cs_wallet);
 
-        while (pindex)
+        while (pindex && (height == -1 || height <= pindex->nHeight))
         {
             // no need to read and scan block, if block was created before
             // our wallet birthday (as adjusted for block time variability)
