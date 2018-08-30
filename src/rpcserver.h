@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -22,14 +23,15 @@ void StopRPCThreads();
   the right number of arguments are passed, just that any passed are the correct type.
   Use like:  RPCTypeCheck(params, boost::assign::list_of(str_type)(int_type)(obj_type));
 */
-void RPCTypeCheck(const json_spirit::Array& params,
-                  const std::list<json_spirit::Value_type>& typesExpected, bool fAllowNull=false);
+void RPCTypeCheck(const json_spirit::Array& params, const std::list<json_spirit::Value_type>& typesExpected,
+                  bool fAllowNull=false);
+
 /*
   Check for expected keys/value types in an Object.
   Use like: RPCTypeCheck(object, boost::assign::map_list_of("name", str_type)("value", int_type));
 */
-void RPCTypeCheck(const json_spirit::Object& o,
-                  const std::map<std::string, json_spirit::Value_type>& typesExpected, bool fAllowNull=false);
+void RPCTypeCheck(const json_spirit::Object& o, const std::map<std::string, json_spirit::Value_type>& typesExpected,
+                  bool fAllowNull=false);
 
 /*
   Run func nSeconds from now. Uses boost deadline timers.
@@ -58,16 +60,9 @@ private:
     std::map<std::string, const CRPCCommand*> mapCommands;
 public:
     CRPCTable();
+
     const CRPCCommand* operator[](std::string name) const;
     std::string help(std::string name) const;
-
-    /**
-     * Execute a method.
-     * @param method   Method to execute
-     * @param params   Array of arguments (JSON objects)
-     * @returns Result of the call.
-     * @throws an exception (json_spirit::Value) when an error happens.
-     */
     json_spirit::Value execute(const std::string &method, const json_spirit::Array &params) const;
 };
 
@@ -87,10 +82,6 @@ extern double GetPoSKernelPS();
 extern std::string HelpRequiringPassphrase();
 extern void EnsureWalletIsUnlocked();
 
-//
-// Utilities: convert hex-encoded Values
-// (throws error if not hex).
-//
 extern uint256 ParseHashV(const json_spirit::Value& v, std::string strName);
 extern uint256 ParseHashO(const json_spirit::Object& o, std::string strKey);
 extern std::vector<unsigned char> ParseHexV(const json_spirit::Value& v, std::string strName);
@@ -201,4 +192,5 @@ extern json_spirit::Value smsgsendanon(const json_spirit::Array& params, bool fH
 extern json_spirit::Value smsginbox(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value smsgoutbox(const json_spirit::Array& params, bool fHelp);
 extern json_spirit::Value smsgbuckets(const json_spirit::Array& params, bool fHelp);
+
 #endif
