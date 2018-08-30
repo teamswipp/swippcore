@@ -156,6 +156,11 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "searchrawtransactions", 1 },
     { "searchrawtransactions", 2 },
     { "searchrawtransactions", 3 },
+    { "scanforalltxns", 0},
+    { "scanforstealthtxns", 0},
+    { "rescanblockchain", 0},
+    { "rescanblockchain", 1},
+    { "rescanblockchain", 2},
 };
 
 class CRPCConvertTable

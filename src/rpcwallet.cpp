@@ -1982,6 +1982,32 @@ Value sendtostealthaddress(const Array& params, bool fHelp)
     return wtx.GetHash().GetHex();
 }
 
+static Object scanforalltxnsheight(int fromHeight, int toHeight)
+{
+    Object result;
+    CBlockIndex *pindex = pindexGenesisBlock;
+
+    if (fromHeight > 0)
+    {
+        pindex = mapBlockIndex[hashBestChain];
+
+        while (pindex->nHeight > fromHeight && pindex->pprev)
+            pindex = pindex->pprev;
+    }
+
+    if (pindex == NULL)
+        throw runtime_error("Genesis Block is not set.");
+    {
+        LOCK2(cs_main, pwalletMain->cs_wallet);
+        pwalletMain->MarkDirty();
+        pwalletMain->ScanForWalletTransactions(pindex, toHeight, true);
+        pwalletMain->ReacceptWalletTransactions();
+    }
+
+    result.push_back(Pair("result", "Scan complete."));
+    return result;
+}
+
 Value scanforalltxns(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() > 1)
@@ -1991,57 +2017,26 @@ Value scanforalltxns(const Array& params, bool fHelp)
             "Scan blockchain for owned transactions.");
     }
 
-    Object result;
     int32_t nFromHeight = 0;
-    CBlockIndex *pindex = pindexGenesisBlock;
 
     if (params.size() > 0)
         nFromHeight = params[0].get_int();
 
-    if (nFromHeight > 0)
-    {
-        pindex = mapBlockIndex[hashBestChain];
-
-        while (pindex->nHeight > nFromHeight && pindex->pprev)
-            pindex = pindex->pprev;
-    }
-
-    if (pindex == NULL)
-        throw runtime_error("Genesis Block is not set.");
-    {
-        LOCK2(cs_main, pwalletMain->cs_wallet);
-        pwalletMain->MarkDirty();
-        pwalletMain->ScanForWalletTransactions(pindex, -1, true);
-        pwalletMain->ReacceptWalletTransactions();
-    }
-
-    result.push_back(Pair("result", "Scan complete."));
-    return result;
+    return scanforalltxnsheight(nFromHeight, -1);
 }
 
-Value scanforstealthtxns(const Array& params, bool fHelp)
+static Object scanforstealthtxnsheight(int fromHeight, int toHeight)
 {
-    if (fHelp || params.size() > 1)
-    {
-        throw runtime_error(
-            "scanforstealthtxns [fromHeight]\n"
-            "Scan blockchain for owned stealth transactions.");
-    }
-
     Object result;
     uint32_t nBlocks = 0;
     uint32_t nTransactions = 0;
-    int32_t nFromHeight = 0;
     CBlockIndex *pindex = pindexGenesisBlock;
 
-    if (params.size() > 0)
-        nFromHeight = params[0].get_int();
-
-    if (nFromHeight > 0)
+    if (fromHeight > 0)
     {
         pindex = mapBlockIndex[hashBestChain];
 
-        while (pindex->nHeight > nFromHeight && pindex->pprev)
+        while (pindex->nHeight > fromHeight && pindex->pprev)
             pindex = pindex->pprev;
     }
 
@@ -2052,7 +2047,7 @@ Value scanforstealthtxns(const Array& params, bool fHelp)
     pwalletMain->nStealth = 0;
     pwalletMain->nFoundStealth = 0;
 
-    while (pindex)
+    while (pindex && (toHeight == -1 || toHeight <= pindex->nHeight))
     {
         nBlocks++;
         CBlock block;
@@ -2076,5 +2071,64 @@ Value scanforstealthtxns(const Array& params, bool fHelp)
 
     result.push_back(Pair("result", "Scan complete."));
     result.push_back(Pair("found", std::string(cbuf)));
+    return result;
+}
+
+Value scanforstealthtxns(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+    {
+        throw runtime_error(
+            "scanforstealthtxns [fromHeight]\n"
+            "Scan blockchain for owned stealth transactions.");
+    }
+
+    int32_t nFromHeight = 0;
+
+    if (params.size() > 0)
+        nFromHeight = params[0].get_int();
+
+    return scanforstealthtxnsheight(nFromHeight, -1);
+}
+
+Value rescanblockchain(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 3) {
+        throw std::runtime_error(
+            "rescanblockchain [fromHeight] [toHeight] [includeStealth]\n"
+            "[fromHeight] is the block height where the rescan should start. If omitted, rescan started from the genesis block.\n"
+            "[toHeight] the last block height that should be scanned. If omitted, rescan stopped at the chain tip.\n"
+            "if [includeStealth] is true, stealth addresses are also included in the scan.\n"
+            "Rescan the local blockchain for wallet related transactions.");
+    }
+
+    int fromHeight = 0;
+    int toHeight = -1;
+
+    if (params.size() > 0)
+        fromHeight = params[0].get_int();
+
+    if (params.size() > 1)
+        toHeight = params[1].get_int();
+
+
+    if (fromHeight < 0 || fromHeight > pindexBest->nHeight)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid fromHeight");
+    else if (toHeight < -1 || toHeight > pindexBest->nHeight)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid toHeight");
+    else if (toHeight != -1 && fromHeight > toHeight)
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "toHeight must be greater than fromHeight");
+
+    if (params.size() > 2 && params[2].get_bool())
+        scanforstealthtxnsheight(fromHeight, toHeight);
+
+    Object result = scanforalltxnsheight(fromHeight, toHeight);
+
+    if (fromHeight != 0)
+        result.push_back(Pair("fromHeight", fromHeight));
+
+    if (toHeight != -1)
+        result.push_back(Pair("toHeight", toHeight));
+
     return result;
 }

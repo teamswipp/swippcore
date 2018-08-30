@@ -218,7 +218,7 @@ Value stop(const Array& params, bool fHelp)
 }
 
 static const CRPCCommand vRPCCommands[] =
-{ //  name                      actor (function)         okSafeMode threadSafe reqWallet
+{  // name                      actor (function)         okSafeMode threadSafe reqWallet
     { "help",                   &help,                   true,      true,      false },
     { "stop",                   &stop,                   true,      true,      false },
     { "getbestblockhash",       &getbestblockhash,       true,      false,     false },
@@ -249,9 +249,9 @@ static const CRPCCommand vRPCCommands[] =
     { "searchrawtransactions",  &searchrawtransactions,  false,     false,     false },
 
     /* Dark features */
-    { "darksend",               &darksend,               false,     false,      true },
-    { "spork",                  &spork,                  true,      false,      false },
-    { "masternode",             &masternode,             true,      false,      true },
+    { "darksend",               &darksend,               false,     false,     true },
+    { "spork",                  &spork,                  true,      false,     false },
+    { "masternode",             &masternode,             true,      false,     true },
 
 #ifdef ENABLE_WALLET
     { "getmininginfo",          &getmininginfo,          true,      false,     false },
@@ -320,6 +320,11 @@ static const CRPCCommand vRPCCommands[] =
     { "smsginbox",              &smsginbox,              false,     false,     false },
     { "smsgoutbox",             &smsgoutbox,             false,     false,     false },
     { "smsgbuckets",            &smsgbuckets,            false,     false,     false },
+
+    /* Rescanning of wallet transactions */
+    { "scanforalltxns",         &scanforalltxns,         false,     false,     true},
+    { "scanforstealthtxns",     &scanforstealthtxns,     false,     false,     true},
+    { "rescanblockchain",       &rescanblockchain,       false,     false,     true}
 #endif
 };
 
