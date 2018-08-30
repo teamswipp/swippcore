@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2013 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -33,10 +34,12 @@ using namespace json_spirit;
 Object CallRPC(const string& strMethod, const Array& params)
 {
     if (mapArgs["-rpcuser"] == "" && mapArgs["-rpcpassword"] == "")
+    {
         throw runtime_error(strprintf(
             _("You must set rpcpassword=<password> in the configuration file:\n%s\n"
               "If the file does not exist, create it with owner-readable-only file permissions."),
-                GetConfigFile().string()));
+              GetConfigFile().string()));
+    }
 
     // Connect to localhost
     bool fUseSSL = GetBoolArg("-rpcssl", false);
@@ -47,10 +50,14 @@ Object CallRPC(const string& strMethod, const Array& params)
     SSLIOStreamDevice<asio::ip::tcp> d(sslStream, fUseSSL);
     iostreams::stream< SSLIOStreamDevice<asio::ip::tcp> > stream(d);
 
-    bool fWait = GetBoolArg("-rpcwait", false); // -rpcwait means try until server has started
+    bool fWait = GetBoolArg("-rpcwait", false);
+
     do {
         bool fConnected = d.connect(GetArg("-rpcconnect", "127.0.0.1"), GetArg("-rpcport", itostr(Params().RPCPort())));
-        if (fConnected) break;
+
+        if (fConnected)
+            break;
+
         if (fWait)
             MilliSleep(1000);
         else
@@ -83,11 +90,13 @@ Object CallRPC(const string& strMethod, const Array& params)
     else if (strReply.empty())
         throw runtime_error("no response from server");
 
-    // Parse reply
     Value valReply;
+
     if (!read_string(strReply, valReply))
         throw runtime_error("couldn't parse reply from server");
+
     const Object& reply = valReply.get_obj();
+
     if (reply.empty())
         throw runtime_error("expected reply to have result, error and id properties");
 
@@ -171,20 +180,18 @@ private:
 public:
     CRPCConvertTable();
 
-    bool convert(const std::string& method, int idx) {
+    bool convert(const std::string& method, int idx)
+    {
         return (members.count(std::make_pair(method, idx)) > 0);
     }
 };
 
 CRPCConvertTable::CRPCConvertTable()
 {
-    const unsigned int n_elem =
-        (sizeof(vRPCConvertParams) / sizeof(vRPCConvertParams[0]));
+    const unsigned int n_elem = (sizeof(vRPCConvertParams) / sizeof(vRPCConvertParams[0]));
 
-    for (unsigned int i = 0; i < n_elem; i++) {
-        members.insert(std::make_pair(vRPCConvertParams[i].methodName,
-                                      vRPCConvertParams[i].paramIdx));
-    }
+    for (unsigned int i = 0; i < n_elem; i++)
+        members.insert(std::make_pair(vRPCConvertParams[i].methodName, vRPCConvertParams[i].paramIdx));
 }
 
 static CRPCConvertTable rpcCvtTable;
@@ -194,22 +201,23 @@ Array RPCConvertValues(const std::string &strMethod, const std::vector<std::stri
 {
     Array params;
 
-    for (unsigned int idx = 0; idx < strParams.size(); idx++) {
+    for (unsigned int idx = 0; idx < strParams.size(); idx++)
+    {
         const std::string& strVal = strParams[idx];
 
-        // insert string value directly
-        if (!rpcCvtTable.convert(strMethod, idx)) {
+        // Insert string value directly
+        if (!rpcCvtTable.convert(strMethod, idx))
             params.push_back(strVal);
-        }
-
-        // parse string as JSON, insert bool/number/object/etc. value
-        else {
+        // Parse string as JSON, insert bool/number/object/etc. value
+        else
+        {
             Value jVal;
+
             if (!read_string(strVal, jVal))
                 throw runtime_error(string("Error parsing JSON:")+strVal);
+
             params.push_back(jVal);
         }
-
     }
 
     return params;
@@ -219,6 +227,7 @@ int CommandLineRPC(int argc, char *argv[])
 {
     string strPrint;
     int nRet = 0;
+
     try
     {
         // Skip switches
@@ -231,6 +240,7 @@ int CommandLineRPC(int argc, char *argv[])
         // Method
         if (argc < 2)
             throw runtime_error("too few parameters");
+
         string strMethod = argv[1];
 
         // Parameters default to strings
@@ -262,14 +272,17 @@ int CommandLineRPC(int argc, char *argv[])
                 strPrint = write_string(result, true);
         }
     }
-    catch (boost::thread_interrupted) {
+    catch (boost::thread_interrupted)
+    {
         throw;
     }
-    catch (std::exception& e) {
+    catch (std::exception& e)
+    {
         strPrint = string("error: ") + e.what();
         nRet = 87;
     }
-    catch (...) {
+    catch (...)
+    {
         PrintException(NULL, "CommandLineRPC()");
     }
 
@@ -277,5 +290,6 @@ int CommandLineRPC(int argc, char *argv[])
     {
         fprintf((nRet == 0 ? stdout : stderr), "%s\n", strPrint.c_str());
     }
+
     return nRet;
 }
