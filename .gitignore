@@ -9,3 +9,4 @@ swipp-qt*
 src/swippd
 src/test/tests
 qrc_*.cpp
+keys
