@@ -1,8 +1,10 @@
 // Copyright (c) 2012 Pieter Wuille
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef _BITCOIN_ADDRMAN
-#define _BITCOIN_ADDRMAN 1
+#define _BITCOIN_ADDRMAN
 
 #include "netbase.h"
 #include "protocol.h"
@@ -12,34 +14,19 @@
 
 #include <map>
 #include <vector>
-
 #include <openssl/rand.h>
 
-
-/** Extended statistics about a CAddress */
+// Extended statistics about a CAddress
 class CAddrInfo : public CAddress
 {
 private:
-    // where knowledge about this address first came from
-    CNetAddr source;
-
-    // last successful connection by us
-    int64_t nLastSuccess;
-
-    // last try whatsoever by us:
+    CNetAddr source;              // Where knowledge about this address first came from
+    int64_t nLastSuccess;         // Last successful connection by us
     // int64_t CAddress::nLastTry
-
-    // connection attempts since last successful attempt
-    int nAttempts;
-
-    // reference count in new sets (memory only)
-    int nRefCount;
-
-    // in tried set? (memory only)
-    bool fInTried;
-
-    // position in vRandom
-    int nRandomPos;
+    int nAttempts;                // Connection attempts since last successful attempt
+    int nRefCount;                // Reference count in new sets (memory only)
+    bool fInTried;                // In tried set? (memory only)
+    int nRandomPos;               // Position in vRandom
 
     friend class CAddrMan;
 
@@ -119,80 +106,40 @@ public:
 //    * Several indexes are kept for high performance. Defining DEBUG_ADDRMAN will introduce frequent (and expensive)
 //      consistency checks for the entire data structure.
 
-// total number of buckets for tried addresses
-#define ADDRMAN_TRIED_BUCKET_COUNT 64
-
-// maximum allowed number of entries in buckets for tried addresses
-#define ADDRMAN_TRIED_BUCKET_SIZE 64
-
-// total number of buckets for new addresses
-#define ADDRMAN_NEW_BUCKET_COUNT 256
-
-// maximum allowed number of entries in buckets for new addresses
-#define ADDRMAN_NEW_BUCKET_SIZE 64
-
-// over how many buckets entries with tried addresses from a single group (/16 for IPv4) are spread
+#define ADDRMAN_TRIED_BUCKET_COUNT 64            // Total number of buckets for tried addresses
+#define ADDRMAN_TRIED_BUCKET_SIZE 64             // Maximum allowed number of entries in buckets for tried addresses
+#define ADDRMAN_NEW_BUCKET_COUNT 256             // Total number of buckets for new addresses
+#define ADDRMAN_NEW_BUCKET_SIZE 64               // Maximum allowed number of entries in buckets for new addresses
 #define ADDRMAN_TRIED_BUCKETS_PER_GROUP 4
-
-// over how many buckets entries with new addresses originating from a single group are spread
 #define ADDRMAN_NEW_BUCKETS_PER_SOURCE_GROUP 32
-
-// in how many buckets for entries with new addresses a single address may occur
 #define ADDRMAN_NEW_BUCKETS_PER_ADDRESS 4
-
-// how many entries in a bucket with tried addresses are inspected, when selecting one to replace
 #define ADDRMAN_TRIED_ENTRIES_INSPECT_ON_EVICT 4
+#define ADDRMAN_HORIZON_DAYS 30                  // How old addresses can maximally be
+#define ADDRMAN_RETRIES 3                        // After how many failed attempts we give up on a new node
+#define ADDRMAN_MAX_FAILURES 10                  // How many successive failures are allowed
+#define ADDRMAN_MIN_FAIL_DAYS 7                  // ... in at least this many days
+#define ADDRMAN_GETADDR_MAX_PCT 23               // The maximum percentage of nodes to return in a getaddr call
+#define ADDRMAN_GETADDR_MAX 2500                 // The maximum number of nodes to return in a getaddr call
 
-// how old addresses can maximally be
-#define ADDRMAN_HORIZON_DAYS 30
-
-// after how many failed attempts we give up on a new node
-#define ADDRMAN_RETRIES 3
-
-// how many successive failures are allowed ...
-#define ADDRMAN_MAX_FAILURES 10
-
-// ... in at least this many days
-#define ADDRMAN_MIN_FAIL_DAYS 7
-
-// the maximum percentage of nodes to return in a getaddr call
-#define ADDRMAN_GETADDR_MAX_PCT 23
-
-// the maximum number of nodes to return in a getaddr call
-#define ADDRMAN_GETADDR_MAX 2500
-
-/** Stochastical (IP) address manager */
+// Stochastical (IP) address manager
 class CAddrMan
 {
 private:
-    // critical section to protect the inner data structures
     mutable CCriticalSection cs;
+    std::vector<unsigned char> nKey;  // Secret key to randomize bucket select with
+    int nIdCount;                     // Last used nId
+    std::map<int, CAddrInfo> mapInfo; // Table with information about all nIds
+    std::map<CNetAddr, int> mapAddr;  // Find an nId based on its network address
+    std::vector<int> vRandom;         // Randomly-ordered vector of all nIds
+    int nTried;                       // Number of "tried" entries
 
-    // secret key to randomize bucket select with
-    std::vector<unsigned char> nKey;
-
-    // last used nId
-    int nIdCount;
-
-    // table with information about all nIds
-    std::map<int, CAddrInfo> mapInfo;
-
-    // find an nId based on its network address
-    std::map<CNetAddr, int> mapAddr;
-
-    // randomly-ordered vector of all nIds
-    std::vector<int> vRandom;
-
-    // number of "tried" entries
-    int nTried;
-
-    // list of "tried" buckets
+    // List of "tried" buckets
     std::vector<std::vector<int> > vvTried;
 
-    // number of (unique) "new" entries
+    // Number of (unique) "new" entries
     int nNew;
 
-    // list of "new" buckets
+    // List of "new" buckets
     std::vector<std::set<int> > vvNew;
 
 protected:
@@ -200,7 +147,7 @@ protected:
     // Find an entry.
     CAddrInfo* Find(const CNetAddr& addr, int *pnId = NULL);
 
-    // find an entry, creating it if necessary.
+    // Find an entry, creating it if necessary.
     // nTime and nServices of found node is updated, if necessary.
     CAddrInfo* Create(const CAddress &addr, const CNetAddr &addrSource, int *pnId = NULL);
 
@@ -244,7 +191,7 @@ protected:
     void Connected_(const CService &addr, int64_t nTime);
 
 public:
-    // serialized format:
+    // Serialized format:
     // * version byte (currently 0)
     // * nKey
     // * nNew
@@ -267,12 +214,11 @@ public:
     //
     // We don't use IMPLEMENT_SERIALIZE since the serialization and deserialization code has
     // very little in common.
-    template<typename Stream>
-    void Serialize(Stream &s, int nType, int nVersionDummy) const
+    template<typename Stream> void Serialize(Stream &s, int nType, int nVersionDummy) const
     {
         LOCK(cs);
-
         unsigned char nVersion = 0;
+
         s << nVersion;
         s << nKey;
         s << nNew;
@@ -280,43 +226,61 @@ public:
 
         int nUBuckets = ADDRMAN_NEW_BUCKET_COUNT;
         s << nUBuckets;
+
         std::map<int, int> mapUnkIds;
         int nIds = 0;
-        for (std::map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end(); it++) {
-            if (nIds == nNew) break; // this means nNew was wrong, oh ow
+
+        for (std::map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end(); it++)
+        {
+            if (nIds == nNew)
+                break;
+
             mapUnkIds[(*it).first] = nIds;
             const CAddrInfo &info = (*it).second;
-            if (info.nRefCount) {
+
+            if (info.nRefCount)
+            {
                 s << info;
                 nIds++;
             }
         }
+
         nIds = 0;
-        for (std::map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end(); it++) {
-            if (nIds == nTried) break; // this means nTried was wrong, oh ow
+
+        for (std::map<int, CAddrInfo>::const_iterator it = mapInfo.begin(); it != mapInfo.end(); it++)
+        {
+            if (nIds == nTried)
+                break;
+
             const CAddrInfo &info = (*it).second;
-            if (info.fInTried) {
+
+            if (info.fInTried)
+            {
                 s << info;
                 nIds++;
             }
         }
-        for (std::vector<std::set<int> >::const_iterator it = vvNew.begin(); it != vvNew.end(); it++) {
+
+        for (std::vector<std::set<int> >::const_iterator it = vvNew.begin(); it != vvNew.end(); it++)
+        {
             const std::set<int> &vNew = (*it);
             int nSize = vNew.size();
+
             s << nSize;
-            for (std::set<int>::const_iterator it2 = vNew.begin(); it2 != vNew.end(); it2++) {
+
+            for (std::set<int>::const_iterator it2 = vNew.begin(); it2 != vNew.end(); it2++)
+            {
                 int nIndex = mapUnkIds[*it2];
                 s << nIndex;
             }
         }
     }
 
-    template<typename Stream>
-    void Unserialize(Stream& s, int nType, int nVersionDummy)
+    template<typename Stream> void Unserialize(Stream& s, int nType, int nVersionDummy)
     {
         LOCK(cs);
-
         unsigned char nVersion;
+
         s >> nVersion;
         s >> nKey;
         s >> nNew;
@@ -324,30 +288,41 @@ public:
 
         int nUBuckets = 0;
         s >> nUBuckets;
+
         nIdCount = 0;
         mapInfo.clear();
         mapAddr.clear();
         vRandom.clear();
+
         vvTried = std::vector<std::vector<int> >(ADDRMAN_TRIED_BUCKET_COUNT, std::vector<int>(0));
         vvNew = std::vector<std::set<int> >(ADDRMAN_NEW_BUCKET_COUNT, std::set<int>());
-        for (int n = 0; n < nNew; n++) {
+
+        for (int n = 0; n < nNew; n++)
+        {
             CAddrInfo &info = mapInfo[n];
             s >> info;
             mapAddr[info] = n;
             info.nRandomPos = vRandom.size();
             vRandom.push_back(n);
-            if (nUBuckets != ADDRMAN_NEW_BUCKET_COUNT) {
+
+            if (nUBuckets != ADDRMAN_NEW_BUCKET_COUNT)
+            {
                 vvNew[info.GetNewBucket(nKey)].insert(n);
                 info.nRefCount++;
             }
         }
+
         nIdCount = nNew;
         int nLost = 0;
-        for (int n = 0; n < nTried; n++) {
+
+        for (int n = 0; n < nTried; n++)
+        {
             CAddrInfo info;
             s >> info;
             std::vector<int> &vTried = vvTried[info.GetTriedBucket(nKey)];
-            if (vTried.size() < ADDRMAN_TRIED_BUCKET_SIZE) {
+
+            if (vTried.size() < ADDRMAN_TRIED_BUCKET_SIZE)
+            {
                 info.nRandomPos = vRandom.size();
                 info.fInTried = true;
                 vRandom.push_back(nIdCount);
@@ -355,20 +330,27 @@ public:
                 mapAddr[info] = nIdCount;
                 vTried.push_back(nIdCount);
                 nIdCount++;
-            } else {
-                nLost++;
             }
+            else
+                nLost++;
         }
+
         nTried -= nLost;
-        for (int b = 0; b < nUBuckets; b++) {
+
+        for (int b = 0; b < nUBuckets; b++)
+        {
             std::set<int> &vNew = vvNew[b];
             int nSize = 0;
             s >> nSize;
-            for (int n = 0; n < nSize; n++) {
+
+            for (int n = 0; n < nSize; n++)
+            {
                 int nIndex = 0;
                 s >> nIndex;
                 CAddrInfo &info = mapInfo[nIndex];
-                if (nUBuckets == ADDRMAN_NEW_BUCKET_COUNT && info.nRefCount < ADDRMAN_NEW_BUCKETS_PER_ADDRESS) {
+
+                if (nUBuckets == ADDRMAN_NEW_BUCKET_COUNT && info.nRefCount < ADDRMAN_NEW_BUCKETS_PER_ADDRESS)
+                {
                     info.nRefCount++;
                     vNew.insert(nIndex);
                 }
@@ -404,24 +386,30 @@ public:
         {
             LOCK(cs);
             int err;
+
             if ((err=Check_()))
                 LogPrintf("ADDRMAN CONSISTENCY CHECK FAILED!!! err=%i\n", err);
         }
 #endif
     }
 
-    // Add a single address.
+    // Add a single address
     bool Add(const CAddress &addr, const CNetAddr& source, int64_t nTimePenalty = 0)
     {
         bool fRet = false;
+
         {
             LOCK(cs);
             Check();
+
             fRet |= Add_(addr, source, nTimePenalty);
+
             Check();
         }
+
         if (fRet)
             LogPrint("addrman", "Added %s from %s: %i tried, %i new\n", addr.ToStringIPPort(), source.ToString(), nTried, nNew);
+
         return fRet;
     }
 
@@ -429,15 +417,20 @@ public:
     bool Add(const std::vector<CAddress> &vAddr, const CNetAddr& source, int64_t nTimePenalty = 0)
     {
         int nAdd = 0;
+
         {
             LOCK(cs);
             Check();
+
             for (std::vector<CAddress>::const_iterator it = vAddr.begin(); it != vAddr.end(); it++)
                 nAdd += Add_(*it, source, nTimePenalty) ? 1 : 0;
+
             Check();
         }
+
         if (nAdd)
             LogPrint("addrman", "Added %i addresses from %s: %i tried, %i new\n", nAdd, source.ToString(), nTried, nNew);
+
         return nAdd > 0;
     }
 
@@ -447,7 +440,9 @@ public:
         {
             LOCK(cs);
             Check();
+
             Good_(addr, nTime);
+
             Check();
         }
     }
@@ -458,7 +453,9 @@ public:
         {
             LOCK(cs);
             Check();
+
             Attempt_(addr, nTime);
+
             Check();
         }
     }
@@ -471,9 +468,12 @@ public:
         {
             LOCK(cs);
             Check();
+
             addrRet = Select_(nUnkBias);
+
             Check();
         }
+
         return addrRet;
     }
 
@@ -482,10 +482,12 @@ public:
     {
         Check();
         std::vector<CAddress> vAddr;
+
         {
             LOCK(cs);
             GetAddr_(vAddr);
         }
+
         Check();
         return vAddr;
     }
@@ -496,7 +498,9 @@ public:
         {
             LOCK(cs);
             Check();
+
             Connected_(addr, nTime);
+
             Check();
         }
     }
