@@ -55,10 +55,11 @@ public:
         pchMessageStart[2] = 0xc5;
         pchMessageStart[3] = 0x54;
 
-        vAlertPubKey = ParseHex("");
+        bnProofOfWorkLimit = CBigNum(~uint256(0) >> 20);
+        vAlertPubKey = ParseHex("048b05ed906551eaeaa184d109e1509e4f4193e95e85cd8c3a21f65cc00a"
+                                "2b473ce5df498164f0e8f9ba6502d302db4bdff167d146df7ad6112128e67640ce96a5");
         nDefaultPort = 24055;
         nRPCPort = 35075;
-        bnProofOfWorkLimit = CBigNum(~uint256(0) >> 20);
 
         // Build the genesis block. Note that the output of the genesis coinbase cannot
         // be spent as it did not originally exist in the database.
@@ -125,7 +126,8 @@ public:
         pchMessageStart[3] = 0x21;
 
         bnProofOfWorkLimit = CBigNum(~uint256(0) >> 16);
-        vAlertPubKey = ParseHex("");
+        vAlertPubKey = ParseHex("04ef763402f735d3da325e884fa011074f621f3cdaa8f7281b2d4449a6d5"
+                                "ecfc4728347688eb33784e1cc09d950f107fce7b218c970b80db2b8f072f6f8f532296");
         nDefaultPort = 18065;
         nRPCPort = 15075;
         strDataDir = "testnet";
