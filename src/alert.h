@@ -1,5 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -14,24 +15,20 @@
 class CNode;
 class uint256;
 
-/** Alerts are for notifying old versions if they become too obsolete and
- * need to upgrade.  The message is displayed in the status bar.
- * Alert messages are broadcast as a vector of signed data.  Unserializing may
- * not read the entire buffer if the alert is for a newer version, but older
- * versions can still relay the original data.
- */
+// Alerts are for notifying old versions if they become too obsolete and
+// need to upgrade. The message is displayed in the status bar
 class CUnsignedAlert
 {
 public:
     int nVersion;
-    int64_t nRelayUntil;      // when newer nodes stop relaying to newer nodes
+    int64_t nRelayUntil; // When newer nodes stop relaying to newer nodes
     int64_t nExpiration;
     int nID;
     int nCancel;
     std::set<int> setCancel;
-    int nMinVer;            // lowest version inclusive
-    int nMaxVer;            // highest version inclusive
-    std::set<std::string> setSubVer;  // empty matches all
+    int nMinVer; // Lowest version inclusive
+    int nMaxVer; // Highest version inclusive
+    std::set<std::string> setSubVer; // Empty matches all
     int nPriority;
 
     // Actions
@@ -59,11 +56,10 @@ public:
     )
 
     void SetNull();
-
     std::string ToString() const;
 };
 
-/** An alert is a combination of a serialized CUnsignedAlert and a signature. */
+// An alert is a combination of a serialized CUnsignedAlert and a signature
 class CAlert : public CUnsignedAlert
 {
 public:
@@ -92,9 +88,7 @@ public:
     bool CheckSignature() const;
     bool ProcessAlert(bool fThread = true);
 
-    /*
-     * Get copy of (active) alert object by hash. Returns a null alert if it is not found.
-     */
+    // Get copy of (active) alert object by hash. Returns a null alert if it is not found
     static CAlert getAlertByHash(const uint256 &hash);
 };
 
