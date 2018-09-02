@@ -222,10 +222,10 @@ private:
 public:
     CMasternodePayments()
     {
-        strMainPubKey = "04760f1bfc2b50a9eb1c6f8ecd3adfd5aa7f674eee729719808a48dc1f44f8c3"
-                        "efe81e90293b79ca9905373a9e63194a4054307d463864ca9336a16204c605e4a7";
-        strTestPubKey = "04760f1bfc2b50a9eb1c6f8ecd3adfd5aa7f674eee729719808a48dc1f44f8c3"
-                        "efe81e90293b79ca9905373a9e63194a4054307d463864ca9336a16204c605e4a7";
+        strMainPubKey = "04834fbd30d792fdd63bc1218ae453516f72a389213a7a49922444a587e2"
+                        "56769d84cc1d56009e06e41c249a95e98fef266849b0870a0b15d4e6f6a632d1486e4d";
+        strTestPubKey = "048eed7c822a13674f9afcc4b46f6324e5066b3bde242225f7c532243def"
+                        "cd0c42afaa37cf61d7c0d214da840fd24a446dcddd07d6ec88e0c9af23ed3274ad3a46";
         enabled = false;
     }
 
