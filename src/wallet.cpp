@@ -3781,6 +3781,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 vwtxPrev.push_back(pcoin.first);
                 txNew.vout.push_back(CTxOut(0, scriptPubKeyOut));
 
+                //TODO: This just splits all collections above 100 Swipp. Should this perhaps be smarter ?
                 if(nCredit > 100 * COIN)
                     txNew.vout.push_back(CTxOut(0, scriptPubKeyOut)); // Split stake
 
@@ -4918,9 +4919,6 @@ bool CWallet::GetTransaction(const uint256 &hashTx, CWalletTx& wtx)
 
 int CMerkleTx::GetTransactionLockSignatures() const
 {
-    if(!IsSporkActive(SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT))
-        return -3;
-
     if(nInstantXDepth == 0)
         return -1;
 
