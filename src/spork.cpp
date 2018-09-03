@@ -91,10 +91,13 @@ bool IsSporkActive(int nSporkID)
         r = mapSporksActive[nSporkID].nValue;
     else
     {
-        if(nSporkID == SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT) r = SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
-        if(nSporkID == SPORK_2_MAX_VALUE) r = SPORK_2_MAX_VALUE_DEFAULT;
-        if(nSporkID == SPORK_3_REPLAY_BLOCKS) r = SPORK_3_REPLAY_BLOCKS_DEFAULT;
-        if(r == 0 && fDebug) LogPrintf("GetSpork::Unknown Spork %d\n", nSporkID);
+        if(nSporkID == SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT)
+            r = SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
+        if(nSporkID == SPORK_2_MAX_INSTANTX_VALUE)
+            r = SPORK_2_MAX_INSTANTX_VALUE_DEFAULT;
+
+        if(r == 0 && fDebug)
+            LogPrintf("GetSpork::Unknown Spork %d\n", nSporkID);
     }
 
     if(r == 0)
@@ -112,10 +115,13 @@ int GetSporkValue(int nSporkID)
         r = mapSporksActive[nSporkID].nValue;
     else
     {
-        if(nSporkID == SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT) r = SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
-        if(nSporkID == SPORK_2_MAX_VALUE) r = SPORK_2_MAX_VALUE_DEFAULT;
-        if(nSporkID == SPORK_3_REPLAY_BLOCKS) r = SPORK_3_REPLAY_BLOCKS_DEFAULT;
-        if(r == 0 && fDebug) LogPrintf("GetSpork::Unknown Spork %d\n", nSporkID);
+        if(nSporkID == SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT)
+            r = SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
+        if(nSporkID == SPORK_2_MAX_INSTANTX_VALUE)
+            r = SPORK_2_MAX_INSTANTX_VALUE_DEFAULT;
+
+        if(r == 0 && fDebug)
+            LogPrintf("GetSpork::Unknown Spork %d\n", nSporkID);
     }
 
     return r;
@@ -123,12 +129,6 @@ int GetSporkValue(int nSporkID)
 
 void ExecuteSpork(int nSporkID, int nValue)
 {
-    // Replay and process blocks (to sync to the longest chain after disabling sporks)
-    /*
-    if(nSporkID == SPORK_3_REPLAY_BLOCKS){
-       DisconnectBlocksAndReprocess(nValue);
-    }
-    */
 }
 
 
@@ -232,10 +232,8 @@ int CSporkManager::GetSporkIDByName(std::string strName)
 {
     if(strName == "SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT")
         return SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT;
-    else if(strName == "SPORK_2_MAX_VALUE")
-        return SPORK_2_MAX_VALUE;
-    else if(strName == "SPORK_3_REPLAY_BLOCKS")
-        return SPORK_3_REPLAY_BLOCKS;
+    else if(strName == "SPORK_2_MAX_INSTANTX_VALUE")
+        return SPORK_2_MAX_INSTANTX_VALUE;
 
     return -1;
 }
@@ -244,10 +242,8 @@ std::string CSporkManager::GetSporkNameByID(int id)
 {
     if(id == SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT)
         return "SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT";
-    else if(id == SPORK_2_MAX_VALUE)
-        return "SPORK_2_MAX_VALUE";
-    else if(id == SPORK_3_REPLAY_BLOCKS)
-        return "SPORK_3_REPLAY_BLOCKS";
+    else if(id == SPORK_2_MAX_INSTANTX_VALUE)
+        return "SPORK_2_MAX_INSTANTX_VALUE";
 
     return "Unknown";
 }
