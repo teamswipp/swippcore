@@ -324,6 +324,16 @@ std::string HelpMessage()
     strUsage += "  -nosmsg         " + _("Disable secure messaging.") + "\n";
     strUsage += "  -debugsmsg      " + _("Log extra debug messages.") + "\n";
     strUsage += "  -smsgscanchain  " + _("Scan the block chain for public key addresses on startup.") + "\n";
+
+    strUsage += "\n" + _("Network control options:") + "\n";
+    strUsage += "  --masternodepaymentskey=<n>  " + _("Set the private control key for the masternode payments master.") + "\n";
+    strUsage += "  --sporkkey=<n>               " + _("Set the private control key for the spork manager.") + "\n";
+    strUsage += "                               " + _("For the test network, the default private WIF keys are;") + "\n";
+    strUsage += "                               " + _("[Masternode payments master] ") +
+                                                      "92kyYbFWnSaCCaMXo8bcbHM2ooCaNZpJbjRUsQS9XDFLX4Ka4AJ\n";
+    strUsage += "                               " + _("[Sporks] ") + "92cgFu5pK9rwiu9FwFucy2fk3PeCjGQn1i6egB5A5A7vRyXR6j2\n";
+    strUsage += "                               " + _("For the public network, the private keys are controlled by the "
+                                                      "Swipp team.") + "\n";
     return strUsage;
 }
 
@@ -579,12 +589,15 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     std::ostringstream strErrors;
 
-    if (mapArgs.count("-masternodepaymentskey")) // masternode payments priv key
+    if (mapArgs.count("-masternodepaymentskey"))
     {
         if (!masternodePayments.SetPrivKey(GetArg("-masternodepaymentskey", "")))
             return InitError(_("Unable to sign masternode payment winner, wrong key?"));
+    }
 
-        if (!sporkManager.SetPrivKey(GetArg("-masternodepaymentskey", "")))
+    if (mapArgs.count("-sporkkey"))
+    {
+        if (!sporkManager.SetPrivKey(GetArg("-sporkkey", "")))
             return InitError(_("Unable to sign spork message, wrong key?"));
     }
 
