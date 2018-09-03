@@ -283,10 +283,10 @@ std::string HelpMessage()
                                                           DEFAULT_MAX_ORPHAN_BLOCKS) + "\n";
 
     strUsage += "\n" + _("Block creation options:") + "\n";
-    strUsage += "  -blockminsize=<n>      "   + _("Set minimum block size in bytes (default: 0)") + "\n";
-    strUsage += "  -blockmaxsize=<n>      "   + _("Set maximum block size in bytes (default: 250000)") + "\n";
-    strUsage += "  -blockprioritysize=<n> "   + _("Set maximum size of high-priority/low-fee transactions in bytes "
-                                                  "(default: 27000)") + "\n";
+    strUsage += "  -blockminsize=<n>       "   + _("Set minimum block size in bytes (default: 0)") + "\n";
+    strUsage += "  -blockmaxsize=<n>       "   + _("Set maximum block size in bytes (default: 250000)") + "\n";
+    strUsage += "  -blockprioritysize=<n>  "   + _("Set maximum size of high-priority/low-fee transactions in bytes "
+                                                   "(default: 27000)") + "\n";
 
     strUsage += "\n" + _("SSL options: (see the Bitcoin Wiki for SSL setup instructions)") + "\n";
     strUsage += "  -rpcssl                                  " + _("Use OpenSSL (https) for JSON-RPC connections") + "\n";
@@ -296,35 +296,34 @@ std::string HelpMessage()
                                                                   "+HIGH:TLSv1+HIGH:!SSLv2:!aNULL:!eNULL:!3DES:@STRENGTH)") + "\n";
 
     strUsage += "\n" + _("Masternode options:") + "\n";
-    strUsage += "  -masternode=<n>        " + _("Enable the client to act as a masternode (0-1, default: 0)") + "\n";
-    strUsage += "  -mnconf=<file>         " + _("Specify masternode configuration file (default: masternode.conf)") + "\n";
-    strUsage += "  -masternodeprivkey=<n> " + _("Set the masternode private key") + "\n";
-    strUsage += "  -masternodeaddr=<n>    " + _("Set external address:port to get to this masternode "
-                                                "(example: address:port)") + "\n";
+    strUsage += "  -masternode=<n>         " + _("Enable the client to act as a masternode (0-1, default: 0)") + "\n";
+    strUsage += "  -mnconf=<file>          " + _("Specify masternode configuration file (default: masternode.conf)") + "\n";
+    strUsage += "  -masternodeprivkey=<n>  " + _("Set the masternode private key") + "\n";
+    strUsage += "  -masternodeaddr=<n>     " + _("Set external address:port to get to this masternode "
+                                                 "(example: address:port)") + "\n";
 
     strUsage += "\n" + _("Darksend options:") + "\n";
-    strUsage += "  -enabledarksend=<n>       " + _("Enable use of automated darksend for funds stored in this wallet "
-                                                   "(0-1, default: 0)") + "\n";
-    strUsage += "  -darksendrounds=<n>       " + _("Use N separate masternodes to anonymize funds  (2-8, default: 2)") + "\n";
-    strUsage += "  -anonymizeSwippamount=<n> " + _("Keep N Swipp anonymized (default: 0)") + "\n";
-    strUsage += "  -liquidityprovider=<n>    " + _("Provide liquidity to Darksend by infrequently mixing coins on a "
-                                                   "continual basis\n                            "
-                                                   "(0-100, default: 0, 1=very frequent, high fees, "
-                                                   "100=very infrequent, low fees)") + "\n";
-    strUsage += "  -litemode=<n>             " + _("Disable all Masternode and Darksend related functionality "
-                                                   "(0-1, default: 0)") + "\n";
+    strUsage += "  -enabledarksend=<n>        " + _("Enable use of automated darksend for funds stored in this wallet "
+                                                    "(0-1, default: 0)") + "\n";
+    strUsage += "  -darksendrounds=<n>        " + _("Use N separate masternodes to anonymize funds  (2-8, default: 2)") + "\n";
+    strUsage += "  -anonymizeSwippamount=<n>  " + _("Keep N Swipp anonymized (default: 0)") + "\n";
+    strUsage += "  -liquidityprovider=<n>     " + _("Provide liquidity to Darksend by infrequently mixing coins on a "
+                                                    "continual basis\n                             "
+                                                    "(0-100, default: 0, 1=very frequent, high fees, "
+                                                    "100=very infrequent, low fees)") + "\n";
+    strUsage += "  -litemode=<n>              " + _("Disable all Masternode and Darksend related functionality "
+                                                    "(0-1, default: 0)") + "\n";
 
     strUsage += "\n" + _("InstantX options:") + "\n";
-    strUsage += "  -enableinstantx=<n> " + _("Enable instantx, show confirmations for locked transactions "
-                                             "(bool, default: true)") + "\n";
-    strUsage += "  -instantxdepth=<n>  " + _("Show N confirmations for a successfully locked transaction "
-                                             "(0-9999, default: 1)") + "\n";
+    strUsage += "  -enableinstantx=<n>  " + _("Enable instantx, show confirmations for locked transactions "
+                                              "(bool, default: true)") + "\n";
+    strUsage += "  -instantxdepth=<n>   " + _("Show N confirmations for a successfully locked transaction "
+                                              "(0-9999, default: 1)") + "\n";
 
     strUsage += "\n" + _("Secure messaging options:") + "\n";
-    strUsage += "  -nosmsg        " + _("Disable secure messaging.") + "\n";
-    strUsage += "  -debugsmsg     " + _("Log extra debug messages.") + "\n";
-    strUsage += "  -smsgscanchain " + _("Scan the block chain for public key addresses on startup.") + "\n";
-
+    strUsage += "  -nosmsg         " + _("Disable secure messaging.") + "\n";
+    strUsage += "  -debugsmsg      " + _("Log extra debug messages.") + "\n";
+    strUsage += "  -smsgscanchain  " + _("Scan the block chain for public key addresses on startup.") + "\n";
     return strUsage;
 }
 
