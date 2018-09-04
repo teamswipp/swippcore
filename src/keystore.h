@@ -1,7 +1,9 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef BITCOIN_KEYSTORE_H
 #define BITCOIN_KEYSTORE_H
 
@@ -10,10 +12,8 @@
 #include <boost/signals2/signal.hpp>
 #include "script.h"
 
-
 class CScript;
 
-/** A virtual base class for key stores */
 class CKeyStore
 {
 protected:
@@ -21,8 +21,6 @@ protected:
 
 public:
     virtual ~CKeyStore() {}
-
-    // Add a key to the store.
     virtual bool AddKeyPubKey(const CKey &key, const CPubKey &pubkey) =0;
     virtual bool AddKey(const CKey &key);
 
@@ -41,7 +39,7 @@ public:
 typedef std::map<CKeyID, CKey> KeyMap;
 typedef std::map<CScriptID, CScript > ScriptMap;
 
-/** Basic key store, that keeps keys in an address->secret map */
+// Basic key store that keeps keys in an address->secret map
 class CBasicKeyStore : public CKeyStore
 {
 protected:
@@ -50,6 +48,7 @@ protected:
 
 public:
     bool AddKeyPubKey(const CKey& key, const CPubKey &pubkey);
+
     bool HaveKey(const CKeyID &address) const
     {
         bool result;
@@ -57,14 +56,17 @@ public:
             LOCK(cs_KeyStore);
             result = (mapKeys.count(address) > 0);
         }
+
         return result;
     }
+
     void GetKeys(std::set<CKeyID> &setAddress) const
     {
         setAddress.clear();
         {
             LOCK(cs_KeyStore);
             KeyMap::const_iterator mi = mapKeys.begin();
+
             while (mi != mapKeys.end())
             {
                 setAddress.insert((*mi).first);
@@ -72,26 +74,28 @@ public:
             }
         }
     }
+
     bool GetKey(const CKeyID &address, CKey &keyOut) const
     {
         {
             LOCK(cs_KeyStore);
             KeyMap::const_iterator mi = mapKeys.find(address);
+
             if (mi != mapKeys.end())
             {
                 keyOut = mi->second;
                 return true;
             }
         }
+
         return false;
     }
+
     virtual bool AddCScript(const CScript& redeemScript);
     virtual bool HaveCScript(const CScriptID &hash) const;
     virtual bool GetCScript(const CScriptID &hash, CScript& redeemScriptOut) const;
 };
 
 typedef std::map<CKeyID, std::pair<CPubKey, std::vector<unsigned char> > > CryptedKeyMap;
-
-
 
 #endif

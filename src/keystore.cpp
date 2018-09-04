@@ -1,22 +1,25 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "keystore.h"
 #include "script.h"
 
-
 bool CKeyStore::GetPubKey(const CKeyID &address, CPubKey &vchPubKeyOut) const
 {
     CKey key;
+
     if (!GetKey(address, key))
         return false;
+
     vchPubKeyOut = key.GetPubKey();
     return true;
 }
 
-bool CKeyStore::AddKey(const CKey &key) {
+bool CKeyStore::AddKey(const CKey &key)
+{
     return AddKeyPubKey(key, key.GetPubKey());
 }
 
@@ -47,11 +50,13 @@ bool CBasicKeyStore::GetCScript(const CScriptID &hash, CScript& redeemScriptOut)
 {
     LOCK(cs_KeyStore);
     ScriptMap::const_iterator mi = mapScripts.find(hash);
+
     if (mi != mapScripts.end())
     {
         redeemScriptOut = (*mi).second;
         return true;
     }
+
     return false;
 }
 
