@@ -25,11 +25,7 @@ class CValidationState;
 static const int64_t DARKSEND_COLLATERAL = (30000*COIN);
 static const int64_t DARKSEND_FEE = (0.002*COIN);
 static const int64_t DARKSEND_POOL_MAX = (9999999.99*COIN);
-/*
-    At 15 signatures, 1/2 of the masternode network can be owned by
-    one party without comprimising the security of InstantX
-    (1000/2150.0)**15 = 1.031e-05
-*/
+
 #define INSTANTX_SIGNATURES_REQUIRED           20
 #define INSTANTX_SIGNATURES_TOTAL              30
 
@@ -221,15 +217,25 @@ public:
         nTxPos = nTxPosIn;
     }
 
-    IMPLEMENT_SERIALIZE( READWRITE(FLATDATA(*this)); )
-    void SetNull() { nFile = (unsigned int) -1; nBlockPos = 0; nTxPos = 0; }
-    bool IsNull() const { return (nFile == (unsigned int) -1); }
+    IMPLEMENT_SERIALIZE(
+        READWRITE(FLATDATA(*this));
+    )
+
+    void SetNull()
+    {
+        nFile = (unsigned int) -1;
+        nBlockPos = 0;
+        nTxPos = 0;
+    }
+
+    bool IsNull() const
+    {
+        return nFile == (unsigned int) -1;
+    }
 
     friend bool operator==(const CDiskTxPos& a, const CDiskTxPos& b)
     {
-        return (a.nFile     == b.nFile &&
-                a.nBlockPos == b.nBlockPos &&
-                a.nTxPos    == b.nTxPos);
+        return (a.nFile == b.nFile && a.nBlockPos == b.nBlockPos && a.nTxPos == b.nTxPos);
     }
 
     friend bool operator!=(const CDiskTxPos& a, const CDiskTxPos& b)
@@ -693,12 +699,12 @@ public:
 
     uint256 GetPoWHash() const
     {
-        return Hash9(BEGIN(nVersion), END(nNonce)); // X... algo series
+        return Hash9(BEGIN(nVersion), END(nNonce));
     }
 
     int64_t GetBlockTime() const
     {
-        return (int64_t)nTime;
+        return (int64_t) nTime;
     }
 
     void UpdateTime(const CBlockIndex* pindexPrev);
@@ -1299,32 +1305,37 @@ public:
         BOOST_FOREACH(const uint256& hash, vHave)
         {
             std::map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hash);
+
             if (mi != mapBlockIndex.end())
             {
                 CBlockIndex* pindex = (*mi).second;
+
                 if (pindex->IsInMainChain())
                     return hash;
             }
         }
+
         return Params().HashGenesisBlock();
     }
 
     int GetHeight()
     {
         CBlockIndex* pindex = GetBlockIndex();
+
         if (!pindex)
             return 0;
+
         return pindex->nHeight;
     }
 };
 
-/** Capture information about block/transaction validation */
+// Capture information about block/transaction validation
 class CValidationState {
 private:
     enum mode_state {
-        MODE_VALID,   //! everything ok
-        MODE_INVALID, //! network rule violation (DoS value may be set)
-        MODE_ERROR,   //! run-time error
+        MODE_VALID,   // Everything ok
+        MODE_INVALID, // Network rule violation (DoS value may be set)
+        MODE_ERROR,   // Run-time error
     } mode;
 
     int nDoS;
@@ -1333,7 +1344,8 @@ private:
     bool corruptionPossible;
 
 public:
-    CValidationState() : mode(MODE_VALID), nDoS(0), chRejectCode(0), corruptionPossible(false) {}
+    CValidationState() : mode(MODE_VALID), nDoS(0), chRejectCode(0), corruptionPossible(false) { }
+
     bool DoS(int level, bool ret = false, unsigned char chRejectCodeIn=0, std::string strRejectReasonIn="",
              bool corruptionIn=false)
     {
