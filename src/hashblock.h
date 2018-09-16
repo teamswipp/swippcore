@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef HASHBLOCK_H
 #define HASHBLOCK_H
 
@@ -50,7 +54,6 @@ GLOBAL sph_echo512_context      z_echo;
     sph_echo512_init(&z_echo); \
 } while (0) 
 
-
 #define ZBLAKE (memcpy(&ctx_blake, &z_blake, sizeof(z_blake)))
 #define ZBMW (memcpy(&ctx_bmw, &z_bmw, sizeof(z_bmw)))
 #define ZGROESTL (memcpy(&ctx_groestl, &z_groestl, sizeof(z_groestl)))
@@ -58,9 +61,7 @@ GLOBAL sph_echo512_context      z_echo;
 #define ZKECCAK (memcpy(&ctx_keccak, &z_keccak, sizeof(z_keccak)))
 #define ZSKEIN (memcpy(&ctx_skein, &z_skein, sizeof(z_skein)))
 
-template<typename T1>
-inline uint256 Hash9(const T1 pbegin, const T1 pend)
-
+template<typename T1> inline uint256 Hash9(const T1 pbegin, const T1 pend)
 {
     sph_blake512_context     ctx_blake;
     sph_bmw512_context       ctx_bmw;
@@ -73,6 +74,7 @@ inline uint256 Hash9(const T1 pbegin, const T1 pend)
     sph_shavite512_context   ctx_shavite;
     sph_simd512_context      ctx_simd;
     sph_echo512_context      ctx_echo;
+
     static unsigned char pblank[1];
 
 #ifndef QT_NO_DEBUG
@@ -128,10 +130,5 @@ inline uint256 Hash9(const T1 pbegin, const T1 pend)
 
     return hash[10].trim256();
 }
-
-
-
-
-
 
 #endif // HASHBLOCK_H
