@@ -48,16 +48,20 @@ bool AppInit(int argc, char* argv[])
         if (mapArgs.count("-?") || mapArgs.count("--help"))
         {
             // First part of help message is specific to bitcoind / RPC client
-            std::string strUsage = _("Swipp version") + " " + FormatFullVersion() + "\n\n" +
-                _("Usage:") + "\n" +
-                  "  swippd [options]                     " + "\n" +
-                  "  swippd [options] <command> [params]  " + _("Send command to -server or swippd") + "\n" +
-                  "  swippd [options] help                " + _("List commands") + "\n" +
-                  "  swippd [options] help <command>      " + _("Get help for a command") + "\n";
+            std::string command = "swippd";
+            std::ostringstream help;
 
-            strUsage += "\n" + HelpMessage();
-            fprintf(stdout, "%s", strUsage.c_str());
+            if (argc > 0)
+                command = argv[0];
 
+            help << _("Swipp version") << " " << FormatFullVersion() << "\n\n" << _("Usage:") << "\n";
+            help << "  " << command << " [options]                     " << "\n";
+            help << "  " << command << " [options] <command> [params]  " << _("Send command to -server or daemon") << "\n";
+            help << "  " << command << " [options] help                " << _("List commands") << "\n";
+            help << "  " << command << " [options] help <command>      " << _("Get help for a command") << "\n";
+            help << "\n" << HelpMessage();
+
+            fprintf(stdout, "%s", help.str().c_str());
             return false;
         }
 
