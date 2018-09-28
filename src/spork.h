@@ -20,12 +20,11 @@ using namespace std;
 using namespace boost;
 
 // Don't ever reuse these IDs for other sporks
-#define SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT               10000
-#define SPORK_2_MAX_INSTANTX_VALUE                            10002
+#define SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT          10000
+#define SPORK_MAX_INSTANTX_VALUE                       10002
 
-
-#define SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT       2428537599  // 2015-04-08 (23:59:59 GMT)
-#define SPORK_2_MAX_INSTANTX_VALUE_DEFAULT                    10000       // 10 000 Swipp
+#define SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT  1541030400 // 2018-11-01 (00:00:00 GMT)
+#define SPORK_MAX_INSTANTX_VALUE_DEFAULT               10000      // 10 000 Swipp
 
 class CSporkMessage;
 class CSporkManager;
@@ -49,9 +48,6 @@ void ProcessSpork(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
 int GetSporkValue(int nSporkID);
 bool IsSporkActive(int nSporkID);
 void ExecuteSpork(int nSporkID, int nValue);
-
-// Spork Class
-// Keeps track of all of the network spork settings
 
 class CSporkMessage
 {

@@ -91,10 +91,10 @@ bool IsSporkActive(int nSporkID)
         r = mapSporksActive[nSporkID].nValue;
     else
     {
-        if(nSporkID == SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT)
-            r = SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
-        if(nSporkID == SPORK_2_MAX_INSTANTX_VALUE)
-            r = SPORK_2_MAX_INSTANTX_VALUE_DEFAULT;
+        if(nSporkID == SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)
+            r = SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
+        if(nSporkID == SPORK_MAX_INSTANTX_VALUE)
+            r = SPORK_MAX_INSTANTX_VALUE_DEFAULT;
 
         if(r == 0 && fDebug)
             LogPrintf("GetSpork::Unknown Spork %d\n", nSporkID);
@@ -115,10 +115,10 @@ int GetSporkValue(int nSporkID)
         r = mapSporksActive[nSporkID].nValue;
     else
     {
-        if(nSporkID == SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT)
-            r = SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
-        if(nSporkID == SPORK_2_MAX_INSTANTX_VALUE)
-            r = SPORK_2_MAX_INSTANTX_VALUE_DEFAULT;
+        if(nSporkID == SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)
+            r = SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
+        if(nSporkID == SPORK_MAX_INSTANTX_VALUE)
+            r = SPORK_MAX_INSTANTX_VALUE_DEFAULT;
 
         if(r == 0 && fDebug)
             LogPrintf("GetSpork::Unknown Spork %d\n", nSporkID);
@@ -230,20 +230,20 @@ bool CSporkManager::SetPrivKey(std::string strPrivKey)
 
 int CSporkManager::GetSporkIDByName(std::string strName)
 {
-    if(strName == "SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT")
-        return SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT;
-    else if(strName == "SPORK_2_MAX_INSTANTX_VALUE")
-        return SPORK_2_MAX_INSTANTX_VALUE;
+    if(strName == "SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT")
+        return SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT;
+    else if(strName == "SPORK_MAX_INSTANTX_VALUE")
+        return SPORK_MAX_INSTANTX_VALUE;
 
     return -1;
 }
 
 std::string CSporkManager::GetSporkNameByID(int id)
 {
-    if(id == SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT)
-        return "SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT";
-    else if(id == SPORK_2_MAX_INSTANTX_VALUE)
-        return "SPORK_2_MAX_INSTANTX_VALUE";
+    if(id == SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)
+        return "SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT";
+    else if(id == SPORK_MAX_INSTANTX_VALUE)
+        return "SPORK_MAX_INSTANTX_VALUE";
 
     return "Unknown";
 }

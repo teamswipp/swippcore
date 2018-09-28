@@ -35,7 +35,7 @@ int nCompleteTXLocks;
 void ProcessMessageInstantX(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 {
     if(fLiteMode) return; //disable all darksend/masternode related functionality
-    if(!IsSporkActive(SPORK_1_MASTERNODE_PAYMENTS_ENFORCEMENT)) return;
+    if(!IsSporkActive(SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)) return;
 
     if (strCommand == "txlreq")
     {
@@ -195,7 +195,7 @@ bool IsIXTXValid(const CTransaction& txCollateral){
         }
     }
 
-    if(nValueOut > GetSporkValue(SPORK_2_MAX_INSTANTX_VALUE) * COIN){
+    if(nValueOut > GetSporkValue(SPORK_MAX_INSTANTX_VALUE) * COIN){
         if(fDebug) LogPrintf ("IsIXTXValid - Transaction value too high - %s\n", txCollateral.ToString().c_str());
         return false;
     }
