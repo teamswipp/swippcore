@@ -7,6 +7,7 @@
 #define SPORK_H
 
 #include "bignum.h"
+#include "darksend.h"
 #include "sync.h"
 #include "net.h"
 #include "key.h"
@@ -16,38 +17,32 @@
 #include "base58.h"
 #include "main.h"
 
-using namespace std;
+#include <boost/lexical_cast.hpp>
+
 using namespace boost;
 
-// Don't ever reuse these IDs for other sporks
-#define SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT          10000
-#define SPORK_MAX_INSTANTX_VALUE                       10002
-
-#define SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT  1541030400 // 2018-11-01 (00:00:00 GMT)
-#define SPORK_MAX_INSTANTX_VALUE_DEFAULT               10000      // 10 000 Swipp
+enum class Spork : int
+{
+    SPORK_UNDEFINED = -1,
+    SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT = 10000,
+    SPORK_MAX_INSTANTX_VALUE = 10002,
+    SPORK_MASTERNODE_ADAPTIVE_NETWORK = 10003
+};
 
 class CSporkMessage;
 class CSporkManager;
 
-#include "bignum.h"
-#include "net.h"
-#include "key.h"
-#include "util.h"
-#include "protocol.h"
-#include "darksend.h"
-#include <boost/lexical_cast.hpp>
-
-using namespace std;
-using namespace boost;
+extern std::map<Spork, int> DEFAULT_ACTIVE_TIME;
+extern std::map<Spork, int> DEFAULT_VALUES;
 
 extern std::map<uint256, CSporkMessage> mapSporks;
-extern std::map<int, CSporkMessage> mapSporksActive;
+extern std::map<Spork, CSporkMessage> mapSporksActive;
 extern CSporkManager sporkManager;
 
 void ProcessSpork(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
-int GetSporkValue(int nSporkID);
-bool IsSporkActive(int nSporkID);
-void ExecuteSpork(int nSporkID, int nValue);
+int GetSporkValue(Spork spork);
+bool IsSporkActive(Spork spork);
+void ExecuteSpork(Spork spork, int nValue);
 
 class CSporkMessage
 {
@@ -93,9 +88,9 @@ public:
                         "1a3693cddde4f2809203175f72589d2cea769d563b8552a0a92cc1fb4c31d7b0a770c3";
     }
 
-    std::string GetSporkNameByID(int id);
-    int GetSporkIDByName(std::string strName);
-    bool UpdateSpork(int nSporkID, int64_t nValue);
+    Spork GetSporkByName(std::string strName);
+    std::string GetNameBySpork(Spork spork);
+    bool UpdateSpork(Spork spork, int64_t nValue);
     bool SetPrivKey(std::string strPrivKey);
     bool CheckSignature(CSporkMessage& spork);
     bool Sign(CSporkMessage& spork);

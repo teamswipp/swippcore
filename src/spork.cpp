@@ -21,8 +21,19 @@ using namespace boost;
 class CSporkMessage;
 class CSporkManager;
 
+std::map<Spork, int> DEFAULT_ACTIVE_TIME =
+{
+    { Spork::SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT, 1541030400 }, // 2018-11-01 (00:00:00 GMT)
+    { Spork::SPORK_MASTERNODE_ADAPTIVE_NETWORK,     1577836800 }  // 2020-01-01 (00:00:00 GMT)
+};
+
+std::map<Spork, int> DEFAULT_VALUES =
+{
+    { Spork::SPORK_MAX_INSTANTX_VALUE, 10000 } // 10 000 Swipp
+};
+
 std::map<uint256, CSporkMessage> mapSporks;
-std::map<int, CSporkMessage> mapSporksActive;
+std::map<Spork, CSporkMessage> mapSporksActive;
 CSporkManager sporkManager;
 
 void ProcessSpork(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
@@ -42,9 +53,9 @@ void ProcessSpork(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 
         uint256 hash = spork.GetHash();
 
-        if (mapSporks.count(hash) && mapSporksActive.count(spork.nSporkID))
+        if (mapSporks.count(hash) && mapSporksActive.count(static_cast<Spork>(spork.nSporkID)))
         {
-            if (mapSporksActive[spork.nSporkID].nTimeSigned >= spork.nTimeSigned)
+            if (mapSporksActive[static_cast<Spork>(spork.nSporkID)].nTimeSigned >= spork.nTimeSigned)
             {
                 if (fDebug)
                     LogPrintf("spork - seen %s block %d \n", hash.ToString().c_str(), pindexBest->nHeight);
@@ -66,15 +77,15 @@ void ProcessSpork(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
         }
 
         mapSporks[hash] = spork;
-        mapSporksActive[spork.nSporkID] = spork;
+        mapSporksActive[static_cast<Spork>(spork.nSporkID)] = spork;
         sporkManager.Relay(spork);
 
         // Does a task if needed
-        ExecuteSpork(spork.nSporkID, spork.nValue);
+        ExecuteSpork(static_cast<Spork>(spork.nSporkID), spork.nValue);
     }
     if (strCommand == "getsporks")
     {
-        std::map<int, CSporkMessage>::iterator it = mapSporksActive.begin();
+        std::map<Spork, CSporkMessage>::iterator it = mapSporksActive.begin();
 
         while (it != mapSporksActive.end())
         {
@@ -85,52 +96,55 @@ void ProcessSpork(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 }
 
 // Grab the spork, otherwise say it's off
-bool IsSporkActive(int nSporkID)
+bool IsSporkActive(Spork spork)
 {
-    int64_t r = 0;
+    int64_t r = 4070908800; // 2099-1-1 by default
 
-    if (mapSporksActive.count(nSporkID))
-        r = mapSporksActive[nSporkID].nValue;
+    if (mapSporksActive.count(spork))
+        r = mapSporksActive[spork].nValue;
     else
     {
-        if (nSporkID == SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)
-            r = SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
-        if (nSporkID == SPORK_MAX_INSTANTX_VALUE)
-            r = SPORK_MAX_INSTANTX_VALUE_DEFAULT;
-
-        if (r == 0 && fDebug)
-            LogPrintf("GetSpork::Unknown Spork %d\n", nSporkID);
+        try
+        {
+            r = DEFAULT_ACTIVE_TIME.at(spork);
+        }
+        catch (const std::out_of_range& oor)
+        {
+            if (fDebug)
+                LogPrintf("IsSporkActive::Unknown Spork %d, %s\n", static_cast<int>(spork), oor.what());
+        }
     }
-
-    if (r == 0)
-        r = 4070908800; //return 2099-1-1 by default
 
     return r < GetTime();
 }
 
 // Grab the value of the spork on the network, or the default
-int GetSporkValue(int nSporkID)
+int GetSporkValue(Spork spork)
 {
     int r = 0;
 
-    if (mapSporksActive.count(nSporkID))
-        r = mapSporksActive[nSporkID].nValue;
+    if (mapSporksActive.count(spork))
+        r = mapSporksActive[spork].nValue;
     else
     {
-        if (nSporkID == SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)
-            r = SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT_DEFAULT;
-        if (nSporkID == SPORK_MAX_INSTANTX_VALUE)
-            r = SPORK_MAX_INSTANTX_VALUE_DEFAULT;
-
-        if (r == 0 && fDebug)
-            LogPrintf("GetSpork::Unknown Spork %d\n", nSporkID);
+        try
+        {
+            r = DEFAULT_VALUES.at(spork);
+        }
+        catch (const std::out_of_range& oor)
+        {
+            if (fDebug)
+                LogPrintf("GetSporkValueq::Unknown Spork %d, %s\n", static_cast<int>(spork), oor.what());
+        }
     }
 
     return r;
 }
 
-void ExecuteSpork(int nSporkID, int nValue)
+void ExecuteSpork(Spork spork, int nValue)
 {
+    // Empty at the moment. Called whenever a spork is processed (via a network spork command) -
+    // so we can do global spork related tasks in here
 }
 
 bool CSporkManager::CheckSignature(CSporkMessage& spork)
@@ -181,10 +195,10 @@ bool CSporkManager::Sign(CSporkMessage& spork)
     return true;
 }
 
-bool CSporkManager::UpdateSpork(int nSporkID, int64_t nValue)
+bool CSporkManager::UpdateSpork(Spork spork, int64_t nValue)
 {
     CSporkMessage msg;
-    msg.nSporkID = nSporkID;
+    msg.nSporkID = static_cast<int>(spork);
     msg.nValue = nValue;
     msg.nTimeSigned = GetTime();
 
@@ -192,7 +206,7 @@ bool CSporkManager::UpdateSpork(int nSporkID, int64_t nValue)
     {
         Relay(msg);
         mapSporks[msg.GetHash()] = msg;
-        mapSporksActive[nSporkID] = msg;
+        mapSporksActive[spork] = msg;
         return true;
     }
 
@@ -229,22 +243,26 @@ bool CSporkManager::SetPrivKey(std::string strPrivKey)
         return false;
 }
 
-int CSporkManager::GetSporkIDByName(std::string strName)
+Spork CSporkManager::GetSporkByName(std::string strName)
 {
     if (strName == "SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT")
-        return SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT;
+        return Spork::SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT;
     else if (strName == "SPORK_MAX_INSTANTX_VALUE")
-        return SPORK_MAX_INSTANTX_VALUE;
+        return Spork::SPORK_MAX_INSTANTX_VALUE;
+    else if (strName == "SPORK_MASTERNODE_ADAPTIVE_NETWORK")
+        return Spork::SPORK_MASTERNODE_ADAPTIVE_NETWORK;
 
-    return -1;
+    return Spork::SPORK_UNDEFINED;
 }
 
-std::string CSporkManager::GetSporkNameByID(int id)
+std::string CSporkManager::GetNameBySpork(Spork spork)
 {
-    if (id == SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)
+    if (spork == Spork::SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)
         return "SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT";
-    else if (id == SPORK_MAX_INSTANTX_VALUE)
+    else if (spork == Spork::SPORK_MAX_INSTANTX_VALUE)
         return "SPORK_MAX_INSTANTX_VALUE";
+    else if (spork == Spork::SPORK_MASTERNODE_ADAPTIVE_NETWORK)
+        return "SPORK_MASTERNODE_ADAPTIVE_NETWORK";
 
     return "Unknown";
 }

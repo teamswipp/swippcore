@@ -38,7 +38,7 @@ void ProcessMessageInstantX(CNode* pfrom, std::string& strCommand, CDataStream& 
     if (fLiteMode)
         return;
 
-    if (!IsSporkActive(SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT))
+    if (!IsSporkActive(Spork::SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT))
         return;
 
     if (strCommand == "txlreq")
@@ -197,7 +197,7 @@ bool IsIXTXValid(const CTransaction& txCollateral)
             missingTx = true;
     }
 
-    if (nValueOut > GetSporkValue(SPORK_MAX_INSTANTX_VALUE) * COIN)
+    if (nValueOut > GetSporkValue(Spork::SPORK_MAX_INSTANTX_VALUE) * COIN)
     {
         if (fDebug)
             LogPrintf ("IsIXTXValid - Transaction value too high - %s\n", txCollateral.ToString().c_str());

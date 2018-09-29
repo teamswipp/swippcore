@@ -266,12 +266,13 @@ Value spork(const Array& params, bool fHelp)
 {
     if(params.size() == 1 && params[0].get_str() == "show")
     {
-        std::map<int, CSporkMessage>::iterator it = mapSporksActive.begin();
+        std::map<Spork, CSporkMessage>::iterator it = mapSporksActive.begin();
         Object ret;
 
         while(it != mapSporksActive.end())
         {
-            ret.push_back(Pair(sporkManager.GetSporkNameByID(it->second.nSporkID), it->second.nValue));
+            ret.push_back(Pair(sporkManager.GetNameBySpork(static_cast<Spork>(it->second.nSporkID)),
+                                                           it->second.nValue));
             it++;
         }
 
@@ -279,16 +280,15 @@ Value spork(const Array& params, bool fHelp)
     }
     else if (params.size() == 2)
     {
-        int nSporkID = sporkManager.GetSporkIDByName(params[0].get_str());
+        Spork spork = sporkManager.GetSporkByName(params[0].get_str());
 
-        if(nSporkID == -1)
+        if(spork == Spork::SPORK_UNDEFINED)
             return "Invalid spork name";
 
-        // SPORK VALUE
         int64_t nValue = params[1].get_int();
 
         // Broadcast new spork
-        if(sporkManager.UpdateSpork(nSporkID, nValue))
+        if(sporkManager.UpdateSpork(spork, nValue))
             return "success";
         else
             return "failure";
