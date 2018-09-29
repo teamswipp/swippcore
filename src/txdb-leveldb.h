@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2012 The Bitcoin Developers.
+// Copyright (c) 2009-2012 The Bitcoin developers
 // Copyright (c) 2017-2018 The Swipp developers
 // Authored by Google, Inc.
 // Distributed under the MIT/X11 software license, see the accompanying
@@ -59,8 +59,7 @@ protected:
     // delete for it.
     bool ScanBatch(const CDataStream &key, std::string *value, bool *deleted) const;
 
-    template<typename K, typename T>
-    bool Read(const K& key, T& value)
+    template<typename K, typename T> bool Read(const K& key, T& value)
     {
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(1000);
@@ -108,8 +107,7 @@ protected:
         return true;
     }
 
-    template<typename K, typename T>
-    bool Write(const K& key, const T& value)
+    template<typename K, typename T> bool Write(const K& key, const T& value)
     {
         if (fReadOnly)
             assert(!"Write called on database in read-only mode");
@@ -138,8 +136,7 @@ protected:
         return true;
     }
 
-    template<typename K>
-    bool Erase(const K& key)
+    template<typename K> bool Erase(const K& key)
     {
         if (!pdb)
             return false;
@@ -161,8 +158,7 @@ protected:
         return (status.ok() || status.IsNotFound());
     }
 
-    template<typename K>
-    bool Exists(const K& key)
+    template<typename K> bool Exists(const K& key)
     {
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
         ssKey.reserve(1000);
