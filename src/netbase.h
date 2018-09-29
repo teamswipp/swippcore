@@ -1,6 +1,8 @@
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef BITCOIN_NETBASE_H
 #define BITCOIN_NETBASE_H
 
@@ -25,15 +27,13 @@ enum Network
     NET_IPV6,
     NET_TOR,
     NET_I2P,
-
     NET_MAX,
 };
 
-/** IP address (IPv6, or IPv4 using mapped IPv6 range (::FFFF:0:0/96)) */
 class CNetAddr
 {
     protected:
-        unsigned char ip[16]; // in network byte order
+        unsigned char ip[16]; // In network byte order
 
     public:
         CNetAddr();
@@ -78,16 +78,15 @@ class CNetAddr
         friend bool operator<(const CNetAddr& a, const CNetAddr& b);
 
         IMPLEMENT_SERIALIZE
-            (
+        (
              READWRITE(FLATDATA(ip));
-            )
+        )
 };
 
-/** A combination of a network address (CNetAddr) and a (TCP) port */
 class CService : public CNetAddr
 {
     protected:
-        unsigned short port; // host order
+        unsigned short port; // Host order
 
     public:
         CService();
@@ -115,14 +114,16 @@ class CService : public CNetAddr
         CService(const struct sockaddr_in6& addr);
 
         IMPLEMENT_SERIALIZE
-            (
+        (
              CService* pthis = const_cast<CService*>(this);
+
              READWRITE(FLATDATA(ip));
              unsigned short portN = htons(port);
              READWRITE(portN);
+
              if (fRead)
                  pthis->port = ntohs(portN);
-            )
+        )
 };
 
 typedef CService proxyType;
