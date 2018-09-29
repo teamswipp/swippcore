@@ -1,22 +1,17 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2013 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef BITCOIN_TXMEMPOOL_H
 #define BITCOIN_TXMEMPOOL_H
 
 #include "core.h"
 
-/*
- * CTxMemPool stores valid-according-to-the-current-best-chain
- * transactions that may be included in the next block.
- *
- * Transactions are added when they are seen on the network
- * (or created by the local node), but not all transactions seen
- * are added to the pool: if a new transaction double-spends
- * an input of a transaction in the pool, it is dropped,
- * as are non-standard transactions.
- */
+// CTxMemPool stores valid-according-to-the-current-best-chain
+// transactions that may be included in the next block
+
 class CTxMemPool
 {
 private:
