@@ -1,9 +1,11 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef _BITCOIN_COMPAT_H
-#define _BITCOIN_COMPAT_H 1
+#define _BITCOIN_COMPAT_H
 
 #ifdef WIN32
 #define _WIN32_WINNT 0x0501
@@ -28,13 +30,14 @@
 typedef u_int SOCKET;
 #endif
 
-
 #ifdef WIN32
-#define MSG_NOSIGNAL        0
-#define MSG_DONTWAIT        0
+#define MSG_NOSIGNAL 0
+#define MSG_DONTWAIT 0
+
 typedef int socklen_t;
 #else
 #include "errno.h"
+
 #define WSAGetLastError()   errno
 #define WSAEINVAL           EINVAL
 #define WSAEALREADY         EALREADY
@@ -52,15 +55,17 @@ inline int myclosesocket(SOCKET& hSocket)
 {
     if (hSocket == INVALID_SOCKET)
         return WSAENOTSOCK;
+
 #ifdef WIN32
     int ret = closesocket(hSocket);
 #else
     int ret = close(hSocket);
 #endif
+
     hSocket = INVALID_SOCKET;
     return ret;
 }
-#define closesocket(s)      myclosesocket(s)
 
+#define closesocket(s)      myclosesocket(s)
 
 #endif
