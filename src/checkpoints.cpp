@@ -34,7 +34,8 @@ namespace Checkpoints
         ( 400000, uint256("b1a87f4e91903d4e5adff4498d97be8fc4fe7b59506fc913bdb585df07b22acb"))
         ( 412500, uint256("000000000006cd1fc6577888a54952b4bb4a033ddcbb54d7d2d436e534d27308"))
         ( 431000, uint256("00000000000d2d511716a25436269c2e1076b877ca64530643558487f1a29bc0"))
-        ( 500000, uint256("000000000005eda1277caafc429ff9c6f6a5add63773bf4e57fb3487d5b7629c"));
+        ( 500000, uint256("000000000005eda1277caafc429ff9c6f6a5add63773bf4e57fb3487d5b7629c"))
+        ( 540000, uint256("00000000001117d47acea84bc2c54136dbb7b088946d3256acfc1e5593fd5cd0"));
 
     // TestNet has no checkpoints
     static MapCheckpoints mapCheckpointsTestnet;
@@ -72,6 +73,7 @@ namespace Checkpoints
             if (t != mapBlockIndex.end())
                 return t->second;
         }
+
         return NULL;
     }
 
