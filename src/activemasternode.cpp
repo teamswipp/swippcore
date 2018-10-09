@@ -6,8 +6,9 @@
 #include "backtrace.h"
 #include "protocol.h"
 #include "activemasternode.h"
-#include <boost/lexical_cast.hpp>
 #include "clientversion.h"
+
+#include <boost/lexical_cast.hpp>
 
 // Bootup the masternode, look for a 30.000 Swipp input and register on the network
 void CActiveMasternode::ManageStatus()

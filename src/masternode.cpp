@@ -7,27 +7,20 @@
 #include "masternode.h"
 #include "activemasternode.h"
 #include "darksend.h"
-//#include "primitives/transaction.h"
 #include "main.h"
 #include "util.h"
 #include "addrman.h"
+
 #include <boost/lexical_cast.hpp>
 
 CCriticalSection cs_masternodes;
+std::vector<CMasterNode> vecMasternodes; // The list of active masternodes
+CMasternodePayments masternodePayments;  // Who's going to get paid on which blocks
 
-/** The list of active masternodes */
-std::vector<CMasterNode> vecMasternodes;
-/** Object for who's going to get paid on which blocks */
-CMasternodePayments masternodePayments;
-// keep track of masternode votes I've seen
 map<uint256, CMasternodePaymentWinner> mapSeenMasternodeVotes;
-// keep track of the scanning errors I've seen
 map<uint256, int> mapSeenMasternodeScanningErrors;
-// who's asked for the masternode list and the last time
 std::map<CNetAddr, int64_t> askedForMasternodeList;
-// which masternodes we've asked for
 std::map<COutPoint, int64_t> askedForMasternodeListEntry;
-// cache block hashes as we calculate them
 std::map<int64_t, uint256> mapCacheBlockHashes;
 
 // Manage the masternode connections
@@ -58,7 +51,9 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
             return; // Disable all darksend/masternode related functionality
 
         bool fIsInitialDownload = IsInitialBlockDownload();
-        if(fIsInitialDownload) return;
+
+        if(fIsInitialDownload)
+            return;
 
         CTxIn vin;
         CService addr;
@@ -91,7 +86,8 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
         strMessage = addr.ToString() + boost::lexical_cast<std::string>(sigTime) +
                      vchPubKey + vchPubKey2 + boost::lexical_cast<std::string>(protocolVersion);
 
-        if(pindexBest == NULL) return;
+        if(pindexBest == NULL)
+            return;
 
         if(!isVersionCompatible(MASTERNODE, pfrom->nVersion, pindexBest->nHeight))
         {
@@ -164,7 +160,7 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
         }
 
         // Make sure the vout that was signed is related to the transaction that spawned the masternode
-        //  - this is expensive, so it's only done once per masternode
+        // This is expensive, so it's only done once per masternode
         if(!darkSendSigner.IsVinAssociatedWithPubkey(vin, pubkey))
         {
             LogPrintf("dsee - Got mismatched pubkey and vin, %s\n", vin.ToString().c_str());
@@ -188,7 +184,8 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
 
         if(AcceptableInputs(mempool, tx, false, &pfMissingInputs))
         {
-            if(fDebug) LogPrintf("dsee - Accepted masternode entry %i %i\n", count, current);
+            if(fDebug)
+                LogPrintf("dsee - Accepted masternode entry %i %i\n", count, current);
 
             if(GetInputAge(vin) < MASTERNODE_MIN_CONFIRMATIONS)
             {
@@ -222,6 +219,7 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
             {
                 LogPrintf("dsee - %s from %s %s was not accepted into the memory pool\n", tx.GetHash().ToString().c_str(),
                           pfrom->addr.ToString().c_str(), pfrom->cleanSubVer.c_str());
+
                 if (nDoS > 0)
                     Misbehaving(pfrom->GetId(), nDoS);
             }
@@ -233,7 +231,9 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
             return; // Disable all darksend/masternode related functionality
 
         bool fIsInitialDownload = IsInitialBlockDownload();
-        if(fIsInitialDownload) return;
+
+        if(fIsInitialDownload)
+            return;
 
         CTxIn vin;
         vector<unsigned char> vchSig;
@@ -259,6 +259,7 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
 
         // See if we have this masternode
         LOCK(cs_masternodes);
+
         BOOST_FOREACH(CMasterNode& mn, vecMasternodes)
         {
             if(mn.vin.prevout == vin.prevout)
@@ -306,11 +307,9 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
         {
             int64_t t = (*i).second;
 
+            // We've asked recently
             if (GetTime() < t)
-            {
-                // We've asked recently
                 return;
-            }
         }
 
         // Ask for the dsee info once from the node that sent dseep
@@ -369,7 +368,8 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
 
                 if(mn.IsEnabled())
                 {
-                    if(fDebug) LogPrintf("dseg - Sending masternode entry - %s \n", mn.addr.ToString().c_str());
+                    if(fDebug)
+                        LogPrintf("dseg - Sending masternode entry - %s \n", mn.addr.ToString().c_str());
 
                     pfrom->PushMessage("dsee", mn.vin, mn.addr, mn.sig, mn.now, mn.pubkey, mn.pubkey2, count,
                                        i, mn.lastTimeSeen, mn.protocolVersion);
@@ -377,7 +377,8 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
             }
             else if (vin == mn.vin)
             {
-                if(fDebug) LogPrintf("dseg - Sending masternode entry - %s \n", mn.addr.ToString().c_str());
+                if(fDebug)
+                    LogPrintf("dseg - Sending masternode entry - %s \n", mn.addr.ToString().c_str());
 
                 pfrom->PushMessage("dsee", mn.vin, mn.addr, mn.sig, mn.now, mn.pubkey, mn.pubkey2, count,
                                    i, mn.lastTimeSeen, mn.protocolVersion);
@@ -455,9 +456,7 @@ void ProcessMessageMasternode(CNode* pfrom, std::string& strCommand, CDataStream
         mapSeenMasternodeVotes.insert(make_pair(hash, winner));
 
         if(masternodePayments.AddWinningMasternode(winner))
-        {
             masternodePayments.Relay(winner);
-        }
     }
 }
 
@@ -557,8 +556,8 @@ int GetMasternodeByRank(int findRank, int64_t nBlockHeight)
         {
             uint256 n = mn.CalculateScore(nBlockHeight);
             unsigned int n2 = 0;
-            memcpy(&n2, &n, sizeof(n2));
 
+            memcpy(&n2, &n, sizeof(n2));
             vecMasternodeScores.push_back(make_pair(n2, i));
         }
 
@@ -573,9 +572,7 @@ int GetMasternodeByRank(int findRank, int64_t nBlockHeight)
         rank++;
 
         if(rank == findRank)
-        {
             return s.second;
-        }
     }
 
     return -1;
@@ -606,17 +603,15 @@ int GetMasternodeRank(CTxIn& vin, int64_t nBlockHeight)
     BOOST_FOREACH (PAIRTYPE(unsigned int, CTxIn)& s, vecMasternodeScores)
     {
         rank++;
+
         if(s.second == vin)
-        {
             return rank;
-        }
     }
 
     return -1;
 }
 
 // Get the last hash that matches the modulus given. Processed in reverse order
-
 bool GetBlockHash(uint256& hash, int nBlockHeight)
 {
     if (pindexBest == NULL)
@@ -985,9 +980,7 @@ bool CMasternodePayments::SetPrivKey(std::string strPrivKey)
         return true;
     }
     else
-    {
         return false;
-    }
 }
 
 // NEEDS TO BE MODIFIED IF A NEW BLOCK BREAK OCCURS IN THE FUTURE!
