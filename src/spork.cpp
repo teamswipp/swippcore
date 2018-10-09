@@ -29,8 +29,8 @@ std::map<Spork, int> DEFAULT_ACTIVE_TIME =
 
 std::map<Spork, int> DEFAULT_VALUES =
 {
-    { Spork::SPORK_MAX_INSTANTX_VALUE,    10000 }, // 10 000 Swipp
-    { Spork::SPORK_MASTERNODE_COLLATERAL, 30000 }  // 30 000 Swipp
+    { Spork::SPORK_MAX_INSTANTX_VALUE, 10000 }, // 10 000 Swipp
+    { Spork::SPORK_MASTERNODE_COLLATERAL, DEFAULT_MASTERNODE_COLLATERAL }  // 30 000 Swipp
 };
 
 std::map<uint256, CSporkMessage> mapSporks;

@@ -996,7 +996,7 @@ int64_t getMasternodeCollateralForBlock(int nHeight)
 {
     if (isVersionCompatible(MASTERNODE, 69200, nHeight) ||
         isVersionCompatible(MASTERNODE, 69210, nHeight))
-        return DARKSEND_COLLATERAL;
+        return DEFAULT_MASTERNODE_COLLATERAL;
 
     return 20000 * COIN;
 }
