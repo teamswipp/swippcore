@@ -3569,7 +3569,7 @@ void static ProcessGetData(CNode* pfrom)
                     {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
 
-                        ss.reserve(1000);
+                        ss.reserve(1024);
                         ss << mapDarksendBroadcastTxes[inv.hash].tx << mapDarksendBroadcastTxes[inv.hash].vin <<
                               mapDarksendBroadcastTxes[inv.hash].vchSig << mapDarksendBroadcastTxes[inv.hash].sigTime;
                         pfrom->PushMessage("dstx", ss);
@@ -3583,7 +3583,7 @@ void static ProcessGetData(CNode* pfrom)
                         {
                             CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
 
-                            ss.reserve(1000);
+                            ss.reserve(4096);
                             ss << tx;
                             pfrom->PushMessage("tx", ss);
                             pushed = true;
@@ -3596,7 +3596,7 @@ void static ProcessGetData(CNode* pfrom)
                     {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
 
-                        ss.reserve(1000);
+                        ss.reserve(1024);
                         ss << mapTxLockVote[inv.hash];
                         pfrom->PushMessage("txlvote", ss);
                         pushed = true;
@@ -3608,7 +3608,7 @@ void static ProcessGetData(CNode* pfrom)
                     {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
 
-                        ss.reserve(1000);
+                        ss.reserve(1024);
                         ss << mapTxLockReq[inv.hash];
                         pfrom->PushMessage("txlreq", ss);
                         pushed = true;
@@ -3620,7 +3620,7 @@ void static ProcessGetData(CNode* pfrom)
                     {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
 
-                        ss.reserve(1000);
+                        ss.reserve(1024);
                         ss << mapSporks[inv.hash];
                         pfrom->PushMessage("spork", ss);
                         pushed = true;
@@ -3633,7 +3633,7 @@ void static ProcessGetData(CNode* pfrom)
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         int a = 0;
 
-                        ss.reserve(1000);
+                        ss.reserve(1024);
                         ss << mapSeenMasternodeVotes[inv.hash] << a;
                         pfrom->PushMessage("mnw", ss);
                         pushed = true;
