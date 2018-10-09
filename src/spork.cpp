@@ -29,7 +29,8 @@ std::map<Spork, int> DEFAULT_ACTIVE_TIME =
 
 std::map<Spork, int> DEFAULT_VALUES =
 {
-    { Spork::SPORK_MAX_INSTANTX_VALUE, 10000 } // 10 000 Swipp
+    { Spork::SPORK_MAX_INSTANTX_VALUE,    10000 }, // 10 000 Swipp
+    { Spork::SPORK_MASTERNODE_COLLATERAL, 30000 }  // 30 000 Swipp
 };
 
 std::map<uint256, CSporkMessage> mapSporks;
@@ -245,24 +246,28 @@ bool CSporkManager::SetPrivKey(std::string strPrivKey)
 
 Spork CSporkManager::GetSporkByName(std::string strName)
 {
-    if (strName == "SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT")
+    if (strName == "SPORK_MASTERNODE_ADAPTIVE_NETWORK")
+        return Spork::SPORK_MASTERNODE_ADAPTIVE_NETWORK;
+    else if (strName == "SPORK_MASTERNODE_COLLATERAL")
+        return Spork::SPORK_MASTERNODE_COLLATERAL;
+    else if (strName == "SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT")
         return Spork::SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT;
     else if (strName == "SPORK_MAX_INSTANTX_VALUE")
         return Spork::SPORK_MAX_INSTANTX_VALUE;
-    else if (strName == "SPORK_MASTERNODE_ADAPTIVE_NETWORK")
-        return Spork::SPORK_MASTERNODE_ADAPTIVE_NETWORK;
 
     return Spork::SPORK_UNDEFINED;
 }
 
 std::string CSporkManager::GetNameBySpork(Spork spork)
 {
-    if (spork == Spork::SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)
+    if (spork == Spork::SPORK_MASTERNODE_ADAPTIVE_NETWORK)
+        return "SPORK_MASTERNODE_ADAPTIVE_NETWORK";
+    else if (spork == Spork::SPORK_MASTERNODE_COLLATERAL)
+        return "SPORK_MASTERNODE_COLLATERAL";
+    else if (spork == Spork::SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT)
         return "SPORK_MASTERNODE_PAYMENTS_ENFORCEMENT";
     else if (spork == Spork::SPORK_MAX_INSTANTX_VALUE)
         return "SPORK_MAX_INSTANTX_VALUE";
-    else if (spork == Spork::SPORK_MASTERNODE_ADAPTIVE_NETWORK)
-        return "SPORK_MASTERNODE_ADAPTIVE_NETWORK";
 
     return "Unknown";
 }
