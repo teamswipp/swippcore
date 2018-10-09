@@ -7,6 +7,7 @@
 #ifndef BITCOIN_SERIALIZE_H
 #define BITCOIN_SERIALIZE_H
 
+#include <cmath>
 #include <string>
 #include <vector>
 #include <map>
@@ -28,6 +29,13 @@ class CDataStream;
 class CScript;
 
 static const unsigned int MAX_SIZE = 0x02000000;
+
+#define SERIALIZATION_RESERVE_COUNT pow(2, 16)
+
+inline int get_serialization_reserve_count()
+{
+    return SERIALIZATION_RESERVE_COUNT;
+}
 
 // Used to bypass the rule against non-const reference to temporary
 // where it makes sense with wrappers such as CFlatData or CTxDB

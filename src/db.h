@@ -116,7 +116,7 @@ protected:
             return false;
 
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
+        ssKey.reserve(get_serialization_reserve_count());
         ssKey << key;
         Dbt datKey(&ssKey[0], ssKey.size());
 
@@ -156,12 +156,12 @@ protected:
             assert(!"Write called on database in read-only mode");
 
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
+        ssKey.reserve(get_serialization_reserve_count());
         ssKey << key;
         Dbt datKey(&ssKey[0], ssKey.size());
 
         CDataStream ssValue(SER_DISK, CLIENT_VERSION);
-        ssValue.reserve(10000);
+        ssValue.reserve(get_serialization_reserve_count() * 10);
         ssValue << value;
         Dbt datValue(&ssValue[0], ssValue.size());
 
@@ -181,7 +181,7 @@ protected:
             assert(!"Erase called on database in read-only mode");
 
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
+        ssKey.reserve(get_serialization_reserve_count());
         ssKey << key;
         Dbt datKey(&ssKey[0], ssKey.size());
 
@@ -197,7 +197,7 @@ protected:
             return false;
 
         CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(1000);
+        ssKey.reserve(get_serialization_reserve_count());
         ssKey << key;
         Dbt datKey(&ssKey[0], ssKey.size());
 
