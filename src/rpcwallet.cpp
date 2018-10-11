@@ -1966,7 +1966,7 @@ Value sendtostealthaddress(const Array& params, bool fHelp)
     {
         result.push_back(Pair("result", "Invalid Swipp stealth address."));
         return result;
-    };
+    }
 
     CWalletTx wtx;
 
