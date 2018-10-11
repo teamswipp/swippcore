@@ -14,6 +14,8 @@
 #include "wallet.h"
 #include "walletdb.h"
 
+#include <tuple>
+
 using namespace std;
 using namespace json_spirit;
 
@@ -83,7 +85,7 @@ string AccountFromValue(const Value& value)
     return strAccount;
 }
 
-static CPubKey genKey(const Array& params)
+static std::tuple<string, CPubKey> genKey(const Array& params)
 {
     string strAccount;
 
@@ -100,7 +102,7 @@ static CPubKey genKey(const Array& params)
     if (!pwalletMain->GetKeyFromPool(newKey))
         throw JSONRPCError(RPC_WALLET_KEYPOOL_RAN_OUT, "Error: Keypool ran out, please call keypoolrefill first");
 
-    return newKey;
+    return std::make_tuple(strAccount, newKey);
 }
 
 Value getnewpubkey(const Array& params, bool fHelp)
@@ -112,9 +114,9 @@ Value getnewpubkey(const Array& params, bool fHelp)
             "Returns new public key for coinbase generation.");
     }
 
-    CPubKey newKey = genKey(params);
-    pwalletMain->SetAddressBookName(newKey.GetID(), AccountFromValue(params[0]));
-    return HexStr(newKey.begin(), newKey.end());
+    std::tuple<string, CPubKey> newKey = genKey(params);
+    pwalletMain->SetAddressBookName(std::get<1>(newKey).GetID(), AccountFromValue(std::get<0>(newKey)));
+    return HexStr(std::get<1>(newKey).begin(), std::get<1>(newKey).end());
 }
 
 Value getnewaddress(const Array& params, bool fHelp)
@@ -128,9 +130,9 @@ Value getnewaddress(const Array& params, bool fHelp)
             "so payments received with the address will be credited to [account].");
     }
 
-    CPubKey newKey = genKey(params);
-    pwalletMain->SetAddressBookName(newKey.GetID(), AccountFromValue(params[0]));
-    return CBitcoinAddress(newKey.GetID()).ToString();
+    std::tuple<string, CPubKey> newKey = genKey(params);
+    pwalletMain->SetAddressBookName(std::get<1>(newKey).GetID(), AccountFromValue(std::get<0>(newKey)));
+    return CBitcoinAddress(std::get<1>(newKey).GetID()).ToString();
 }
 
 CBitcoinAddress GetAccountAddress(string strAccount, bool bForceNew=false)
