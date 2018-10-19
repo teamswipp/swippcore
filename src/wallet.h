@@ -9,18 +9,19 @@
 
 #include "walletdb.h"
 
+#include <stdlib.h>
 #include <string>
 #include <vector>
-#include <stdlib.h>
 
+#include "constraints.h"
 #include "crypter.h"
-#include "main.h"
 #include "key.h"
 #include "keystore.h"
+#include "main.h"
 #include "script.h"
+#include "stealth.h"
 #include "ui_interface.h"
 #include "util.h"
-#include "stealth.h"
 
 // Settings
 extern int64_t nTransactionFee;

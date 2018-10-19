@@ -7,12 +7,13 @@
 #include "base58.h"
 #include "rpcserver.h"
 #include "chainparams.h"
-#include "main.h"
+#include "constraints.h"
 #include "db.h"
-#include "txdb.h"
 #include "init.h"
+#include "main.h"
 #include "miner.h"
 #include "kernel.h"
+#include "txdb.h"
 
 #include <boost/assign/list_of.hpp>
 

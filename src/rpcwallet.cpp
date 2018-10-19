@@ -5,6 +5,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "base58.h"
+#include "constraints.h"
 #include "rpcserver.h"
 #include "init.h"
 #include "net.h"

@@ -4,12 +4,13 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "masternode.h"
 #include "activemasternode.h"
+#include "addrman.h"
+#include "constraints.h"
 #include "darksend.h"
+#include "masternode.h"
 #include "main.h"
 #include "util.h"
-#include "addrman.h"
 
 #include <boost/lexical_cast.hpp>
 

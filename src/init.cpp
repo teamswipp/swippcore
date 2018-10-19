@@ -4,18 +4,19 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "activemasternode.h"
+#include "chainparams.h"
+#include "checkpoints.h"
+#include "constraints.h"
 #include "init.h"
 #include "main.h"
-#include "chainparams.h"
-#include "txdb.h"
-#include "rpcserver.h"
 #include "net.h"
+#include "rpcserver.h"
+#include "smessage.h"
+#include "spork.h"
+#include "txdb.h"
 #include "util.h"
 #include "ui_interface.h"
-#include "checkpoints.h"
-#include "activemasternode.h"
-#include "spork.h"
-#include "smessage.h"
 
 #ifdef ENABLE_WALLET
 #include "wallet.h"

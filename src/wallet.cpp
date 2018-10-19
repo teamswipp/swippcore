@@ -8,6 +8,7 @@
 
 #include "base58.h"
 #include "coincontrol.h"
+#include "constraints.h"
 #include "kernel.h"
 #include "net.h"
 #include "timedata.h"

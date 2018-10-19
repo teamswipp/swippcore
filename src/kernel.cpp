@@ -5,6 +5,7 @@
 
 #include <boost/assign/list_of.hpp>
 
+#include "constraints.h"
 #include "kernel.h"
 #include "txdb.h"
 

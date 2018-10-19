@@ -6,10 +6,11 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "backtrace.h"
-#include "txdb.h"
-#include "miner.h"
+#include "constraints.h"
 #include "kernel.h"
 #include "masternode.h"
+#include "miner.h"
+#include "txdb.h"
 
 using namespace std;
 

@@ -7,13 +7,16 @@
 #ifndef BITCOIN_MAIN_H
 #define BITCOIN_MAIN_H
 
-#include "core.h"
 #include "bignum.h"
-#include "sync.h"
-#include "txmempool.h"
+#include "constraints.h"
+#include "core.h"
+#include "disk.h"
+#include "hashblock.h"
 #include "net.h"
 #include "script.h"
-#include "hashblock.h"
+#include "sync.h"
+#include "transaction.h"
+#include "txmempool.h"
 
 #include <list>
 
@@ -86,7 +89,6 @@ static const int64_t MAX_MONEY = 1400000 * COIN; //14M
 // First POS block
 static const int MODIFIER_INTERVAL_SWITCH = 1;
 
-inline bool MoneyRange(int64_t nValue) { return (nValue >= 0 && nValue <= 5000000 * COIN); } //TODO: Add check for both
 /** Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp. */
 static const unsigned int LOCKTIME_THRESHOLD = 500000000; // Tue Nov  5 00:53:20 1985 UTC
 
