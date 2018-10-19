@@ -1,13 +1,18 @@
+// Copyright (c) 2017-2018 The Swipp developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef MESSAGEPAGE_H
 #define MESSAGEPAGE_H
 
 #include <QWidget>
 
-namespace Ui {
+namespace Ui
+{
     class MessagePage;
 }
+
 class MessageModel;
-//class OptionsModel;
 
 QT_BEGIN_NAMESPACE
 class QTableView;
@@ -19,15 +24,11 @@ class MessageViewDelegate;
 class MRichTextEdit;
 QT_END_NAMESPACE
 
-
-/** Widget that shows a list of sending or receiving addresses.
-  */
 class MessagePage : public QWidget
 {
     Q_OBJECT
 
 public:
-
     explicit MessagePage(QWidget *parent = 0);
     ~MessagePage();
 
@@ -64,10 +65,9 @@ private slots:
     void selectionChanged();
     void itemSelectionChanged();
     void incomingMessage();
-    /** Spawn contextual menu (right mouse menu) for address book entry */
-    void contextualMenu(const QPoint &point);
 
-signals:
+    // Spawn contextual menu (right mouse menu) for address book entry
+    void contextualMenu(const QPoint &point);
 };
 
 #endif // MESSAGEPAGE_H
