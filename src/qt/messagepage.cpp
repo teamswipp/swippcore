@@ -31,10 +31,10 @@ protected:
 
 void MessageViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QStyleOptionViewItemV4 optionV4 = option;
-    initStyleOption(&optionV4, index);
+    QStyleOptionViewItem options = option;
+    initStyleOption(&options, index);
 
-    QStyle *style = optionV4.widget? optionV4.widget->style() : QApplication::style();
+    QStyle *style = options.widget ? options.widget->style() : QApplication::style();
 
     QTextDocument doc;
     QString align(index.data(MessageModel::TypeRole) == 1 ? "left" : "right");
@@ -42,16 +42,16 @@ void MessageViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
     doc.setHtml(html);
 
     /// Painting item without text
-    optionV4.text = QString();
-    style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+    options.text = QString();
+    style->drawControl(QStyle::CE_ItemViewItem, &options, painter);
 
     QAbstractTextDocumentLayout::PaintContext ctx;
 
     // Highlighting text if item is selected
-    if (optionV4.state & QStyle::State_Selected)
-        ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+    if (options.state & QStyle::State_Selected)
+        ctx.palette.setColor(QPalette::Text, options.palette.color(QPalette::Active, QPalette::HighlightedText));
 
-    QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+    QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &options);
     doc.setTextWidth( textRect.width() );
     painter->save();
     painter->translate(textRect.topLeft());
@@ -60,9 +60,9 @@ void MessageViewDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
     painter->restore();
 }
 
-QSize MessageViewDelegate::sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const
+QSize MessageViewDelegate::sizeHint (const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QStyleOptionViewItemV4 options = option;
+    QStyleOptionViewItem options = option;
     initStyleOption(&options, index);
 
     QTextDocument doc;
