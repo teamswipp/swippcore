@@ -331,7 +331,9 @@ HEADERS += src/qt/bitcoingui.h \
     src/sph_simd.h \
     src/sph_types.h \
     src/txdb-leveldb.h \
-    src/geoposition.h
+    src/geoposition.h \
+    src/transaction.h \
+    src/disk.h
 
 SOURCES += src/qt/bitcoin.cpp \
     src/qt/bitcoingui.cpp \
@@ -439,7 +441,9 @@ SOURCES += src/qt/bitcoin.cpp \
     src/qt/plugins/mrichtexteditor/mrichtextedit.cpp \
     src/qt/plugins/rangeslider/rangeslider.cpp \
     src/rpcsmessage.cpp \
-    src/geoposition.cpp
+    src/geoposition.cpp \
+    src/transaction.cpp \
+    src/disk.cpp
 
 RESOURCES += \
     src/qt/bitcoin.qrc
