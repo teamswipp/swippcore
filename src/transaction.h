@@ -107,8 +107,8 @@ public:
         SetNull();
     }
 
-    CTransaction(int nVersion, unsigned int nTime, const std::vector<CTxIn>& vin, const std::vector<CTxOut>& vout, unsigned int nLockTime)
-        : nVersion(nVersion), nTime(nTime), vin(vin), vout(vout), nLockTime(nLockTime), nDoS(0)
+    CTransaction(int nVersion, unsigned int nTime, const std::vector<CTxIn>& vin, const std::vector<CTxOut>& vout,
+                 unsigned int nLockTime) : nVersion(nVersion), nTime(nTime), vin(vin), vout(vout), nLockTime(nLockTime), nDoS(0)
     {
     }
 
@@ -153,64 +153,6 @@ public:
         return vin.size() > 0 && (!vin[0].prevout.IsNull()) && vout.size() >= 2 && vout[0].IsEmpty();
     }
 
-    // Amount spent by this transaction. Returns the sum of all outputs (note: does not include fees)
-    int64_t GetValueOut() const
-    {
-        int64_t nValueOut = 0;
-
-        BOOST_FOREACH(const CTxOut& txout, vout)
-        {
-            nValueOut += txout.nValue;
-
-            if (!MoneyRange(txout.nValue) || !MoneyRange(nValueOut))
-                throw std::runtime_error("CTransaction::GetValueOut() : value out of range");
-        }
-
-        return nValueOut;
-    }
-
-    /** Amount of bitcoins coming in to this transaction
-        Note that lightweight clients may not know anything besides the hash of previous transactions,
-        so may not be able to calculate this.
-
-        @param[in] mapInputs Map of previous transactions that have outputs we're spending
-        @return Sum of value of all inputs (scriptSigs)
-        @see CTransaction::FetchInputs
-     */
-    int64_t GetValueIn(const MapPrevTx& mapInputs) const;
-
-    bool ReadFromDisk(CDiskTxPos pos, FILE** pfileRet=NULL)
-    {
-        CAutoFile filein = CAutoFile(OpenBlockFile(pos.nFile, 0, pfileRet ? "rb+" : "rb"), SER_DISK, CLIENT_VERSION);
-
-        if (!filein)
-            return error("CTransaction::ReadFromDisk() : OpenBlockFile failed");
-
-        // Read transaction
-        if (fseek(filein, pos.nTxPos, SEEK_SET) != 0)
-            return error("CTransaction::ReadFromDisk() : fseek failed");
-
-        try
-        {
-            filein >> *this;
-        }
-        catch (std::exception &e)
-        {
-            return error("%s() : deserialize or I/O error", __PRETTY_FUNCTION__);
-        }
-
-        // Return file pointer
-        if (pfileRet)
-        {
-            if (fseek(filein, pos.nTxPos, SEEK_SET) != 0)
-                return error("CTransaction::ReadFromDisk() : second fseek failed");
-
-            *pfileRet = filein.release();
-        }
-
-        return true;
-    }
-
     friend bool operator==(const CTransaction& a, const CTransaction& b)
     {
         return a.nVersion  == b.nVersion && a.nTime == b.nTime &&
@@ -237,6 +179,10 @@ public:
         return str;
     }
 
+    int64_t GetValueIn(const MapPrevTx& mapInputs) const;
+    int64_t GetValueOut() const;
+
+    bool ReadFromDisk(CDiskTxPos pos, FILE** pfileRet=NULL);
     bool ReadFromDisk(CTxDB& txdb, COutPoint prevout, CTxIndex& txindexRet);
     bool ReadFromDisk(CTxDB& txdb, COutPoint prevout);
     bool ReadFromDisk(COutPoint prevout);
@@ -266,8 +212,7 @@ public:
         @param[in] fMiner true if called from CreateNewBlock
         @return Returns true if all checks succeed
      */
-    bool ConnectInputs(CTxDB& txdb, MapPrevTx inputs,
-                       std::map<uint256, CTxIndex>& mapTestPool, const CDiskTxPos& posThisTx,
+    bool ConnectInputs(CTxDB& txdb, MapPrevTx inputs, std::map<uint256, CTxIndex>& mapTestPool, const CDiskTxPos& posThisTx,
                        const CBlockIndex* pindexBlock, bool fBlock, bool fMiner,
                        unsigned int flags = STANDARD_SCRIPT_VERIFY_FLAGS, bool fValidateSig = true);
 
