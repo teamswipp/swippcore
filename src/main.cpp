@@ -2624,7 +2624,10 @@ bool CBlock::AcceptBlock()
 
     // Write block to history file
     if (!CheckDiskSpace(::GetSerializeSize(*this, SER_DISK, CLIENT_VERSION)))
+    {
+        StartShutdown();
         return error("AcceptBlock() : out of disk space");
+    }
 
     unsigned int nFile = -1;
     unsigned int nBlockPos = 0;
@@ -2935,25 +2938,6 @@ bool CBlock::CheckBlockSignature() const
     }
 
     return false;
-}
-
-bool CheckDiskSpace(uint64_t nAdditionalBytes)
-{
-    uint64_t nFreeBytesAvailable = filesystem::space(GetDataDir()).available;
-
-    // Check for nMinDiskSpace bytes (currently 50MB)
-    if (nFreeBytesAvailable < nMinDiskSpace + nAdditionalBytes)
-    {
-        string strMessage = _("Error: Disk space is low!");
-        strMiscWarning = strMessage;
-        LogPrintf("*** %s\n", strMessage);
-        uiInterface.ThreadSafeMessageBox(strMessage, "", CClientUIInterface::MSG_ERROR);
-        StartShutdown();
-
-        return false;
-    }
-
-    return true;
 }
 
 bool LoadBlockIndex(bool fAllowNew)

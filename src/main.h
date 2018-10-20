@@ -132,9 +132,6 @@ extern unsigned int nDerivationMethodIndex;
 
 extern bool fMinimizeCoinAge;
 
-// Minimum disk space required - used in CheckDiskSpace()
-static const uint64_t nMinDiskSpace = 52428800;
-
 class CReserveKey;
 class CTxDB;
 class CTxIndex;
@@ -151,7 +148,6 @@ void UnregisterNodeSignals(CNodeSignals& nodeSignals);
 void PushGetBlocks(CNode* pnode, CBlockIndex* pindexBegin, uint256 hashEnd);
 
 bool ProcessBlock(CNode* pfrom, CBlock* pblock);
-bool CheckDiskSpace(uint64_t nAdditionalBytes=0);
 bool LoadBlockIndex(bool fAllowNew=true);
 void PrintBlockTree();
 CBlockIndex* FindBlockByHeight(int nHeight);

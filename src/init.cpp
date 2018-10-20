@@ -986,7 +986,10 @@ bool AppInit2(boost::thread_group& threadGroup)
     SecureMsgStart(fNoSmsg, GetBoolArg("-smsgscanchain", false));
 
     if (!CheckDiskSpace())
+    {
+        StartShutdown();
         return false;
+    }
 
     if (!strErrors.str().empty())
         return InitError(strErrors.str());

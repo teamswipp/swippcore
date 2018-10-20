@@ -9,8 +9,10 @@
 #include <string>
 #include <stdlib.h>
 
+#include "disk.h"
 #include "tinyformat.h"
 #include "util.h"
+#include "ui_interface.h"
 
 static unsigned int nCurrentBlockFile = 1;
 
@@ -18,28 +20,6 @@ static inline boost::filesystem::path BlockFilePath(unsigned int nFile)
 {
     std::string strBlockFn = strprintf("blk%04u.dat", nFile);
     return GetDataDir() / strBlockFn;
-}
-
-FILE* OpenBlockFile(unsigned int nFile, unsigned int nBlockPos, const char* pszMode)
-{
-    if ((nFile < 1) || (nFile == (unsigned int) - 1))
-        return NULL;
-
-    FILE* file = fopen(BlockFilePath(nFile).string().c_str(), pszMode);
-
-    if (!file)
-        return NULL;
-
-    if (nBlockPos != 0 && !strchr(pszMode, 'a') && !strchr(pszMode, 'w'))
-    {
-        if (fseek(file, nBlockPos, SEEK_SET) != 0)
-        {
-            fclose(file);
-            return NULL;
-        }
-    }
-
-    return file;
 }
 
 FILE* AppendBlockFile(unsigned int& nFileRet)
@@ -65,4 +45,46 @@ FILE* AppendBlockFile(unsigned int& nFileRet)
         fclose(file);
         nCurrentBlockFile++;
     }
+}
+
+static const uint64_t nMinDiskSpace = 52428800;
+
+bool CheckDiskSpace(uint64_t nAdditionalBytes)
+{
+    uint64_t nFreeBytesAvailable = boost::filesystem::space(GetDataDir()).available;
+
+    // Check for nMinDiskSpace bytes (currently 50MB)
+    if (nFreeBytesAvailable < nMinDiskSpace + nAdditionalBytes)
+    {
+        std::string strMessage = _("Error: Disk space is low!");
+        strMiscWarning = strMessage;
+        LogPrintf("*** %s\n", strMessage);
+        uiInterface.ThreadSafeMessageBox(strMessage, "", CClientUIInterface::MSG_ERROR);
+
+        return false;
+    }
+
+    return true;
+}
+
+FILE* OpenBlockFile(unsigned int nFile, unsigned int nBlockPos, const char* pszMode)
+{
+    if ((nFile < 1) || (nFile == (unsigned int) - 1))
+        return NULL;
+
+    FILE* file = fopen(BlockFilePath(nFile).string().c_str(), pszMode);
+
+    if (!file)
+        return NULL;
+
+    if (nBlockPos != 0 && !strchr(pszMode, 'a') && !strchr(pszMode, 'w'))
+    {
+        if (fseek(file, nBlockPos, SEEK_SET) != 0)
+        {
+            fclose(file);
+            return NULL;
+        }
+    }
+
+    return file;
 }

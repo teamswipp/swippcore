@@ -1369,7 +1369,10 @@ void CDarkSendPool::SendDarksendDenominate(std::vector<CTxIn>& vin, std::vector<
     }
 
     if (!CheckDiskSpace())
+    {
+        StartShutdown();
         return;
+    }
 
     if (fMasterNode)
     {
