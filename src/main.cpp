@@ -139,11 +139,6 @@ void ResendWalletTransactions(bool fForce)
     g_signals.Broadcast(fForce);
 }
 
-//////////////////////////////////////////////////////////////////////////////
-//
-// Registration of network node signals.
-//
-
 void RegisterNodeSignals(CNodeSignals& nodeSignals)
 {
     nodeSignals.ProcessMessages.connect(&ProcessMessages);
@@ -167,11 +162,6 @@ bool AbortNode(const std::string &strMessage, const std::string &userMessage)
     StartShutdown();
     return false;
 }
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// mapOrphanTransactions
-//
 
 bool AddOrphanTx(const CTransaction& tx)
 {
@@ -418,11 +408,13 @@ int64_t GetMinFee(const CTransaction& tx, unsigned int nBlockSize, enum GetMinFe
     {
         if (nNewBlockSize >= MAX_BLOCK_SIZE_GEN)
             return MAX_MONEY;
+
         nMinFee *= MAX_BLOCK_SIZE_GEN / (MAX_BLOCK_SIZE_GEN - nNewBlockSize);
     }
 
     if (!MoneyRange(nMinFee))
         nMinFee = MAX_MONEY;
+
     return nMinFee;
 }
 
@@ -554,9 +546,12 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction &tx, bool fLimitFree, boo
         // There is a similar check in CreateNewBlock() to prevent creating
         // invalid blocks, however allowing such transactions into the mempool
         // can be exploited as a DoS attack.
-        if (!tx.ConnectInputs(txdb, mapInputs, mapUnused, CDiskTxPos(1,1,1), pindexBest, false, false, MANDATORY_SCRIPT_VERIFY_FLAGS))
+        if (!tx.ConnectInputs(txdb, mapInputs, mapUnused, CDiskTxPos(1,1,1), pindexBest, false, false,
+                              MANDATORY_SCRIPT_VERIFY_FLAGS))
+        {
             return error("AcceptToMemoryPool: : BUG! PLEASE REPORT THIS! ConnectInputs failed against MANDATORY "
                          "but not STANDARD flags %s", hash.ToString());
+        }
     }
 
     // Store transaction in memory
