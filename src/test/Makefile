@@ -6,9 +6,10 @@ OBJDIR = obj
 SRCS := $(wildcard *.cpp)
 OBJS := $(patsubst %.cpp, $(OBJDIR)/%.o, \
 	$(SRCS)) $(filter-out ../obj/bitcoind.o, $(wildcard ../obj/*.o)) $(wildcard ../obj/crypto/*.o)
+DEFS += $(addprefix -I,$(CURDIR)/../leveldb/include)
 
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -g -pthread -I..
+CXXFLAGS = -std=c++11 -Wall -g -pthread -I.. $(DEFS)
 
 LIBS += -Wl,-Bdynamic \
 	-l boost_system$(BOOST_LIB_SUFFIX) \
@@ -23,7 +24,9 @@ LIBS += -Wl,-Bdynamic \
 	-l z \
 	-l dl \
 	-l miniupnpc \
-	../leveldb/libleveldb.a ../leveldb/libmemenv.a
+	-l curl \
+	$(CURDIR)/../leveldb/out-static/libleveldb.a \
+	$(CURDIR)/../leveldb/out-static/libmemenv.a
 
 check: tests
 	./tests
