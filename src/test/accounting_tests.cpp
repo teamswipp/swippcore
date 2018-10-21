@@ -9,8 +9,7 @@
 
 BOOST_AUTO_TEST_SUITE(accounting_tests)
 
-static void
-GetResults(CWalletDB& walletdb, std::map<int64_t, CAccountingEntry>& results)
+static void GetResults(CWalletDB& walletdb, std::map<int64_t, CAccountingEntry>& results)
 {
     std::list<CAccountingEntry> aes;
 
@@ -25,7 +24,7 @@ GetResults(CWalletDB& walletdb, std::map<int64_t, CAccountingEntry>& results)
 
 BOOST_AUTO_TEST_CASE(acc_orderupgrade)
 {
-    CWalletDB walletdb(pwalletMain->strWalletFile);
+    CWalletDB walletdb("TEST");
     std::vector<CWalletTx*> vpwtx;
     CWalletTx wtx;
     CAccountingEntry ae;
@@ -58,7 +57,6 @@ BOOST_AUTO_TEST_CASE(acc_orderupgrade)
     BOOST_CHECK(results[2].nTime == 1333333336);
     BOOST_CHECK(results[2].strOtherAccount == "c");
 
-
     ae.nTime = 1333333330;
     ae.strOtherAccount = "d";
     ae.nOrderPos = pwalletMain->IncOrderPosNext();
@@ -73,7 +71,6 @@ BOOST_AUTO_TEST_CASE(acc_orderupgrade)
     BOOST_CHECK(results[2].nTime == 1333333336);
     BOOST_CHECK(results[3].nTime == 1333333330);
     BOOST_CHECK(results[3].strComment.empty());
-
 
     wtx.mapValue["comment"] = "y";
     --wtx.nLockTime;  // Just to change the hash :)
@@ -99,7 +96,6 @@ BOOST_AUTO_TEST_CASE(acc_orderupgrade)
     BOOST_CHECK(results[4].nTime == 1333333330);
     BOOST_CHECK(results[4].strComment.empty());
     BOOST_CHECK(5 == vpwtx[1]->nOrderPos);
-
 
     ae.nTime = 1333333334;
     ae.strOtherAccount = "e";
