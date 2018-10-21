@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2017 The Swipp developers
+# Copyright (c) 2017-2018 The Swipp developers
 # Distributed under the MIT/X11 software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -12,6 +12,7 @@ STATUS_COMMAND="ps -eo pid,args | grep swippd | grep testnet"
 
 RED=$(tput setaf 1)
 GREEN=$(tput setaf 2)
+MAGENTA=$(tput setaf 5)
 RESET=$(tput sgr0)
 
 # Return a randomly generated UUID.
@@ -129,11 +130,12 @@ status() {
 
 	if [ "$running_nodes" != "" ]; then
 		for (( ; i < ${#running_nodes[@]}; i++ )); do
-			echo $GREEN[$i]$RESET: ${running_nodes[$i]}
+			privkey=$(command $i dumpprivkey $(command $i getaddressesbyaccount "" | grep -Po "[a-zA-Z0-9]+"))
+			echo $GREEN[$i, $privkey]$RESET: ${running_nodes[$i]}
 		done
 	fi
 
-	echo There are $i nodes up and running.
+	echo $MAGENTA"There are $i nodes up and running."$RESET
 }
 
 get_node_parameters() {
