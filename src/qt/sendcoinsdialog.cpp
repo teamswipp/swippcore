@@ -226,6 +226,9 @@ void SendCoinsDialog::on_sendButton_clicked()
         CoinControlDialog::coinControl->UnSelectAll();
         coinControlUpdateLabels();
         break;
+    case WalletModel::AnonymizeOnlyUnlocked:
+        /* TODO: Probably need to handle this? */
+        break;
     }
     fNewRecipientAllowed = true;
 }
