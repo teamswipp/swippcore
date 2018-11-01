@@ -992,23 +992,51 @@ void ThreadSocketHandler()
 }
 
 #ifdef USE_UPNP
-void ThreadMapPort()
+static inline int upnp_add_port_mapping(struct UPNPUrls *urls, struct IGDdatas *data, const char *port, char *lanaddr)
 {
-    std::string port = strprintf("%u", GetListenPort());
+    int r;
+    string strDesc = "Swipp " + FormatFullVersion();
+
+#ifndef UPNPDISCOVER_SUCCESS
+    /* miniupnpc 1.5 */
+    r = UPNP_AddPortMapping(urls->controlURL, data->first.servicetype, port, port,
+                            lanaddr, strDesc.c_str(), "TCP", 0);
+#else
+    /* miniupnpc 1.6 */
+    r = UPNP_AddPortMapping(urls->controlURL, data->first.servicetype, port, port,
+                            lanaddr, strDesc.c_str(), "TCP", 0, "0");
+#endif
+
+    return r;
+}
+
+static inline struct UPNPDev *upnp_discover(int *error)
+{
+    struct UPNPDev *devlist = NULL;
     const char * multicastif = 0;
     const char * minissdpdpath = 0;
-    struct UPNPDev * devlist = 0;
-    char lanaddr[64];
 
 #ifndef UPNPDISCOVER_SUCCESS
     /* miniupnpc 1.5 */
     devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0);
-#else
+#elif MINIUPNPC_API_VERSION < 14
     /* miniupnpc 1.6 */
-    int error = 0;
-    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, error);
+#else
+    /* miniupnpc 1.9 */
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, error);
 #endif
 
+    return devlist;
+}
+
+void ThreadMapPort()
+{
+    std::string port = strprintf("%u", GetListenPort());
+    char lanaddr[64];
+    int error = 0;
+
+    struct UPNPDev *devlist = upnp_discover(&error);
     struct UPNPUrls urls;
     struct IGDdatas data;
     int r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
@@ -1034,26 +1062,16 @@ void ThreadMapPort()
             }
         }
 
-        string strDesc = "Swipp " + FormatFullVersion();
-
         try
         {
             while (!ShutdownRequested())
             {
                 boost::this_thread::interruption_point();
+                r = upnp_add_port_mapping(&urls, &data, port.c_str(), lanaddr);
 
-#ifndef UPNPDISCOVER_SUCCESS
-                /* miniupnpc 1.5 */
-                r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
-                                    port.c_str(), port.c_str(), lanaddr, strDesc.c_str(), "TCP", 0);
-#else
-                /* miniupnpc 1.6 */
-                r = UPNP_AddPortMapping(urls.controlURL, data.first.servicetype,
-                                    port.c_str(), port.c_str(), lanaddr, strDesc.c_str(), "TCP", 0, "0");
-#endif
-                if(r!=UPNPCOMMAND_SUCCESS)
+                if(r != UPNPCOMMAND_SUCCESS)
                     LogPrintf("AddPortMapping(%s, %s, %s) failed with code %d (%s)\n",
-                        port, port, lanaddr, r, strupnperror(r));
+                              port, port, lanaddr, r, strupnperror(r));
                 else
                     LogPrintf("UPnP Port Mapping successful.\n");;
 
@@ -1111,7 +1129,7 @@ void MapPort(bool)
 {
     // Intentionally left blank.
 }
-#endif
+#endif /* USE_UPNP */
 
 void ThreadDNSAddressSeed()
 {
