@@ -53,7 +53,11 @@ extern "C"{
 
 #if GCC_DIAGNOSTIC_AWARE
 #pragma GCC diagnostic push
+#if (__GNUC__ == 5 && __GNUC_MINOR__ == 5)
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#else
 #pragma GCC diagnostic ignored "-Wunused-const-variable"
+#endif
 #endif
 
 static const sph_u32 V_INIT[5][8] = {
