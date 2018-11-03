@@ -13,6 +13,7 @@
 # make MXE_TARGETS="i686-w64-mingw32.static" qtbase
 # make MXE_TARGETS="i686-w64-mingw32.static" qttools
 # make MXE_TARGETS="i686-w64-mingw32.static" curl
+# make MXE_TARGETS="i686-w64-mingw32.static" miniupnpc
 #
 # Then just run this script the following way:
 # ./cross-compile-win.sh <path-to-mxe>

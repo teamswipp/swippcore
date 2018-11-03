@@ -103,12 +103,26 @@ contains(USE_QRCODE, 1) {
     LIBS += -lqrencode
 }
 
-# use: qmake "USE_UPNP=1" ( enabled by default; default)
+# use: qmake "USE_UPNP=1" (enabled by default; default)
 #  or: qmake "USE_UPNP=0" (disabled by default)
 #  or: qmake "USE_UPNP=-" (not supported)
-# miniupnpc (http://miniupnp.free.fr/files/) must be installed for support
-contains(USE_UPNP, -) {
+contains(USE_PNP, -) {
     message(Building without UPNP support)
+} else {
+    isEmpty(USE_UPNP) {
+        DEFINES += USE_UPNP=1
+    } else {
+        DEFINES += USE_UPNP=$$USE_UPNP
+    }
+
+    LIBS += -lminiupnpc
+    LIBS += $$join(MINIUPNPC_LIB_PATH,,-L,)
+
+    win32 {
+        # covers 1.9 and prior versions
+        DEFINES += STATICLIB
+        DEFINES += MINIUPNP_STATICLIB
+    }
 }
 
 # use: qmake "USE_DBUS=1" or qmake "USE_DBUS=0"
