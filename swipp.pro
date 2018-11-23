@@ -98,7 +98,7 @@ lessThan(QT_MAJOR_VERSION, 5): win32: QMAKE_LFLAGS *= -static
 # use: qmake "USE_QRCODE=1"
 # libqrencode (http://fukuchi.org/works/qrencode/index.en.html) must be installed for support
 contains(USE_QRCODE, 1) {
-    message(Building with QRCode support)
+    message("INFO: Building with QRCode support")
     DEFINES += USE_QRCODE
     LIBS += -lqrencode
 }
@@ -107,7 +107,7 @@ contains(USE_QRCODE, 1) {
 #  or: qmake "USE_UPNP=0" (disabled by default)
 #  or: qmake "USE_UPNP=-" (not supported)
 contains(USE_PNP, -) {
-    message(Building without UPNP support)
+    message("INFO: Building without UPNP support")
 } else {
     isEmpty(USE_UPNP) {
         DEFINES += USE_UPNP=1
@@ -131,7 +131,7 @@ linux:count(USE_DBUS, 0) {
 }
 
 contains(USE_DBUS, 1) {
-    message(Building with DBUS (Freedesktop notifications) support)
+    message("INFO: Building with DBUS (Freedesktop notifications) support")
     DEFINES += USE_DBUS
     QT += dbus
 }
@@ -195,7 +195,7 @@ QMAKE_CLEAN += $$PWD/src/leveldb/out-static/libleveldb.a; cd $$PWD/src/leveldb ;
 }
 
 contains(USE_O3, 1) {
-    message(Building O3 optimization flag)
+    message("INFO: Building O3 optimization flag")
     QMAKE_CXXFLAGS_RELEASE -= -O2
     QMAKE_CFLAGS_RELEASE -= -O2
     QMAKE_CXXFLAGS += -O3
@@ -203,7 +203,7 @@ contains(USE_O3, 1) {
 }
 
 *-g++-32 {
-    message("32 platform, adding -msse2 flag")
+    message("INFO: 32 platform, adding -msse2 flag")
 
     QMAKE_CXXFLAGS += -msse2
     QMAKE_CFLAGS += -msse2
