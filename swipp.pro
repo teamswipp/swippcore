@@ -64,18 +64,22 @@ OBJECTS_DIR = build
 MOC_DIR = build
 UI_DIR = build
 
-# use: qmake "RELEASE=1"
-contains(RELEASE, 1) {
-    # Mac: compile for maximum compatibility (10.7, 32-bit)
-    macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.7 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
-    macx:QMAKE_CFLAGS += -mmacosx-version-min=10.7 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
-    macx:QMAKE_LFLAGS += -mmacosx-version-min=10.7 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
-    macx:QMAKE_OBJECTIVE_CFLAGS += -mmacosx-version-min=10.7 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
+# Mac: compile for maximum compatibility (10.11)
+exists(/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk) {
+    macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.11 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+    macx:QMAKE_CFLAGS += -mmacosx-version-min=10.11 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+    macx:QMAKE_LFLAGS += -mmacosx-version-min=10.11 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+    macx:QMAKE_OBJECTIVE_CFLAGS += -mmacosx-version-min=10.11 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
+} else {
+    #macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
+    #macx:QMAKE_CFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
+    #macx:QMAKE_LFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
+    #macx:QMAKE_OBJECTIVE_CFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
+}
 
-    !windows:!macx {
-        # Linux: static link
-        # LIBS += -Wl,-Bstatic
-    }
+contains(RELEASE, 1):!windows:!macx {
+    # Linux: static link
+    # LIBS += -Wl,-Bstatic
 }
 
 !win32 {
