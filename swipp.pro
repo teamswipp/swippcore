@@ -71,10 +71,10 @@ exists(/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Deve
     macx:QMAKE_LFLAGS += -mmacosx-version-min=10.11 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
     macx:QMAKE_OBJECTIVE_CFLAGS += -mmacosx-version-min=10.11 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk
 } else {
-    #macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
-    #macx:QMAKE_CFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
-    #macx:QMAKE_LFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
-    #macx:QMAKE_OBJECTIVE_CFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
+    macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
+    macx:QMAKE_CFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
+    macx:QMAKE_LFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
+    macx:QMAKE_OBJECTIVE_CFLAGS += -mmacosx-version-min=10.11 -isysroot $${QMAKE_MAC_SDK.macosx.Path}
 }
 
 contains(RELEASE, 1):!windows:!macx {
