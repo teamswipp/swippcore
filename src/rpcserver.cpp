@@ -451,8 +451,8 @@ void ServiceConnection(AcceptedConnection *conn);
 
 // Forward declaration required for RPCListen
 BASIC_SOCKET_ACCEPTOR_RETURN
-void RPCAcceptHandler(boost::shared_ptr< basic_socket_acceptor<BASIC_SOCKET_ACCEPTOR_TEMPLATE> > acceptor,
-                      ssl::context& context, bool fUseSSL, AcceptedConnection* conn, const boost::system::error_code& error);
+static void RPCAcceptHandler(boost::shared_ptr< basic_socket_acceptor<BASIC_SOCKET_ACCEPTOR_TEMPLATE> > acceptor,
+                             ssl::context& context, bool fUseSSL, AcceptedConnection* conn, const boost::system::error_code& error);
 
 // Sets up I/O resources to accept and handle a new connection.
 BASIC_SOCKET_ACCEPTOR_RETURN static void RPCListen(boost::shared_ptr< basic_socket_acceptor<BASIC_SOCKET_ACCEPTOR_TEMPLATE> > acceptor,
@@ -470,8 +470,8 @@ BASIC_SOCKET_ACCEPTOR_RETURN static void RPCListen(boost::shared_ptr< basic_sock
 }
 
 // Accept and handle incoming connection.
-template <typename Protocol, typename SocketAcceptorService>
-void RPCAcceptHandler(boost::shared_ptr< basic_socket_acceptor<BASIC_SOCKET_ACCEPTOR_TEMPLATE> > acceptor,
+BASIC_SOCKET_ACCEPTOR_RETURN
+static void RPCAcceptHandler(boost::shared_ptr< basic_socket_acceptor<BASIC_SOCKET_ACCEPTOR_TEMPLATE> > acceptor,
                       ssl::context& context, const bool fUseSSL, AcceptedConnection* conn,
                       const boost::system::error_code& error)
 {
