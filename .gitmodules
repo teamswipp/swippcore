@@ -1,5 +1,5 @@
 [submodule "cpuminer-opt"]
-	path = cpuminer-opt
+	path = dependencies/cpuminer-opt
 	url = https://github.com/JayDDee/cpuminer-opt.git
 [submodule "dependencies/electron-webpack-quick-start"]
 	path = dependencies/electron-webpack-quick-start

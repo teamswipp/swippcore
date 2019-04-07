@@ -5,7 +5,7 @@
 
 SWIPP_BINARY=src/swippd
 SWIPP_ARGS="-debug -debugbacktrace -testnet -staking -datadir="
-MINER_BINARY=cpuminer-opt/cpuminer
+MINER_BINARY=dependencies/cpuminer-opt/cpuminer
 MINER_ARGS=" -a x11 --userpass=%s:%s --url=http://127.0.0.1:%d"
 TMP_TEMPLATE=/tmp/swipp.XXXXXXX
 STATUS_COMMAND="ps -eo pid,args | grep swippd | grep testnet"
