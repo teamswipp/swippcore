@@ -233,12 +233,8 @@ swippd: $(OBJS:obj/%=obj/%)
 
 clean:
 	-rm -f swippd
-	-rm -f obj/*.o
-	-rm -f obj/*.P
-	-rm -f obj-test/*.o
-	-rm -f obj-test/*.P
-	-rm -f obj/*.d
-	-rm -f obj/build.h
+	-rm -rf obj/*
+	-rm -rf obj-test/*
 	cd leveldb && $(MAKE) clean && cd ..
 
 FORCE:

@@ -53,8 +53,7 @@ bool fOnlyTor = false;
 
 // Thread management and startup/shutdown:
 //
-// The network-processing threads are all part of a thread group
-// created by AppInit() or the Qt main() function.
+// The network-processing threads are all part of a thread group.
 //
 // A clean exit happens when StartShutdown() or the SIGTERM
 // signal handler sets fRequestShutdown, which triggers
@@ -69,10 +68,6 @@ bool fOnlyTor = false;
 // Note that if running -daemon the parent process returns from AppInit2
 // before adding any threads to the threadGroup, so .join_all() returns
 // immediately and the parent exits from main().
-//
-// Shutdown for Qt is very similar, only it uses a QTimer to detect
-// fRequestShutdown getting set, and then does the normal Qt
-// shutdown thing.
 
 volatile bool fRequestShutdown = false;
 
@@ -808,9 +803,6 @@ bool AppInit2(boost::thread_group& threadGroup)
     if (!LoadBlockIndex())
         return InitError(_("Error loading block database"));
 
-    // As LoadBlockIndex can take several minutes, it's possible the user
-    // requested to kill bitcoin-qt during the last operation. If so, exit.
-    // As the program has not fully started yet, Shutdown() is possibly overkill.
     if (fRequestShutdown)
     {
         LogPrintf("Shutdown requested. Exiting.\n");
