@@ -1,12 +1,5 @@
-.qmake.stash
-/Makefile*
-build
-compile*
-object*
-release*
-swipp-qt*
-*.qm
-src/swippd
-src/test/tests
-qrc_*.cpp
+daemon/swippd
+daemon/test/tests
 keys
+gmon.out
+nohup.out
