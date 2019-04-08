@@ -1,6 +1,6 @@
 [submodule "cpuminer-opt"]
 	path = dependencies/cpuminer-opt
 	url = https://github.com/JayDDee/cpuminer-opt.git
-[submodule "dependencies/electron-webpack-quick-start"]
-	path = dependencies/electron-webpack-quick-start
-	url = https://github.com/electron-userland/electron-webpack-quick-start.git
+[submodule "dependencies/electron-webpack-react-quickstart"]
+	path = dependencies/electron-webpack-react-quickstart
+	url = https://github.com/slashbinslashnoname/electron-webpack-react-quickstart.git
