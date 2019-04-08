@@ -3,3 +3,6 @@ daemon/test/tests
 keys
 gmon.out
 nohup.out
+wallet/dist
+wallet/yarn.lock
+node_modules

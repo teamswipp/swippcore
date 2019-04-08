@@ -1,0 +1,30 @@
+{
+  "name": "swipp-wallet",
+  "version": "2.1.7",
+  "license": "LGPL-3.0-or-later",
+  "scripts": {
+    "dev": "electron-webpack dev",
+    "compile": "electron-webpack",
+    "dist": "yarn compile && electron-builder",
+    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
+  },
+  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "@babel/core": "^7.0.0",
+    "@babel/preset-react": "^7.0.0",
+    "source-map-support": "^0.5.10",
+    "less": "^3.8.1",
+    "less-loader": "^4.1.0"
+  }, 
+  "devDependencies": {
+    "electron": "4.0.1",
+    "electron-builder": "20.38.4",
+    "electron-webpack": "^2.6.2",
+    "electron-webpack-eslint": "^3.0.0",
+    "webpack": "4.28.4"
+  },
+  "resolutions": {
+    "upath": "^1.0.5"
+  }
+}
