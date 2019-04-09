@@ -13,8 +13,13 @@ if (app.getGPUFeatureStatus().gpu_compositing.includes("disabled")) {
 // Necessary to prevent window from being garbage collected
 let mainWindow;
 
-function createMainWindow() {
-	const window = new BrowserWindow({ frame: false });
+function createSplashWindow() {
+	const window = new BrowserWindow({
+		width: 600,
+		height: 200,
+		frame: false,
+		resizable: false
+	});
 
 	if (isDevelopment) {
 		window.webContents.openDevTools({ mode : "detach" });
@@ -49,11 +54,11 @@ app.on("window-all-closed", () => {
 
 app.on("activate", () => {
 	if (mainWindow === null) {
-		mainWindow = createMainWindow();
+		mainWindow = createSplashWindow();
 	}
 });
 
 app.on("ready", () => {
-	mainWindow = createMainWindow();
+	mainWindow = createSplashWindow();
 });
 
