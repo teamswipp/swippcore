@@ -30,5 +30,11 @@
   },
   "resolutions": {
     "upath": "^1.0.5"
+  },
+  "build": {
+    "extraFiles": {
+      "from": "../daemon/swippd",
+      "to": "swippd"
+    }
   }
 }

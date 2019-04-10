@@ -1,8 +1,9 @@
 "use strict";
 
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import { format as formatUrl } from "url";
+import Daemon from "common/daemon";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -12,13 +13,15 @@ if (app.getGPUFeatureStatus().gpu_compositing.includes("disabled")) {
 
 // Necessary to prevent window from being garbage collected
 let mainWindow;
+let splashWindow;
 
 function createSplashWindow() {
 	const window = new BrowserWindow({
 		width: 600,
 		height: 200,
 		frame: false,
-		resizable: false
+		resizable: false,
+		show: false
 	});
 
 	if (isDevelopment) {
@@ -26,17 +29,17 @@ function createSplashWindow() {
 		window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`);
 	} else {
 		window.loadURL(formatUrl({
-			pathname: path.join(__dirname, 'index.html'),
-			protocol: 'file',
+			pathname: path.join(__dirname, "index.html"),
+			protocol: "file",
 			slashes: true
 		}));
   	}
 
 	window.on("closed", () => {
-		mainWindow = null
+		splashWindow = null
 	})
 
-	window.webContents.on('devtools-opened', () => {
+	window.webContents.on("devtools-opened", () => {
 		window.focus();
 		setImmediate(() => {
 			window.focus();
@@ -44,6 +47,9 @@ function createSplashWindow() {
 	});
 
 	return window;
+}
+
+function createMainWindow() {
 }
 
 app.on("window-all-closed", () => {
@@ -54,11 +60,21 @@ app.on("window-all-closed", () => {
 
 app.on("activate", () => {
 	if (mainWindow === null) {
-		mainWindow = createSplashWindow();
+		mainWindow = createMainWindow();
 	}
 });
 
 app.on("ready", () => {
-	mainWindow = createSplashWindow();
+	splashWindow = createSplashWindow();
+
+	splashWindow.webContents.on("did-finish-load", () => {
+		splashWindow.show();
+		setTimeout(function() {
+		Daemon.start(splashWindow);
+		}, 3000);
+	});
 });
 
+ipcMain.on("exit", () => {
+	app.quit()
+});

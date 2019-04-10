@@ -1,16 +1,17 @@
 body {
+	font-size: 16pt;
 	margin: 15px;
+	user-select: none;
 }
 
-header.window {
-	height: 3em;
-	
+p {
+	font-size: 9pt;
 }
 
 img.logo {
-	width: auto;
-	height: 110px;
-	padding-left: 15px;
+	width: 110px;
+	height: auto;
+	padding-right: 30px;
 }
 
 html {
@@ -26,12 +27,22 @@ div#app {
 div.splash {
 	display: flex;
 	align-items: center;
+	flex-wrap: wrap;
 	justify-content: center;
 	height: 170px;
 }
 
 div.splash > div {
-	padding-left: 30px;
+	width: 400px;
+}
+
+div.splash > div:last-child {
+	font-size: 9pt;
+	width: 100%;
+	align-self: flex-end;
+	color: #d55;
+	text-align: center;
+	height: 1em;
 }
 
 h1 {
@@ -46,12 +57,29 @@ h2 {
 	margin-block-start: 0em;
 }
 
-p {
-	font-size: 9pt;
-}
-
 svg {
+	color: white;
 	position: absolute;
 	top: 18px;
 	right: 20px;
+}
+
+div.splash.error svg {
+	transition: transform .3s ease-in-out;
+	color: #d55;
+	cursor: pointer;
+}
+
+div.splash.error svg:hover {
+	transform: scale(1.3);
+}
+
+div.splash.error svg:active {
+	transition: none;
+	transform: scale(1.35);
+	color: #f77;
+}
+
+div:empty {
+	display: none;
 }
