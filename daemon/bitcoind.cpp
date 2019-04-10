@@ -1,9 +1,10 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "localization.h"
 #include "rpcserver.h"
 #include "rpcclient.h"
 #include "init.h"
@@ -27,10 +28,10 @@ void WaitForShutdown(boost::thread_group* threadGroup)
     }
 }
 
-bool AppInit(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     boost::thread_group threadGroup;
-    bool fRet = false;
+    int fRet = false;
 
     try
     {
@@ -120,7 +121,7 @@ bool AppInit(int argc, char* argv[])
         PrintException(NULL, "AppInit()");
     }
 
-    if (!fRet)
+    if (fRet > 1)
     {
         threadGroup.interrupt_all();
         // threadGroup.join_all(); was left out intentionally here, because we didn't re-test all of
@@ -131,20 +132,9 @@ bool AppInit(int argc, char* argv[])
         WaitForShutdown(&threadGroup);
 
     Shutdown();
-    return fRet;
-}
 
-extern void noui_connect();
+    if (fRet > 1)
+        exit(fRet);
 
-int main(int argc, char* argv[])
-{
-    bool fRet = false;
-    fHaveGUI = false;
-
-    fRet = AppInit(argc, argv);
-
-    if (fRet && fDaemon)
-        return 0;
-
-    return (fRet ? 0 : 1);
+    return 0;
 }
