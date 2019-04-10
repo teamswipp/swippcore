@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -9,6 +9,7 @@
 #include "checkpoints.h"
 #include "constraints.h"
 #include "init.h"
+#include "localization.h"
 #include "main.h"
 #include "net.h"
 #include "rpcserver.h"
@@ -16,13 +17,13 @@
 #include "spork.h"
 #include "txdb.h"
 #include "util.h"
-#include "ui_interface.h"
 
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #include "walletdb.h"
 #endif
 
+#include <errno.h>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -41,7 +42,6 @@ using namespace boost;
 CWallet* pwalletMain = NULL;
 #endif
 
-CClientUIInterface uiInterface;
 bool fConfChange;
 bool fMinimizeCoinAge;
 unsigned int nNodeLifespan;
@@ -142,13 +142,20 @@ void HandleSIGHUP(int)
 
 bool static InitError(const std::string &str)
 {
-    uiInterface.ThreadSafeMessageBox(str, "", CClientUIInterface::MSG_ERROR);
+    #warning InitError(str) not returning a proper error code to the OS and should not be used
+    fprintf(stderr, "%s\n", str.c_str());
     return false;
+}
+
+int static InitError(const std::string &str, int error)
+{
+    fprintf(stderr, "%s\n", str.c_str());
+    return error;
 }
 
 bool static InitWarning(const std::string &str)
 {
-    uiInterface.ThreadSafeMessageBox(str, "", CClientUIInterface::MSG_WARNING);
+    printf("%s\n", str.c_str());
     return true;
 }
 
@@ -173,163 +180,163 @@ bool static Bind(const CService &addr, bool fError = true)
 // Core-specific options shared between UI and daemon
 std::string HelpMessage()
 {
-    string strUsage = _("Options:") + "\n";
-    strUsage += "  -?                     " + _("This help message") + "\n";
-    strUsage += "  -conf=<file>           " + _("Specify configuration file (default: swipp.conf)") + "\n";
-    strUsage += "  -pid=<file>            " + _("Specify pid file (default: swippd.pid)") + "\n";
-    strUsage += "  -datadir=<dir>         " + _("Specify data directory") + "\n";
-    strUsage += "  -wallet=<dir>          " + _("Specify wallet file (within data directory)") + "\n";
-    strUsage += "  -dbcache=<n>           " + _("Set database cache size in megabytes (default: 100)") + "\n";
-    strUsage += "  -dblogsize=<n>         " + _("Set database disk log size in megabytes (default: 100)") + "\n";
-    strUsage += "  -timeout=<n>           " + _("Specify connection timeout in milliseconds (default: 5000)") + "\n";
-    strUsage += "  -proxy=<ip:port>       " + _("Connect through SOCKS5 proxy") + "\n";
-    strUsage += "  -tor=<ip:port>         " + _("Use proxy to reach tor hidden services (default: same as -proxy)") + "\n";
-    strUsage += "  -dns                   " + _("Allow DNS lookups for -addnode, -seednode and -connect") + "\n";
-    strUsage += "  -port=<port>           " + _("Listen for connections on <port> (default: 24055 or testnet: 18065)") + "\n";
-    strUsage += "  -maxconnections=<n>    " + _("Maintain at most <n> connections to peers (default: 125)") + "\n";
-    strUsage += "  -addnode=<ip>          " + _("Add a node to connect to and attempt to keep the connection open") + "\n";
-    strUsage += "  -connect=<ip>          " + _("Connect only to the specified node(s)") + "\n";
-    strUsage += "  -seednode=<ip>         " + _("Connect to a node to retrieve peer addresses, and disconnect") + "\n";
-    strUsage += "  -externalip=<ip>       " + _("Specify your own public address") + "\n";
-    strUsage += "  -onlynet=<net>         " + _("Only connect to nodes in network <net> (IPv4, IPv6 or Tor)") + "\n";
-    strUsage += "  -discover              " + _("Discover own IP address (default: 1 when listening and no -externalip)") + "\n";
-    strUsage += "  -irc                   " + _("Find peers using internet relay chat (default: 0)") + "\n";
-    strUsage += "  -listen                " + _("Accept connections from outside (default: 1 if no -proxy or -connect)") + "\n";
-    strUsage += "  -bind=<addr>           " + _("Bind to given address. Use [host]:port notation for IPv6") + "\n";
-    strUsage += "  -dnsseed               " + _("Query for peer addresses via DNS lookup, if low on addresses "
-                                                "(default: 1 unless -connect)") + "\n";
-    strUsage += "  -forcednsseed          " + _("Always query for peer addresses via DNS lookup (default: 0)") + "\n";
-    strUsage += "  -synctime              " + _("Sync time with other nodes. Disable if time on your system is precise e.g. "
-                                                "syncing with NTP (default: 1)") + "\n";
-    strUsage += "  -cppolicy              " + _("Sync checkpoints policy (default: strict)") + "\n";
-    strUsage += "  -banscore=<n>          " + _("Threshold for disconnecting misbehaving peers (default: 100)") + "\n";
-    strUsage += "  -bantime=<n>           " + _("Number of seconds to keep misbehaving peers from reconnecting "
-                                                "(default: 86400)") + "\n";
-    strUsage += "  -maxreceivebuffer=<n>  " + _("Maximum per-connection receive buffer, <n>*1000 bytes (default: 5000)") + "\n";
-    strUsage += "  -maxsendbuffer=<n>     " + _("Maximum per-connection send buffer, <n>*1000 bytes (default: 1000)") + "\n";
+    string strUsage = std::string(_("Options:")) + "\n";
+    strUsage += "  -?                     " + std::string(_("This help message")) + "\n";
+    strUsage += "  -conf=<file>           " + std::string(_("Specify configuration file (default: swipp.conf)")) + "\n";
+    strUsage += "  -pid=<file>            " + std::string(_("Specify pid file (default: swippd.pid)")) + "\n";
+    strUsage += "  -datadir=<dir>         " + std::string(_("Specify data directory")) + "\n";
+    strUsage += "  -wallet=<dir>          " + std::string(_("Specify wallet file (within data directory)")) + "\n";
+    strUsage += "  -dbcache=<n>           " + std::string(_("Set database cache size in megabytes (default: 100)")) + "\n";
+    strUsage += "  -dblogsize=<n>         " + std::string(_("Set database disk log size in megabytes (default: 100)")) + "\n";
+    strUsage += "  -timeout=<n>           " + std::string(_("Specify connection timeout in milliseconds (default: 5000)")) + "\n";
+    strUsage += "  -proxy=<ip:port>       " + std::string(_("Connect through SOCKS5 proxy")) + "\n";
+    strUsage += "  -tor=<ip:port>         " + std::string(_("Use proxy to reach tor hidden services (default: same as -proxy)")) + "\n";
+    strUsage += "  -dns                   " + std::string(_("Allow DNS lookups for -addnode, -seednode and -connect")) + "\n";
+    strUsage += "  -port=<port>           " + std::string(_("Listen for connections on <port> (default: 24055 or testnet: 18065)")) + "\n";
+    strUsage += "  -maxconnections=<n>    " + std::string(_("Maintain at most <n> connections to peers (default: 125)")) + "\n";
+    strUsage += "  -addnode=<ip>          " + std::string(_("Add a node to connect to and attempt to keep the connection open")) + "\n";
+    strUsage += "  -connect=<ip>          " + std::string(_("Connect only to the specified node(s)")) + "\n";
+    strUsage += "  -seednode=<ip>         " + std::string(_("Connect to a node to retrieve peer addresses, and disconnect")) + "\n";
+    strUsage += "  -externalip=<ip>       " + std::string(_("Specify your own public address")) + "\n";
+    strUsage += "  -onlynet=<net>         " + std::string(_("Only connect to nodes in network <net> (IPv4, IPv6 or Tor)")) + "\n";
+    strUsage += "  -discover              " + std::string(_("Discover own IP address (default: 1 when listening and no -externalip)")) + "\n";
+    strUsage += "  -irc                   " + std::string(_("Find peers using internet relay chat (default: 0)")) + "\n";
+    strUsage += "  -listen                " + std::string(_("Accept connections from outside (default: 1 if no -proxy or -connect)")) + "\n";
+    strUsage += "  -bind=<addr>           " + std::string(_("Bind to given address. Use [host]:port notation for IPv6")) + "\n";
+    strUsage += "  -dnsseed               " + std::string(_("Query for peer addresses via DNS lookup, if low on addresses "
+                                                            "(default: 1 unless -connect)")) + "\n";
+    strUsage += "  -forcednsseed          " + std::string(_("Always query for peer addresses via DNS lookup (default: 0)")) + "\n";
+    strUsage += "  -synctime              " + std::string(_("Sync time with other nodes. Disable if time on your system is precise e.g. "
+                                                            "syncing with NTP (default: 1)")) + "\n";
+    strUsage += "  -cppolicy              " + std::string(_("Sync checkpoints policy (default: strict)")) + "\n";
+    strUsage += "  -banscore=<n>          " + std::string(_("Threshold for disconnecting misbehaving peers (default: 100)")) + "\n";
+    strUsage += "  -bantime=<n>           " + std::string(_("Number of seconds to keep misbehaving peers from reconnecting "
+                                                            "(default: 86400)")) + "\n";
+    strUsage += "  -maxreceivebuffer=<n>  " + std::string(_("Maximum per-connection receive buffer, <n>*1000 bytes (default: 5000)")) + "\n";
+    strUsage += "  -maxsendbuffer=<n>     " + std::string(_("Maximum per-connection send buffer, <n>*1000 bytes (default: 1000)")) + "\n";
 
 #ifdef USE_UPNP
 #if USE_UPNP
-    strUsage += "  -upnp                  " + _("Use UPnP to map the listening port (default: 1 when listening)") + "\n";
+    strUsage += "  -upnp                  " + std::string(_("Use UPnP to map the listening port (default: 1 when listening)")) + "\n";
 #else
-    strUsage += "  -upnp                  " + _("Use UPnP to map the listening port (default: 0)") + "\n";
+    strUsage += "  -upnp                  " + std::string(_("Use UPnP to map the listening port (default: 0)")) + "\n";
 #endif
 #endif
 
-    strUsage += "  -paytxfee=<amt>        " + _("Fee per KB to add to transactions you send") + "\n";
-    strUsage += "  -mininput=<amt>        " + _("When creating transactions, ignore inputs with value less than this "
-                                                "(default: 0.01)") + "\n";
+    strUsage += "  -paytxfee=<amt>        " + std::string(_("Fee per KB to add to transactions you send")) + "\n";
+    strUsage += "  -mininput=<amt>        " + std::string(_("When creating transactions, ignore inputs with value less than this "
+                                                            "(default: 0.01)")) + "\n";
     if (fHaveGUI)
-        strUsage += "  -server                " + _("Accept command line and JSON-RPC commands") + "\n";
+        strUsage += "  -server                " + std::string(_("Accept command line and JSON-RPC commands")) + "\n";
 
 #if !defined(WIN32)
     if (fHaveGUI)
-        strUsage += "  -daemon                " + _("Run in the background as a daemon and accept commands") + "\n";
+        strUsage += "  -daemon                " + std::string(_("Run in the background as a daemon and accept commands")) + "\n";
 #endif
 
-    strUsage += "  -testnet               " + _("Use the test network") + "\n";
-    strUsage += "  -debug=<category>      " + _("Output debugging information (default: 0, supplying "
-                                                "<category> is optional)") + "\n";
-    strUsage += "                         " + _("If <category> is not supplied, output all debugging information.") + "\n";
-    strUsage += "                         " + _("<category> can be:");
-    strUsage += " addrman, alert, db, lock, rand, rpc, selectcoins, mempool, net,\n";
-    strUsage += "                         coinage, coinstake, creation, stakemodifier";
+    strUsage += "  -testnet               " + std::string(_("Use the test network")) + "\n";
+    strUsage += "  -debug=<category>      " + std::string(_("Output debugging information (default: 0, supplying "
+                                                            "<category> is optional)")) + "\n";
+    strUsage += "                         " + std::string(_("If <category> is not supplied, output all debugging information.")) + "\n";
+    strUsage += "                         " + std::string(_("<category> can be:"));
+    strUsage += "                         " + std::string("   addrman, alert, db, lock, rand, rpc, selectcoins, mempool, net,\n");
+    strUsage += "                         " + std::string("   coinage, coinstake, creation, stakemodifier");
 
     if (fHaveGUI)
         strUsage += ", qt.\n";
     else
         strUsage += ".\n";
 
-    strUsage += "  -debugbacktrace        " + _("Output backtrace debugging information, disabled by default") + "\n";
-    strUsage += "  -logtimestamps         " + _("Prepend debug output with timestamp") + "\n";
-    strUsage += "  -shrinkdebugfile       " + _("Shrink debug.log file on client startup (default: 1 when no -debug)") + "\n";
-    strUsage += "  -printtoconsole        " + _("Send trace/debug info to console instead of debug.log file") + "\n";
-    strUsage += "  -regtest               " + _("Enter regression test mode, which uses a special chain in which blocks can be "
-                                                "solved instantly.\n                         "
-                                                "This is intended for regression testing tools and app development.") + "\n";
-    strUsage += "  -rpcuser=<user>        " + _("Username for JSON-RPC connections") + "\n";
-    strUsage += "  -rpcpassword=<pw>      " + _("Password for JSON-RPC connections") + "\n";
-    strUsage += "  -rpcport=<port>        " + _("Listen for JSON-RPC connections on <port> (default: 35075 or "
-                                                "testnet: 15075)") + "\n";
-    strUsage += "  -rpcallowip=<ip>       " + _("Allow JSON-RPC connections from specified IP address") + "\n";
+    strUsage += "  -debugbacktrace        " + std::string(_("Output backtrace debugging information, disabled by default")) + "\n";
+    strUsage += "  -logtimestamps         " + std::string(_("Prepend debug output with timestamp")) + "\n";
+    strUsage += "  -shrinkdebugfile       " + std::string(_("Shrink debug.log file on client startup (default: 1 when no -debug)")) + "\n";
+    strUsage += "  -printtoconsole        " + std::string(_("Send trace/debug info to console instead of debug.log file")) + "\n";
+    strUsage += "  -regtest               " + std::string(_("Enter regression test mode, which uses a special chain in which "
+                                                            "blocks can be solved instantly.\n                         "
+                                                            "This is intended for regression testing tools and app development.")) + "\n";
+    strUsage += "  -rpcuser=<user>        " + std::string(_("Username for JSON-RPC connections")) + "\n";
+    strUsage += "  -rpcpassword=<pw>      " + std::string(_("Password for JSON-RPC connections")) + "\n";
+    strUsage += "  -rpcport=<port>        " + std::string(_("Listen for JSON-RPC connections on <port> (default: 35075 or "
+                                                            "testnet: 15075)")) + "\n";
+    strUsage += "  -rpcallowip=<ip>       " + std::string(_("Allow JSON-RPC connections from specified IP address")) + "\n";
 
     if (!fHaveGUI)
     {
-        strUsage += "  -rpcconnect=<ip>       " + _("Send commands to node running on <ip> (default: 127.0.0.1)") + "\n";
-        strUsage += "  -rpcwait               " + _("Wait for RPC server to start") + "\n";
+        strUsage += "  -rpcconnect=<ip>       " + std::string(_("Send commands to node running on <ip> (default: 127.0.0.1)")) + "\n";
+        strUsage += "  -rpcwait               " + std::string(_("Wait for RPC server to start")) + "\n";
     }
 
-    strUsage += "  -rpcthreads=<n>        " + _("Set the number of threads to service RPC calls (default: 4)") + "\n";
-    strUsage += "  -blocknotify=<cmd>     " + _("Execute command when the best block changes (%s in cmd is replaced "
-                                                "by block hash)") + "\n";
-    strUsage += "  -walletnotify=<cmd>    " + _("Execute command when a wallet transaction changes (%s in cmd is "
-                                                "replaced by TxID)") + "\n";
-    strUsage += "  -confchange            " + _("Require a confirmations for change (default: 0)") + "\n";
-    strUsage += "  -minimizecoinage       " + _("Minimize weight consumption (experimental) (default: 0)") + "\n";
-    strUsage += "  -alertnotify=<cmd>     " + _("Execute command when a relevant alert is received (%s in cmd is "
-                                                "replaced by message)") + "\n";
-    strUsage += "  -upgradewallet         " + _("Upgrade wallet to latest format") + "\n";
-    strUsage += "  -keypool=<n>           " + _("Set key pool size to <n> (default: 100)") + "\n";
-    strUsage += "  -rescan                " + _("Rescan the block chain for missing wallet transactions") + "\n";
-    strUsage += "  -salvagewallet         " + _("Attempt to recover private keys from a corrupt wallet.dat") + "\n";
-    strUsage += "  -checkblocks=<n>       " + _("How many blocks to check at startup (default: 500, 0 = all)") + "\n";
-    strUsage += "  -checklevel=<n>        " + _("How thorough the block verification is (0-6, default: 1)") + "\n";
-    strUsage += "  -loadblock=<file>      " + _("Imports blocks from external blk000?.dat file") + "\n";
-    strUsage += "  -maxorphanblocks=<n>   " + strprintf(_("Keep at most <n> unconnectable blocks in memory (default: %u)"),
-                                                          DEFAULT_MAX_ORPHAN_BLOCKS) + "\n";
+    strUsage += "  -rpcthreads=<n>        " + std::string(_("Set the number of threads to service RPC calls (default: 4)")) + "\n";
+    strUsage += "  -blocknotify=<cmd>     " + std::string(_("Execute command when the best block changes (%s in cmd is replaced "
+                                                            "by block hash)")) + "\n";
+    strUsage += "  -walletnotify=<cmd>    " + std::string(_("Execute command when a wallet transaction changes (%s in cmd is "
+                                                            "replaced by TxID)")) + "\n";
+    strUsage += "  -confchange            " + std::string(_("Require a confirmations for change (default: 0)")) + "\n";
+    strUsage += "  -minimizecoinage       " + std::string(_("Minimize weight consumption (experimental) (default: 0)")) + "\n";
+    strUsage += "  -alertnotify=<cmd>     " + std::string(_("Execute command when a relevant alert is received (%s in cmd is "
+                                                            "replaced by message)")) + "\n";
+    strUsage += "  -upgradewallet         " + std::string(_("Upgrade wallet to latest format")) + "\n";
+    strUsage += "  -keypool=<n>           " + std::string(_("Set key pool size to <n> (default: 100)")) + "\n";
+    strUsage += "  -rescan                " + std::string(_("Rescan the block chain for missing wallet transactions")) + "\n";
+    strUsage += "  -salvagewallet         " + std::string(_("Attempt to recover private keys from a corrupt wallet.dat")) + "\n";
+    strUsage += "  -checkblocks=<n>       " + std::string(_("How many blocks to check at startup (default: 500, 0 = all)")) + "\n";
+    strUsage += "  -checklevel=<n>        " + std::string(_("How thorough the block verification is (0-6, default: 1)")) + "\n";
+    strUsage += "  -loadblock=<file>      " + std::string(_("Imports blocks from external blk000?.dat file")) + "\n";
+    strUsage += "  -maxorphanblocks=<n>   " + std::string(strprintf(_("Keep at most <n> unconnectable blocks in memory (default: %u)"),
+                                                                      DEFAULT_MAX_ORPHAN_BLOCKS)) + "\n";
 
-    strUsage += "\n" + _("Block creation options:") + "\n";
-    strUsage += "  -blockminsize=<n>       "   + _("Set minimum block size in bytes (default: 0)") + "\n";
-    strUsage += "  -blockmaxsize=<n>       "   + _("Set maximum block size in bytes (default: 250000)") + "\n";
-    strUsage += "  -blockprioritysize=<n>  "   + _("Set maximum size of high-priority/low-fee transactions in bytes "
-                                                   "(default: 27000)") + "\n";
+    strUsage += "\n" + std::string(_("Block creation options:")) + "\n";
+    strUsage += "  -blockminsize=<n>       "   + std::string(_("Set minimum block size in bytes (default: 0)")) + "\n";
+    strUsage += "  -blockmaxsize=<n>       "   + std::string(_("Set maximum block size in bytes (default: 250000)")) + "\n";
+    strUsage += "  -blockprioritysize=<n>  "   + std::string(_("Set maximum size of high-priority/low-fee transactions in bytes "
+                                                               "(default: 27000)")) + "\n";
 
-    strUsage += "\n" + _("SSL options: (see the Bitcoin Wiki for SSL setup instructions)") + "\n";
-    strUsage += "  -rpcssl                                  " + _("Use OpenSSL (https) for JSON-RPC connections") + "\n";
-    strUsage += "  -rpcsslcertificatechainfile=<file.cert>  " + _("Server certificate file (default: server.cert)") + "\n";
-    strUsage += "  -rpcsslprivatekeyfile=<file.pem>         " + _("Server private key (default: server.pem)") + "\n";
-    strUsage += "  -rpcsslciphers=<ciphers>                 " + _("Acceptable ciphers (default: TLSv1.2"
-                                                                  "+HIGH:TLSv1+HIGH:!SSLv2:!aNULL:!eNULL:!3DES:@STRENGTH)") + "\n";
+    strUsage += "\n" + std::string(_("SSL options: (see the Bitcoin Wiki for SSL setup instructions)")) + "\n";
+    strUsage += "  -rpcssl                                  " + std::string(_("Use OpenSSL (https) for JSON-RPC connections")) + "\n";
+    strUsage += "  -rpcsslcertificatechainfile=<file.cert>  " + std::string(_("Server certificate file (default: server.cert)")) + "\n";
+    strUsage += "  -rpcsslprivatekeyfile=<file.pem>         " + std::string(_("Server private key (default: server.pem)")) + "\n";
+    strUsage += "  -rpcsslciphers=<ciphers>                 " + std::string(_("Acceptable ciphers (default: TLSv1.2"
+                                                                              "+HIGH:TLSv1+HIGH:!SSLv2:!aNULL:!eNULL:!3DES:@STRENGTH)")) + "\n";
 
-    strUsage += "\n" + _("Masternode options:") + "\n";
-    strUsage += "  -masternode=<n>         " + _("Enable the client to act as a masternode (0-1, default: 0)") + "\n";
-    strUsage += "  -mnconf=<file>          " + _("Specify masternode configuration file (default: masternode.conf)") + "\n";
-    strUsage += "  -masternodeprivkey=<n>  " + _("Set the masternode private key") + "\n";
-    strUsage += "  -masternodeaddr=<n>     " + _("Set external address:port to get to this masternode "
-                                                 "(example: address:port)") + "\n";
+    strUsage += "\n" + std::string(_("Masternode options:")) + "\n";
+    strUsage += "  -masternode=<n>         " + std::string(_("Enable the client to act as a masternode (0-1, default: 0)")) + "\n";
+    strUsage += "  -mnconf=<file>          " + std::string(_("Specify masternode configuration file (default: masternode.conf)")) + "\n";
+    strUsage += "  -masternodeprivkey=<n>  " + std::string(_("Set the masternode private key")) + "\n";
+    strUsage += "  -masternodeaddr=<n>     " + std::string(_("Set external address:port to get to this masternode "
+                                                             "(example: address:port)")) + "\n";
 
-    strUsage += "\n" + _("Darksend options:") + "\n";
-    strUsage += "  -enabledarksend=<n>        " + _("Enable use of automated darksend for funds stored in this wallet "
-                                                    "(0-1, default: 0)") + "\n";
-    strUsage += "  -darksendrounds=<n>        " + _("Use N separate masternodes to anonymize funds  (2-8, default: 2)") + "\n";
-    strUsage += "  -anonymizeSwippamount=<n>  " + _("Keep N Swipp anonymized (default: 0)") + "\n";
-    strUsage += "  -liquidityprovider=<n>     " + _("Provide liquidity to Darksend by infrequently mixing coins on a "
-                                                    "continual basis\n                             "
-                                                    "(0-100, default: 0, 1=very frequent, high fees, "
-                                                    "100=very infrequent, low fees)") + "\n";
-    strUsage += "  -litemode=<n>              " + _("Disable all Masternode and Darksend related functionality "
-                                                    "(0-1, default: 0)") + "\n";
+    strUsage += "\n" + std::string(_("Darksend options:")) + "\n";
+    strUsage += "  -enabledarksend=<n>        " + std::string(_("Enable use of automated darksend for funds stored in this wallet "
+                                                                "(0-1, default: 0)")) + "\n";
+    strUsage += "  -darksendrounds=<n>        " + std::string(_("Use N separate masternodes to anonymize funds  (2-8, default: 2)")) + "\n";
+    strUsage += "  -anonymizeSwippamount=<n>  " + std::string(_("Keep N Swipp anonymized (default: 0)")) + "\n";
+    strUsage += "  -liquidityprovider=<n>     " + std::string(_("Provide liquidity to Darksend by infrequently mixing coins on a "
+                                                                "continual basis\n                             "
+                                                                "(0-100, default: 0, 1=very frequent, high fees, "
+                                                                "100=very infrequent, low fees)")) + "\n";
+    strUsage += "  -litemode=<n>              " + std::string(_("Disable all Masternode and Darksend related functionality "
+                                                                "(0-1, default: 0)")) + "\n";
 
-    strUsage += "\n" + _("InstantX options:") + "\n";
-    strUsage += "  -enableinstantx=<n>  " + _("Enable instantx, show confirmations for locked transactions "
-                                              "(bool, default: true)") + "\n";
-    strUsage += "  -instantxdepth=<n>   " + _("Show N confirmations for a successfully locked transaction "
-                                              "(0-9999, default: 1)") + "\n";
+    strUsage += "\n" + std::string(_("InstantX options:")) + "\n";
+    strUsage += "  -enableinstantx=<n>  " + std::string(_("Enable instantx, show confirmations for locked transactions "
+                                                          "(bool, default: true)")) + "\n";
+    strUsage += "  -instantxdepth=<n>   " + std::string(_("Show N confirmations for a successfully locked transaction "
+                                                          "(0-9999, default: 1)")) + "\n";
 
-    strUsage += "\n" + _("Secure messaging options:") + "\n";
-    strUsage += "  -nosmsg         " + _("Disable secure messaging.") + "\n";
-    strUsage += "  -debugsmsg      " + _("Log extra debug messages.") + "\n";
-    strUsage += "  -smsgscanchain  " + _("Scan the block chain for public key addresses on startup.") + "\n";
+    strUsage += "\n" + std::string(_("Secure messaging options:")) + "\n";
+    strUsage += "  -nosmsg         " + std::string(_("Disable secure messaging.")) + "\n";
+    strUsage += "  -debugsmsg      " + std::string(_("Log extra debug messages.")) + "\n";
+    strUsage += "  -smsgscanchain  " + std::string(_("Scan the block chain for public key addresses on startup.")) + "\n";
 
-    strUsage += "\n" + _("Network control options:") + "\n";
-    strUsage += "  --masternodepaymentskey=<n>  " + _("Set the private control key for the masternode payments master.") + "\n";
-    strUsage += "  --sporkkey=<n>               " + _("Set the private control key for the spork manager.") + "\n";
-    strUsage += "                               " + _("For the test network, the default private WIF keys are;") + "\n";
-    strUsage += "                               " + _("[Masternode payments master] ") +
-                                                      "92kyYbFWnSaCCaMXo8bcbHM2ooCaNZpJbjRUsQS9XDFLX4Ka4AJ\n";
-    strUsage += "                               " + _("[Sporks] ") + "92cgFu5pK9rwiu9FwFucy2fk3PeCjGQn1i6egB5A5A7vRyXR6j2\n";
-    strUsage += "                               " + _("For the public network, the private keys are controlled by the "
-                                                      "Swipp team.") + "\n";
+    strUsage += "\n" + std::string(_("Network control options:")) + "\n";
+    strUsage += "  --masternodepaymentskey=<n>  " + std::string(_("Set the private control key for the masternode payments master.")) + "\n";
+    strUsage += "  --sporkkey=<n>               " + std::string(_("Set the private control key for the spork manager.")) + "\n";
+    strUsage += "                               " + std::string(_("For the test network, the default private WIF keys are;")) + "\n";
+    strUsage += "                               " + std::string(_("[Masternode payments master] ")) +
+                                                    std::string("92kyYbFWnSaCCaMXo8bcbHM2ooCaNZpJbjRUsQS9XDFLX4Ka4AJ\n");
+    strUsage += "                               " + std::string(_("[Sporks] ")) + "92cgFu5pK9rwiu9FwFucy2fk3PeCjGQn1i6egB5A5A7vRyXR6j2\n";
+    strUsage += "                               " + std::string(_("For the public network, the private keys are controlled by the "
+                                                                  "Swipp team.")) + "\n";
     return strUsage;
 }
 
@@ -346,7 +353,7 @@ bool InitSanityCheck(void)
     return true;
 }
 
-bool AppInit2(boost::thread_group& threadGroup)
+int AppInit2(boost::thread_group& threadGroup)
 {
 #ifdef _MSC_VER
     // Turn off Microsoft heap dump noise
@@ -568,7 +575,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     if (!lock.try_lock())
         return InitError(strprintf(_("Cannot obtain a lock on data directory %s. "
-                                     "Swipp is probably already running."), strDataDir));
+                                     "Swipp is probably already running."), strDataDir), EEXIST);
 
     if (GetBoolArg("-shrinkdebugfile", !fDebug))
         ShrinkDebugFile();
@@ -605,7 +612,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 #ifdef ENABLE_WALLET
     if (!fDisableWallet)
     {
-        uiInterface.InitMessage(_("Verifying database integrity..."));
+        LogPrintf(_("Verifying database integrity...\n"));
 
         if (!bitdb.Open(GetDataDir()))
         {
@@ -797,7 +804,7 @@ bool AppInit2(boost::thread_group& threadGroup)
         return false;
     }
 
-    uiInterface.InitMessage(_("Loading block index..."));
+    LogPrintf(_("Loading block index...\n"));
     nStart = GetTimeMillis();
 
     if (!LoadBlockIndex())
@@ -851,7 +858,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     }
     else
     {
-        uiInterface.InitMessage(_("Loading wallet..."));
+        LogPrintf(_("Loading wallet...\n"));
         nStart = GetTimeMillis();
         bool fFirstRun = true;
         pwalletMain = new CWallet(strWalletFileName);
@@ -936,7 +943,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
         if (pindexBest != pindexRescan && pindexBest && pindexRescan && pindexBest->nHeight > pindexRescan->nHeight)
         {
-            uiInterface.InitMessage(_("Rescanning..."));
+            LogPrintf(_("Rescanning...\n"));
             LogPrintf("Rescanning last %i blocks (from block %i)...\n",
                       pindexBest->nHeight - pindexRescan->nHeight, pindexRescan->nHeight);
 
@@ -962,7 +969,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     }
 
     threadGroup.create_thread(boost::bind(&ThreadImport, vImportFiles));
-    uiInterface.InitMessage(_("Loading addresses..."));
+    LogPrintf(_("Loading addresses...\n"));
     nStart = GetTimeMillis();
 
     {
@@ -1098,13 +1105,13 @@ bool AppInit2(boost::thread_group& threadGroup)
     // Reindex addresses found in blockchain
     if(GetBoolArg("-reindexaddr", false))
     {
-        uiInterface.InitMessage(_("Rebuilding address index..."));
+        LogPrintf(_("Rebuilding address index...\n"));
         CBlockIndex *pblockAddrIndex = pindexBest;
         CTxDB txdbAddr("rw");
 
         while(pblockAddrIndex)
         {
-            uiInterface.InitMessage(strprintf("Rebuilding address index, block %i", pblockAddrIndex->nHeight));
+            LogPrintf("Rebuilding address index, block %d\n", pblockAddrIndex->nHeight);
             bool ReadFromDisk(const CBlockIndex* pindex, bool fReadTransactions=true);
             CBlock pblockAddr;
 
@@ -1142,14 +1149,11 @@ bool AppInit2(boost::thread_group& threadGroup)
         threadGroup.create_thread(boost::bind(&ThreadStakeMiner, pwalletMain));
 #endif
 
-    uiInterface.InitMessage(_("Done loading"));
+    LogPrintf(_("Done loading\n"));
 
 #ifdef ENABLE_WALLET
     if (pwalletMain)
     {
-        BOOST_FOREACH(PAIRTYPE(std::string, CAdrenalineNodeConfig) adrenaline, pwalletMain->mapMyAdrenalineNodes)
-            uiInterface.NotifyAdrenalineNodeChanged(adrenaline.second);
-
         // Add wallet transactions that aren't already in a block to mapTransactions
         pwalletMain->ReacceptWalletTransactions();
 

@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2013 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -9,8 +9,8 @@
 
 #include "rpcprotocol.h"
 #include "util.h"
-#include "ui_interface.h"
 #include "chainparams.h" // for Params().RPCPort()
+#include "localization.h"
 
 #include <stdint.h>
 

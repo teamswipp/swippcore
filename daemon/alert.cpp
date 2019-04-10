@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,7 +10,6 @@
 #include "key.h"
 #include "net.h"
 #include "timedata.h"
-#include "ui_interface.h"
 #include "util.h"
 
 #include <stdint.h>
@@ -208,13 +207,11 @@ bool CAlert::ProcessAlert(bool fThread)
             if (Cancels(alert))
             {
                 LogPrint("alert", "cancelling alert %d\n", alert.nID);
-                uiInterface.NotifyAlertChanged((*mi).first, CT_DELETED);
                 mapAlerts.erase(mi++);
             }
             else if (!alert.IsInEffect())
             {
                 LogPrint("alert", "expiring alert %d\n", alert.nID);
-                uiInterface.NotifyAlertChanged((*mi).first, CT_DELETED);
                 mapAlerts.erase(mi++);
             }
             else
@@ -238,7 +235,6 @@ bool CAlert::ProcessAlert(bool fThread)
         // Notify UI and alertnotify if it applies to me
         if(AppliesToMe())
         {
-            uiInterface.NotifyAlertChanged(GetHash(), CT_NEW);
             std::string strCmd = GetArg("-alertnotify", "");
 
             if (!strCmd.empty())

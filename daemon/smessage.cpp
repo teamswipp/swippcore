@@ -1,5 +1,5 @@
 // Copyright (c) 2014 The ShadowCoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -2319,38 +2319,6 @@ int SecureMsgWalletUnlocked()
               nFiles, nMessages, nFoundMessages);
 
     NotifySecMsgWalletUnlocked();
-    return 0;
-}
-
-int SecureMsgWalletKeyChanged(std::string sAddress, std::string sLabel, ChangeType mode)
-{
-    if (!fSecMsgEnabled)
-        return 0;
-
-    LogPrintf("SecureMsgWalletKeyChanged()\n");
-    {
-        LOCK(cs_smsg);
-
-        switch(mode)
-        {
-            case CT_NEW:
-                smsgAddresses.push_back(SecMsgAddress(sAddress, smsgOptions.fNewAddressRecv, smsgOptions.fNewAddressAnon));
-                break;
-            case CT_DELETED:
-                for (std::vector<SecMsgAddress>::iterator it = smsgAddresses.begin(); it != smsgAddresses.end(); ++it)
-                {
-                    if (sAddress != it->sAddress)
-                        continue;
-
-                    smsgAddresses.erase(it);
-                    break;
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
     return 0;
 }
 

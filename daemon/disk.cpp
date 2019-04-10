@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,9 +10,9 @@
 #include <stdlib.h>
 
 #include "disk.h"
+#include "localization.h"
 #include "tinyformat.h"
 #include "util.h"
-#include "ui_interface.h"
 
 static unsigned int nCurrentBlockFile = 1;
 
@@ -59,7 +59,7 @@ bool CheckDiskSpace(uint64_t nAdditionalBytes)
         std::string strMessage = _("Error: Disk space is low!");
         strMiscWarning = strMessage;
         LogPrintf("*** %s\n", strMessage);
-        uiInterface.ThreadSafeMessageBox(strMessage, "", CClientUIInterface::MSG_ERROR);
+        fprintf(stderr, "%s\n", strMessage.c_str());
 
         return false;
     }

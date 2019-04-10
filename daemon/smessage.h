@@ -1,5 +1,5 @@
 // Copyright (c) 2014 The ShadowCoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -37,10 +37,6 @@ class SecMsgAddress;
 class SecMsgOptions;
 
 extern bool fSecMsgEnabled;
-extern boost::signals2::signal<void (SecMsgStored& inboxHdr)> NotifySecMsgInboxChanged;
-extern boost::signals2::signal<void (SecMsgStored& outboxHdr)> NotifySecMsgOutboxChanged;
-extern boost::signals2::signal<void ()> NotifySecMsgWalletUnlocked;
-
 extern std::map<int64_t, SecMsgBucket> smsgBuckets;
 extern std::vector<SecMsgAddress> smsgAddresses;
 extern SecMsgOptions smsgOptions;
@@ -304,7 +300,6 @@ bool SecureMsgScanBlockChain();
 bool SecureMsgScanBuckets();
 
 int SecureMsgWalletUnlocked();
-int SecureMsgWalletKeyChanged(std::string sAddress, std::string sLabel, ChangeType mode);
 int SecureMsgScanMessage(uint8_t *pHeader, uint8_t *pPayload, uint32_t nPayload, bool reportToGui);
 int SecureMsgGetStoredKey(CKeyID& ckid, CPubKey& cpkOut);
 int SecureMsgGetLocalKey(CKeyID& ckid, CPubKey& cpkOut);

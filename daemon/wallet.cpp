@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,10 +10,10 @@
 #include "coincontrol.h"
 #include "constraints.h"
 #include "kernel.h"
+#include "localization.h"
 #include "net.h"
 #include "timedata.h"
 #include "txdb.h"
-#include "ui_interface.h"
 #include "walletdb.h"
 #include "crypter.h"
 #include "key.h"
@@ -511,7 +511,6 @@ void CWallet::WalletUpdateSpent(const CTransaction &tx, bool fBlock)
                     LogPrintf("WalletUpdateSpent found spent coin %s BC %s\n", FormatMoney(wtx.GetCredit()), wtx.GetHash().ToString());
                     wtx.MarkSpent(txin.prevout.n);
                     wtx.WriteToDisk();
-                    NotifyTransactionChanged(this, txin.prevout.hash, CT_UPDATED);
                 }
             }
         }
@@ -528,7 +527,6 @@ void CWallet::WalletUpdateSpent(const CTransaction &tx, bool fBlock)
                 {
                     wtx.MarkUnspent(&txout - &tx.vout[0]);
                     wtx.WriteToDisk();
-                    NotifyTransactionChanged(this, hash, CT_UPDATED);
                 }
             }
         }
@@ -676,9 +674,6 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn)
 
         // since AddToWallet is called directly for self-originating transactions, check for consumption of own coins
         WalletUpdateSpent(wtx, (wtxIn.hashBlock != 0));
-
-        // Notify UI of new or updated transaction
-        NotifyTransactionChanged(this, hash, fInsertedNew ? CT_NEW : CT_UPDATED);
 
         // notify an external script when a wallet transaction comes in or is updated
         std::string strCmd = GetArg("-walletnotify", "");
@@ -3002,12 +2997,7 @@ bool CWallet::AddStealthAddress(CStealthAddress& sxAddr)
         }
     }
 
-    bool rv = CWalletDB(strWalletFile).WriteStealthAddress(sxAddr);
-
-    if (rv)
-        NotifyAddressBookChanged(this, sxAddr, sxAddr.label, fOwned, CT_NEW);
-
-    return rv;
+    return CWalletDB(strWalletFile).WriteStealthAddress(sxAddr);
 }
 
 bool CWallet::UnlockStealthAddresses(const CKeyingMaterial& vMasterKeyIn)
@@ -3179,8 +3169,6 @@ bool CWallet::UpdateStealthAddress(std::string &addr, std::string &label, bool a
 
     std::set<CStealthAddress>::iterator it;
     it = stealthAddresses.find(sxAddr);
-
-    ChangeType nMode = CT_UPDATED;
     CStealthAddress sxFound;
 
     if (it == stealthAddresses.end())
@@ -3190,7 +3178,6 @@ bool CWallet::UpdateStealthAddress(std::string &addr, std::string &label, bool a
             sxFound = sxAddr;
             sxFound.label = label;
             stealthAddresses.insert(sxFound);
-            nMode = CT_NEW;
         }
         else
         {
@@ -3221,9 +3208,6 @@ bool CWallet::UpdateStealthAddress(std::string &addr, std::string &label, bool a
         printf("UpdateStealthAddress(%s) Write to db failed.\n", addr.c_str());
         return false;
     }
-
-    bool fOwned = sxFound.scan_secret.size() == ec_secret_size;
-    NotifyAddressBookChanged(this, sxFound, sxFound.label, fOwned, nMode);
 
     return true;
 }
@@ -3273,7 +3257,7 @@ bool CWallet::CreateStealthTransaction(CScript scriptPubKey, int64_t nValue, std
 }
 
 string CWallet::SendStealthMoney(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t>& P,
-                                 std::vector<uint8_t>& narr, std::string& sNarr, CWalletTx& wtxNew, bool fAskFee)
+                                 std::vector<uint8_t>& narr, std::string& sNarr, CWalletTx& wtxNew)
 {
     CReserveKey reservekey(this);
     int64_t nFeeRequired;
@@ -3307,9 +3291,6 @@ string CWallet::SendStealthMoney(CScript scriptPubKey, int64_t nValue, std::vect
         return strError;
     }
 
-    if (fAskFee && !uiInterface.ThreadSafeAskFee(nFeeRequired, _("Sending...")))
-        return "ABORTED";
-
     if (!CommitTransaction(wtxNew, reservekey))
         return _("Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already "
                  "spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
@@ -3318,7 +3299,7 @@ string CWallet::SendStealthMoney(CScript scriptPubKey, int64_t nValue, std::vect
 }
 
 bool CWallet::SendStealthMoneyToDestination(CStealthAddress& sxAddress, int64_t nValue, std::string& sNarr,
-                                            CWalletTx& wtxNew, std::string& sError, bool fAskFee)
+                                            CWalletTx& wtxNew, std::string& sError)
 {
     // Check amount
     if (nValue <= 0)
@@ -3398,7 +3379,7 @@ bool CWallet::SendStealthMoneyToDestination(CStealthAddress& sxAddress, int64_t 
     CScript scriptPubKey;
     scriptPubKey.SetDestination(addrTo.Get());
 
-    if ((sError = SendStealthMoney(scriptPubKey, nValue, ephem_pubkey, vchNarr, sNarr, wtxNew, fAskFee)) != "")
+    if ((sError = SendStealthMoney(scriptPubKey, nValue, ephem_pubkey, vchNarr, sNarr, wtxNew)) != "")
         return false;
 
     return true;
@@ -3984,7 +3965,6 @@ bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey)
                 coin.BindWallet(this);
                 coin.MarkSpent(txin.prevout.n);
                 coin.WriteToDisk();
-                NotifyTransactionChanged(this, coin.GetHash(), CT_UPDATED);
             }
 
             if (fFileBacked)
@@ -4008,7 +3988,7 @@ bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey)
     return true;
 }
 
-string CWallet::SendMoney(CScript scriptPubKey, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew, bool fAskFee)
+string CWallet::SendMoney(CScript scriptPubKey, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew)
 {
     CReserveKey reservekey(this);
     int64_t nFeeRequired;
@@ -4043,9 +4023,6 @@ string CWallet::SendMoney(CScript scriptPubKey, int64_t nValue, std::string& sNa
         return strError;
     }
 
-    if (fAskFee && !uiInterface.ThreadSafeAskFee(nFeeRequired, _("Sending...")))
-        return "ABORTED";
-
     if (!CommitTransaction(wtxNew, reservekey))
         return _("Error: The transaction was rejected! This might happen if some of the coins in your wallet were "
                  "already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not "
@@ -4054,7 +4031,7 @@ string CWallet::SendMoney(CScript scriptPubKey, int64_t nValue, std::string& sNa
     return "";
 }
 
-string CWallet::SendMoneyToDestination(const CTxDestination& address, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew, bool fAskFee)
+string CWallet::SendMoneyToDestination(const CTxDestination& address, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew)
 {
     // Check amount
     if (nValue <= 0)
@@ -4070,7 +4047,7 @@ string CWallet::SendMoneyToDestination(const CTxDestination& address, int64_t nV
     CScript scriptPubKey;
     scriptPubKey.SetDestination(address);
 
-    return SendMoney(scriptPubKey, nValue, sNarr, wtxNew, fAskFee);
+    return SendMoney(scriptPubKey, nValue, sNarr, wtxNew);
 }
 
 string CWallet::PrepareDarksendDenominate(int minRounds, int maxRounds)
@@ -4263,17 +4240,11 @@ DBErrors CWallet::LoadWallet(bool& fFirstRunRet)
 
 bool CWallet::SetAddressBookName(const CTxDestination& address, const string& strName)
 {
-    bool fUpdated = false;
-
     {
         LOCK(cs_wallet); // mapAddressBook
-        std::map<CTxDestination, std::string>::iterator mi = mapAddressBook.find(address);
-        fUpdated = mi != mapAddressBook.end();
         mapAddressBook[address] = strName;
     }
 
-    NotifyAddressBookChanged(this, address, strName, ::IsMine(*this, address),
-                             (fUpdated ? CT_UPDATED : CT_NEW) );
     if (!fFileBacked)
         return false;
 
@@ -4286,8 +4257,6 @@ bool CWallet::DelAddressBookName(const CTxDestination& address)
         LOCK(cs_wallet); // mapAddressBook
         mapAddressBook.erase(address);
     }
-
-    NotifyAddressBookChanged(this, address, "", ::IsMine(*this, address), CT_DELETED);
 
     if (!fFileBacked)
         return false;
@@ -4788,13 +4757,7 @@ void CWallet::GetAllReserveKeys(set<CKeyID>& setAddress) const
 
 void CWallet::UpdatedTransaction(const uint256 &hashTx)
 {
-    LOCK(cs_wallet);
-
-    // Only notify UI if this transaction is in this wallet
-    map<uint256, CWalletTx>::const_iterator mi = mapWallet.find(hashTx);
-
-    if (mi != mapWallet.end())
-        NotifyTransactionChanged(this, hashTx, CT_UPDATED);
+    /* Does nothing for now */
 }
 
 
@@ -4947,10 +4910,5 @@ bool CMerkleTx::IsTransactionLockTimedOut() const
 
 bool CWallet::AddAdrenalineNodeConfig(CAdrenalineNodeConfig nodeConfig)
 {
-    bool rv = CWalletDB(strWalletFile).WriteAdrenalineNodeConfig(nodeConfig.sAlias, nodeConfig);
-
-    if(rv)
-        uiInterface.NotifyAdrenalineNodeChanged(nodeConfig);
-
-    return rv;
+    return CWalletDB(strWalletFile).WriteAdrenalineNodeConfig(nodeConfig.sAlias, nodeConfig);
 }

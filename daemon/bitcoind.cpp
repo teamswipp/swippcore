@@ -141,7 +141,6 @@ int main(int argc, char* argv[])
     bool fRet = false;
     fHaveGUI = false;
 
-    noui_connect();
     fRet = AppInit(argc, argv);
 
     if (fRet && fDaemon)

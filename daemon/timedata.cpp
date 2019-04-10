@@ -1,12 +1,12 @@
 // Copyright (c) 2014 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "localization.h"
 #include "timedata.h"
 #include "netbase.h"
 #include "sync.h"
-#include "ui_interface.h"
 #include "util.h"
 
 #include <boost/foreach.hpp>
@@ -89,7 +89,7 @@ void AddTimeData(const CNetAddr& ip, int64_t nTime)
                     strMiscWarning = strMessage;
 
                     LogPrintf("*** %s\n", strMessage);
-                    uiInterface.ThreadSafeMessageBox(strMessage, "", CClientUIInterface::MSG_WARNING);
+                    printf("%s\n", strMessage.c_str());
                 }
             }
         }

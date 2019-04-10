@@ -1,16 +1,16 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "init.h"
 #include "chainparams.h"
 #include "db.h"
+#include "localization.h"
 #include "net.h"
 #include "main.h"
 #include "addrman.h"
-#include "ui_interface.h"
 #include "darksend.h"
 #include "wallet.h"
 
@@ -753,7 +753,6 @@ void ThreadSocketHandler()
         if(vNodes.size() != nPrevNodeCount)
         {
             nPrevNodeCount = vNodes.size();
-            uiInterface.NotifyNumConnectionsChanged(nPrevNodeCount);
         }
 
         // Find which sockets have data to receive
@@ -2165,6 +2164,6 @@ void FindReleases()
 
     if (latest_version > FormatVersion(CLIENT_VERSION, true))
     {
-        uiInterface.ThreadSafeMessageBox("This wallet is outdated. Please update to the latest version!", "", CClientUIInterface::MSG_WARNING);
+        LogPrintf("This wallet is outdated. Please update to the latest version!");
     }
 }

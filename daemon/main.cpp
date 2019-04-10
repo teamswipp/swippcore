@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -17,13 +17,13 @@
 #include "init.h"
 #include "instantx.h"
 #include "kernel.h"
+#include "localization.h"
 #include "masternode.h"
 #include "net.h"
 #include "smessage.h"
 #include "spork.h"
 #include "txdb.h"
 #include "txmempool.h"
-#include "ui_interface.h"
 
 using namespace std;
 using namespace boost;
@@ -155,10 +155,6 @@ bool AbortNode(const std::string &strMessage, const std::string &userMessage)
 {
     strMiscWarning = strMessage;
     LogPrintf("*** %s\n", strMessage);
-
-    uiInterface.ThreadSafeMessageBox(userMessage.empty() ?
-        _("Error: A fatal internal error occured, see debug.log for details") : userMessage, "", CClientUIInterface::MSG_ERROR);
-
     StartShutdown();
     return false;
 }

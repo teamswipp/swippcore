@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -410,10 +410,7 @@ bool ProcessConsensusVote(CConsensusVote& ctx)
             {
 #ifdef ENABLE_WALLET
                 if (pwalletMain)
-                {
-                    pwalletMain->UpdatedTransaction((*i).second.txHash);
                     nCompleteTXLocks++;
-                }
 #endif
                 if (mapTxLockReq.count(ctx.txHash))
                 {

@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -20,7 +20,6 @@
 #include "main.h"
 #include "script.h"
 #include "stealth.h"
-#include "ui_interface.h"
 #include "util.h"
 
 // Settings
@@ -309,8 +308,8 @@ public:
     uint64_t GetStakeWeight() const;
     bool CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int64_t nSearchInterval, int64_t nFees, CTransaction& txNew, CKey& key);
 
-    std::string SendMoney(CScript scriptPubKey, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew, bool fAskFee=false);
-    std::string SendMoneyToDestination(const CTxDestination &address, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew, bool fAskFee=false);
+    std::string SendMoney(CScript scriptPubKey, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew);
+    std::string SendMoneyToDestination(const CTxDestination &address, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew);
 
     bool NewStealthAddress(std::string& sError, std::string& sLabel, CStealthAddress& sxAddr);
     bool AddStealthAddress(CStealthAddress& sxAddr);
@@ -322,10 +321,10 @@ public:
                                   const CCoinControl* coinControl=NULL);
 
     std::string SendStealthMoney(CScript scriptPubKey, int64_t nValue, std::vector<uint8_t>& P, std::vector<uint8_t>& narr,
-                                 std::string& sNarr, CWalletTx& wtxNew, bool fAskFee=false);
+                                 std::string& sNarr, CWalletTx& wtxNew);
 
     bool SendStealthMoneyToDestination(CStealthAddress& sxAddress, int64_t nValue, std::string& sNarr, CWalletTx& wtxNew,
-                                       std::string& sError, bool fAskFee=false);
+                                       std::string& sError);
 
     bool FindStealthTransactions(const CTransaction& tx, mapValue_t& mapNarr);
 
@@ -489,13 +488,6 @@ public:
 
     void FixSpentCoins(int& nMismatchSpent, int64_t& nBalanceInQuestion, bool fCheckOnly = false);
     void DisableTransaction(const CTransaction &tx);
-
-    // Address book entry changed
-    boost::signals2::signal<void (CWallet *wallet, const CTxDestination &address, const std::string &label,
-                            bool isMine, ChangeType status)> NotifyAddressBookChanged;
-
-    // Wallet transaction added, removed or updated.
-    boost::signals2::signal<void (CWallet *wallet, const uint256 &hashTx, ChangeType status)> NotifyTransactionChanged;
 };
 
 class CReserveKey
