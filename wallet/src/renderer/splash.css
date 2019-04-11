@@ -36,10 +36,14 @@ div.splash > div {
 }
 
 div.splash > div > div.error {
-    margin-block-start: 0.83em;
+	margin-block-start: 0.83em;
 	font-size: 9pt;
 	width: 100%;
 	align-self: flex-end;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
 	color: #d55;
 }
 
