@@ -15,10 +15,12 @@ if (app.getGPUFeatureStatus().gpu_compositing.includes("disabled")) {
 let mainWindow;
 let splashWindow;
 
+console.log(process.argv);
+
 function createSplashWindow() {
 	const window = new BrowserWindow({
 		width: 600,
-		height: 200,
+		height: 236,
 		frame: false,
 		resizable: false,
 		show: false
@@ -69,9 +71,8 @@ app.on("ready", () => {
 
 	splashWindow.webContents.on("did-finish-load", () => {
 		splashWindow.show();
-		setTimeout(function() {
+		splashWindow.webContents.send("state", "working");
 		Daemon.start(splashWindow);
-		}, 3000);
 	});
 });
 

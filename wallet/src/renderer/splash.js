@@ -11,34 +11,15 @@ library.add(faSpinner, faTimes)
 export default class Splash extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {
-			errorClass: "",
-			errorMessage: null
-		};
+		this.state = { errorMessage: null };
 
 		ipcRenderer.on("fatal-error", (event, message) => {
-			this.setState({
-				errorClass: "error",
-				errorMessage: message
-			});
+			this.setState({ errorMessage: message });
 		});
 	}
 
-	CornerWidget(props) {
-		var onClick = () => {
-			ipcRenderer.send("exit");
-		}
-
-		if (props.isSpinner) {
-			return <FontAwesomeIcon icon="spinner" spin/>;
-		}
-
-		return <FontAwesomeIcon onClick={onClick} icon="times"/>;
-	}
-
 	render() { return(
-		<div className={"splash " + this.state.errorClass}>
-			<this.CornerWidget isSpinner={this.state.errorClass == ""}/>
+		<div className="splash">
 			<img className="logo" src={File.get("logo.png")}></img>
 			<div>
 				<h1>The modern cryptocurrency</h1>
@@ -52,8 +33,8 @@ export default class Splash extends React.Component {
 					<strong> The Darkcoin Developers</strong>,
 					based on work between 2009 and 2017.
 				</p>
+				<div className="error">{this.state.errorMessage}</div>
 			</div>
-			<div>{this.state.errorMessage}</div>
 		</div>
 	);}
 }

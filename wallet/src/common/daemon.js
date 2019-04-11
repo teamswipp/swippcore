@@ -8,6 +8,7 @@ export default class Daemon {
 
 			if (error) {
 				window.webContents.send("fatal-error", stderr);
+				window.webContents.send("state", "idle");
 				console.error(stderr);
 			}
 		});

@@ -1,0 +1,38 @@
+div.controlbar {
+	display: flex;
+	align-items: center;
+	padding: 10px 6px 6px 6px;
+	background-color: #171717;
+}
+
+div.controlbar > div:first-child {
+	flex-grow: 1;
+}
+
+div.controlbar svg.close {
+	transition: transform .2s ease-in-out;
+	cursor: pointer;
+	color: #d55;
+	transform: scale(1.15);
+}
+
+div.controlbar svg.close:hover {
+	transform: scale(1.35);
+}
+
+div.controlbar svg.close:active {
+	transform: scale(1.15);
+	color: #f77;
+}
+
+div.controlbar svg.spinner {
+	color: #eee;
+}
+
+svg {
+	margin-right: 15px;
+}
+
+svg:last-child {
+	margin-right: 6px;
+}
