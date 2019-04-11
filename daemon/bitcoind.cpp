@@ -135,6 +135,8 @@ int main(int argc, char* argv[])
 
     if (fRet > 1)
         exit(fRet);
+    if (fRet == 0)
+        exit(1);
 
     return 0;
 }
