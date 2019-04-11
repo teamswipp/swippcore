@@ -1,5 +1,3 @@
-"use strict";
-
 import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import { format as formatUrl } from "url";
@@ -14,8 +12,6 @@ if (app.getGPUFeatureStatus().gpu_compositing.includes("disabled")) {
 // Necessary to prevent window from being garbage collected
 let mainWindow;
 let splashWindow;
-
-console.log(process.argv);
 
 function createSplashWindow() {
 	const window = new BrowserWindow({
