@@ -36,24 +36,26 @@ export default class Splash extends React.Component {
 		});
 	}
 
-	render() { return(
-		<div className="splash">
-			<img className="logo" src={File.get("logo.png")}></img>
-			<div>
-				<h1>The modern cryptocurrency</h1>
-				<h2>Copyright © 2017-2019 The Swipp Developers</h2>
-				<p>
-					This project is using code based on the work of
-					<strong> Satoshi Nakamoto</strong>,
-					<strong> The Bitcoin Developers</strong>,
-					<strong> The Peercoin Developers</strong>,
-					<strong> The Novacoin Developers</strong> and
-					<strong> The Darkcoin Developers</strong>,
-					based on work between 2009 and 2017.
-				</p>
-				<div className="error">{this.state.errorMessage}</div>
+	render() {
+		return(
+			<div className="splash">
+				<img className="logo" src={File.get("logo.png")}></img>
+				<div>
+					<h1>The modern cryptocurrency</h1>
+					<h2>Copyright © 2017-2019 The Swipp Developers</h2>
+					<p>
+						This project is using code based on the work of
+						<strong> Satoshi Nakamoto</strong>,
+						<strong> The Bitcoin Developers</strong>,
+						<strong> The Peercoin Developers</strong>,
+						<strong> The Novacoin Developers</strong> and
+						<strong> The Darkcoin Developers</strong>,
+						based on work between 2009 and 2017.
+					</p>
+					<div className="error">{this.state.errorMessage}</div>
+				</div>
 			</div>
-		</div>
-	);}
+		);
+	}
 }
 

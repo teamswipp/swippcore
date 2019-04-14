@@ -35,7 +35,8 @@ export default class Daemon {
 
 			clargs.push(`-rpcuser=${global.credentials.user}` , `-rpcpassword=${global.credentials.password}`);
 
-			portscanner.findAPortNotInUse(defaultRPCPort, defaultRPCPort + 1024, "127.0.0.1", function(error, port) {
+			portscanner.findAPortNotInUse(defaultRPCPort, defaultRPCPort + 1024,
+			                              "127.0.0.1", function(error, port) {
 				var executionError = false;
 
 				global.rpcPort = port;
