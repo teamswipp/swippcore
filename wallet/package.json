@@ -17,10 +17,12 @@
     "jquery": "^3.3.1",
     "less": "^3.8.1",
     "less-loader": "^4.1.0",
+    "node-json-rpc2": "^1.1.0",
     "portscanner": "^2.2.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "source-map-support": "^0.5.10"
+    "source-map-support": "^0.5.10",
+    "tcp-port-used": "^1.0.1"
   },
   "devDependencies": {
     "electron": "4.0.1",

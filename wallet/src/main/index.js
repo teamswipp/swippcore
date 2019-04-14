@@ -20,6 +20,7 @@ import { app, BrowserWindow, ipcMain } from "electron";
 import * as path from "path";
 import { format as formatUrl } from "url";
 import Daemon from "common/daemon";
+import SplashController from "./splash-controller";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -86,7 +87,12 @@ app.on("ready", () => {
 	splashWindow.webContents.on("did-finish-load", () => {
 		splashWindow.show();
 		splashWindow.webContents.send("state", "working");
-		Daemon.start(splashWindow);
+
+		Daemon.start(splashWindow).then(function() {
+			new SplashController(splashWindow).synchronize_wallet();
+		}, function(stderr) {
+			console.error(stderr);
+		});
 	});
 });
 

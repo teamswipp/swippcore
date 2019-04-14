@@ -19,40 +19,62 @@
 import { execFile } from "child_process";
 import crypto from "crypto";
 import portscanner from "portscanner";
+import tcpPortUsed from "tcp-port-used";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
-const rpcPort = 35075;
+const defaultRPCPort = 35075;
 
 export default class Daemon {
 	static execute(window, location) {
-		var clargs = process.argv.slice(isDevelopment ? 3 : 1);
+		return new Promise(function(resolve, reject) {
+			var clargs = process.argv.slice(isDevelopment ? 3 : 1);
 
-		process.credentials = {
-			user: crypto.randomBytes(6).toString('hex'),
-			password: crypto.randomBytes(20).toString('hex')
-		};
+			global.credentials = {
+				user: crypto.randomBytes(6).toString('hex'),
+				password: crypto.randomBytes(20).toString('hex')
+			};
 
-		clargs.push(`-rpcuser=${process.credentials.user}` , `-rpcpassword=${process.credentials.password}`);
+			clargs.push(`-rpcuser=${global.credentials.user}` , `-rpcpassword=${global.credentials.password}`);
 
-		portscanner.findAPortNotInUse(rpcPort, rpcPort + 1024, "127.0.0.1", function(error, port) {
-			clargs.push(`-rpcport=${port}`);
+			portscanner.findAPortNotInUse(defaultRPCPort, defaultRPCPort + 1024, "127.0.0.1", function(error, port) {
+				var executionError = false;
 
-			execFile(location, clargs, { windowsHide: true }, (error, stdout, stderr) => {
-				if (error) {
-					window.webContents.send("fatal-error", stderr);
-					window.webContents.send("state", "idle");
-					console.error(stderr);
-				}
+				global.rpcPort = port;
+				clargs.push(`-rpcport=${port}`);
+
+				execFile(location, clargs, { windowsHide: true }, (error, stdout, stderr) => {
+					if (error) {
+						executionError = true;
+						window.webContents.send("fatal-error", stderr);
+						window.webContents.send("state", "idle");
+						reject(stderr);
+					}
+				});
+
+				tcpPortUsed.waitUntilUsed(global.rpcPort, 200, 3000).then(function() {
+					resolve();
+				}, function(err) {
+					if (!executionError) {
+						var errorMessage = `Error waiting for the wallet daemon: ${err.message}`;
+						window.webContents.send("fatal-error", errorMessage);
+						window.webContents.send("state", "idle");
+						reject(errorMessage);
+					}
+				});
 			});
 		});
 	}
 
-	static start(window) {
+	static async start(window) {
+		var p;
+
 		if (isDevelopment) {
-			Daemon.execute(window, "../daemon/swippd");
+			p = await Daemon.execute(window, "../daemon/swippd");
 		} else {
-			Daemon.execute(window, process.resourcesPath + "/../swippd");
+			p = await Daemon.execute(window, process.resourcesPath + "/../swippd");
 		}
+
+		return p;
 	}
 }
 
