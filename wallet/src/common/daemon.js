@@ -21,13 +21,12 @@ import crypto from "crypto";
 import portscanner from "portscanner";
 import tcpPortUsed from "tcp-port-used";
 
-const isDevelopment = process.env.NODE_ENV !== "production";
 const defaultRPCPort = 35075;
 
 export default class Daemon {
 	static execute(window, location) {
 		return new Promise(function(resolve, reject) {
-			var clargs = process.argv.slice(isDevelopment ? 3 : 1);
+			var clargs = process.argv.slice(global.isDevelopment ? 3 : 1);
 
 			global.credentials = {
 				user: crypto.randomBytes(6).toString('hex'),

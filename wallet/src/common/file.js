@@ -16,14 +16,13 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { remote } from "electron";
 import fs from "fs";
 import path from "path";
 
-const isDevelopment = process.env.NODE_ENV !== "production";
-
 export default class File {
 	static get(f) {
-		if (isDevelopment) {
+		if (remote.getGlobal('isDevelopment')) {
 			return f;
 		}
 

@@ -16,57 +16,17 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, ipcMain } from "electron";
 import * as path from "path";
 import { format as formatUrl } from "url";
 import Daemon from "common/daemon";
+import RPCClient from "common/rpc-client.js"
 import SplashController from "./splash-controller";
 
-const isDevelopment = process.env.NODE_ENV !== "production";
+global.isDevelopment = process.env.NODE_ENV !== "production";
 
 if (app.getGPUFeatureStatus().gpu_compositing.includes("disabled")) {
 	app.disableHardwareAcceleration();
-}
-
-// Necessary to prevent window from being garbage collected
-let mainWindow;
-let splashWindow;
-
-function createSplashWindow() {
-	const window = new BrowserWindow({
-		width: 600,
-		height: 236,
-		frame: false,
-		resizable: false,
-		show: false
-	});
-
-	if (isDevelopment) {
-		window.webContents.openDevTools({ mode : "detach" });
-		window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`);
-	} else {
-		window.loadURL(formatUrl({
-			pathname: path.join(__dirname, "index.html"),
-			protocol: "file",
-			slashes: true
-		}));
-  	}
-
-	window.on("closed", () => {
-		splashWindow = null
-	})
-
-	window.webContents.on("devtools-opened", () => {
-		window.focus();
-		setImmediate(() => {
-			window.focus();
-		});
-	});
-
-	return window;
-}
-
-function createMainWindow() {
 }
 
 app.on("window-all-closed", () => {
@@ -76,20 +36,19 @@ app.on("window-all-closed", () => {
 });
 
 app.on("activate", () => {
-	if (mainWindow === null) {
+/*	if (mainWindow === null) {
 		mainWindow = createMainWindow();
-	}
+	}*/
 });
 
+const defaultRPCPort = 35075;
+
 app.on("ready", () => {
-	splashWindow = createSplashWindow();
+	var splashController = new SplashController();
 
-	splashWindow.webContents.on("did-finish-load", () => {
-		splashWindow.show();
-		splashWindow.webContents.send("state", "working");
-
-		Daemon.start(splashWindow).then(function() {
-			new SplashController(splashWindow).synchronize_wallet();
+	splashController.window.webContents.on("did-finish-load", () => {
+		Daemon.start(splashController.window).then(function() {
+			splashController.synchronize_wallet(new RPCClient());
 		}, function(stderr) {
 			console.error(stderr);
 		});
@@ -99,3 +58,4 @@ app.on("ready", () => {
 ipcMain.on("exit", () => {
 	app.quit()
 });
+

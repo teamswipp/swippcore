@@ -16,18 +16,55 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { BrowserWindow } from "electron";
 import { remote } from "electron";
-import RPCClient from "common/rpc-client";
-import tcpPortUsed from "tcp-port-used";
 
 export default class SplashController {
-	constructor(window) {
-		this.client = new RPCClient();
-		this.window = window;
+	constructor() {
+		this.window = SplashController.create_window();
 	}
 
-	synchronize_wallet() {
-		this.client.getinfo();
+	static create_window() {
+		var window = new BrowserWindow({
+			width: 600,
+			height: 236,
+			frame: false,
+			resizable: false,
+			show: false
+		});
+
+		if (global.isDevelopment) {
+			window.webContents.openDevTools({ mode : "detach" });
+			window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}`);
+		} else {
+			window.loadURL(formatUrl({
+				pathname: path.join(__dirname, "index.html"),
+				protocol: "file",
+				slashes: true
+			}));
+		}
+
+		window.webContents.on("devtools-opened", () => {
+			window.focus();
+			setImmediate(() => {
+				window.focus();
+			});
+		});
+
+		window.webContents.on("did-finish-load", () => {
+			window.show();
+			window.webContents.send("state", "working");
+		});
+
+		return window;
+	}
+
+	synchronize_wallet(rpcClient) {
+		rpcClient.getinfo().then(function(response) {
+			console.log(response);
+		}, function(stderr) {
+			/* Empty for now */
+		});
 	}
 }
 

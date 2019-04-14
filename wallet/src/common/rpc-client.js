@@ -20,7 +20,6 @@ import { Client } from "node-json-rpc2";
 
 export default class RPCClient {
 	constructor() {
-
 		this.client = new Client({
 			user: global.credentials.user,
 			password: global.credentials.password,
@@ -28,16 +27,17 @@ export default class RPCClient {
 		});
 	}
 
-	getinfo() {
-		this.client.call({method: "getinfo" }, function(err, response) {
-			if(err) {
-				console.log(err);
-				console.log(response);
-				throw err;
-			}
+	async getinfo() {
+		var client = this.client;
 
-			console.log("meh");
-			console.log(response.result);
+		return await new Promise(function(resolve, reject) {
+			client.call({method: "getinfo" }, function(err, response) {
+				if(err) {
+					reject(err);
+				}
+
+				resolve(response.result);
+			});
 		});
 	}
 }

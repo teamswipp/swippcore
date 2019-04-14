@@ -56,3 +56,4 @@ export default class Splash extends React.Component {
 		</div>
 	);}
 }
+
