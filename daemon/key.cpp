@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2012 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 // NOTE:  libsecp256k1 verification methods presently not working,
 //        so here, we include both openssl libs and libsecp256k1

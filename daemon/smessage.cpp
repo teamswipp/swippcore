@@ -1,7 +1,7 @@
 // Copyright (c) 2014 The ShadowCoin developers
 // Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 // WARNING: Running with -debug could leave to and from address hashes and public keys in the log
 

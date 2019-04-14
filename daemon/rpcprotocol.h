@@ -1,7 +1,7 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2013 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef _BITCOINRPC_PROTOCOL_H_
 #define _BITCOINRPC_PROTOCOL_H_ 1

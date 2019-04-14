@@ -3,7 +3,7 @@
 // Copyright (c) 2013 The NovaCoin developers
 // Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef NOVACOIN_MINER_H
 #define NOVACOIN_MINER_H

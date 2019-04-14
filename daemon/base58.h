@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2012 The Bitcoin Developers
 // Copyright (c) 2017-2018 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 // We use base58 instead of standard base64 to avoid 0OIl characters that look the same in some fonts
 // and could be used to create visually identical looking account numbers.

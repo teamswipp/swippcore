@@ -2,7 +2,7 @@
 // Copyright (c) 2017-2018 The Swipp developers
 // Authored by Google, Inc.
 // Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef BITCOIN_LEVELDB_H
 #define BITCOIN_LEVELDB_H
