@@ -18,8 +18,10 @@
 
 import { execFile } from "child_process";
 import crypto from "crypto";
+import portscanner from "portscanner";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
+const rpcPort = 35075;
 
 export default class Daemon {
 	static execute(window, location) {
@@ -32,19 +34,22 @@ export default class Daemon {
 
 		clargs.push(`-rpcuser=${process.credentials.user}` , `-rpcpassword=${process.credentials.password}`);
 
-		execFile(location, clargs, { windowsHide: true }, (error, stdout, stderr) => {
-			if (error) {
-				window.webContents.send("fatal-error", stderr);
-				window.webContents.send("state", "idle");
-				console.error(stderr);
-			}
+		portscanner.findAPortNotInUse(rpcPort, rpcPort + 1024, "127.0.0.1", function(error, port) {
+			clargs.push(`-rpcport=${port}`);
+
+			execFile(location, clargs, { windowsHide: true }, (error, stdout, stderr) => {
+				if (error) {
+					window.webContents.send("fatal-error", stderr);
+					window.webContents.send("state", "idle");
+					console.error(stderr);
+				}
+			});
 		});
 	}
 
 	static start(window) {
 		if (isDevelopment) {
 			Daemon.execute(window, "../daemon/swippd");
-
 		} else {
 			Daemon.execute(window, process.resourcesPath + "/../swippd");
 		}
