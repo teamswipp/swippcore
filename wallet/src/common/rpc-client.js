@@ -25,20 +25,22 @@ export default class RPCClient {
 			password: global.credentials.password,
 			port: global.rpcPort /* Should have been initialized by daemon */
 		});
+
+		this.send_command = (command, args = []) => {
+			return new Promise((resolve, reject) => {
+				this.client.call({ method: command, params: args }, (err, response) => {
+					if(err) {
+						reject(err);
+					}
+
+					resolve(response.result);
+				});
+			});
+		}
 	}
 
 	async getinfo() {
-		var client = this.client;
-
-		return await new Promise((resolve, reject) => {
-			client.call({method: "getinfo" }, (err, response) => {
-				if(err) {
-					reject(err);
-				}
-
-				resolve(response.result);
-			});
-		});
+		return await this.send_command("getinfo");
 	}
 }
 
