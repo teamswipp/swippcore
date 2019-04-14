@@ -60,9 +60,9 @@ export default class SplashController {
 	}
 
 	synchronize_wallet(rpcClient) {
-		rpcClient.getinfo().then(function(response) {
+		rpcClient.getinfo().then((response) => {
 			console.log(response);
-		}, function(stderr) {
+		}, (stderr) => {
 			/* Empty for now */
 		});
 	}

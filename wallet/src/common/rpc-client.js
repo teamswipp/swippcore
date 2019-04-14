@@ -30,8 +30,8 @@ export default class RPCClient {
 	async getinfo() {
 		var client = this.client;
 
-		return await new Promise(function(resolve, reject) {
-			client.call({method: "getinfo" }, function(err, response) {
+		return await new Promise((resolve, reject) => {
+			client.call({method: "getinfo" }, (err, response) => {
 				if(err) {
 					reject(err);
 				}

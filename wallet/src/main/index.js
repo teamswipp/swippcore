@@ -47,9 +47,9 @@ app.on("ready", () => {
 	var splashController = new SplashController();
 
 	splashController.window.webContents.on("did-finish-load", () => {
-		Daemon.start(splashController.window).then(function() {
+		Daemon.start(splashController.window).then(() => {
 			splashController.synchronize_wallet(new RPCClient());
-		}, function(stderr) {
+		}, (stderr) => {
 			console.error(stderr);
 		});
 	});

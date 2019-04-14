@@ -25,7 +25,7 @@ const defaultRPCPort = 35075;
 
 export default class Daemon {
 	static execute(window, location) {
-		return new Promise(function(resolve, reject) {
+		return new Promise((resolve, reject) => {
 			var clargs = process.argv.slice(global.isDevelopment ? 3 : 1);
 
 			global.credentials = {
@@ -36,7 +36,7 @@ export default class Daemon {
 			clargs.push(`-rpcuser=${global.credentials.user}` , `-rpcpassword=${global.credentials.password}`);
 
 			portscanner.findAPortNotInUse(defaultRPCPort, defaultRPCPort + 1024,
-			                              "127.0.0.1", function(error, port) {
+			                              "127.0.0.1", (error, port) => {
 				var executionError = false;
 
 				global.rpcPort = port;
@@ -51,9 +51,9 @@ export default class Daemon {
 					}
 				});
 
-				tcpPortUsed.waitUntilUsed(global.rpcPort, 200, 3000).then(function() {
+				tcpPortUsed.waitUntilUsed(global.rpcPort, 200, 3000).then(() => {
 					resolve();
-				}, function(err) {
+				}, (err) => {
 					if (!executionError) {
 						var errorMessage = `Error waiting for the wallet daemon: ${err.message}`;
 						window.webContents.send("fatal-error", errorMessage);

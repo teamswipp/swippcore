@@ -36,13 +36,13 @@ export default class ControlBar extends React.Component {
 	}
 
 	render() {
-		var onMinimzie = function() {
+		var onMinimzie = () => {
 		}
 
-		var onMaximize = function() {
+		var onMaximize = () => {
 		}
 
-		var onClose = function() {
+		var onClose = () => {
 			ipcRenderer.send("exit");
 		}
 
