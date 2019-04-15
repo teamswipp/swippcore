@@ -37,9 +37,11 @@ export default class ControlBar extends React.Component {
 
 	render() {
 		var onMinimzie = () => {
+			window.minimize();
 		}
 
 		var onMaximize = () => {
+			window.maximize();
 		}
 
 		var onClose = () => {
@@ -58,8 +60,8 @@ export default class ControlBar extends React.Component {
 					}
 					{this.props.fullControls == true &&
 						<div>
-							<FontAwesomeIcon className="minimize" icon="window-minimize"/>
-							<FontAwesomeIcon className="maximize" icon="window-maximize"/>
+							<FontAwesomeIcon onClick={onMinimize} className="minimize" icon="window-minimize"/>
+							<FontAwesomeIcon onClick={onMaximize} className="maximize" icon="window-maximize"/>
 						</div>
 					}
 					<FontAwesomeIcon onClick={onClose} className="close" icon="window-close"/>
