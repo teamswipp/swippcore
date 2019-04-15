@@ -42,5 +42,9 @@ export default class RPCClient {
 	async getinfo() {
 		return await this.send_command("getinfo");
 	}
+
+	async stop() {
+		return await this.send_command("stop");
+	}
 }
 

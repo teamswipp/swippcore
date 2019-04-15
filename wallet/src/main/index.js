@@ -30,9 +30,11 @@ if (app.getGPUFeatureStatus().gpu_compositing.includes("disabled")) {
 }
 
 app.on("window-all-closed", () => {
-	if (process.platform !== "darwin") {
-		app.quit();
+	if (global.rpcPort != undefined) {
+		new RPCClient().stop();
 	}
+
+	app.quit();
 });
 
 app.on("activate", () => {
@@ -53,9 +55,5 @@ app.on("ready", () => {
 			console.error(stderr);
 		});
 	});
-});
-
-ipcMain.on("exit", () => {
-	app.quit()
 });
 

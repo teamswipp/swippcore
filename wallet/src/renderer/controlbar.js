@@ -43,7 +43,7 @@ export default class ControlBar extends React.Component {
 		}
 
 		var onClose = () => {
-			ipcRenderer.send("exit");
+			window.close();
 		}
 
 		return(
