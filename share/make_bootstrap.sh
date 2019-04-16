@@ -17,15 +17,15 @@ else
 	kill -CONT $PID
 fi
 
-bzip2 -9 ${BLOCKFILE_DEST}.tmp
+xz -T0 -8 ${BLOCKFILE_DEST}.tmp
 
-RES=$(sha256sum ${BLOCKFILE_DEST}.tmp.bz2)
+RES=$(sha256sum ${BLOCKFILE_DEST}.tmp.xz)
 HASH=${RES% *}
 
 if [ -z "$PID" ]; then
 	exit 1;
 else
-	cat <(printf $HASH) ${BLOCKFILE_DEST}.tmp.bz2 > $BLOCKFILE_DEST.bsa
-	rm ${BLOCKFILE_DEST}.tmp.bz2
+	cat <(printf $HASH) ${BLOCKFILE_DEST}.tmp.xz > $BLOCKFILE_DEST.bsa
+	rm ${BLOCKFILE_DEST}.tmp.xz
 fi
 
