@@ -238,7 +238,7 @@ std::string HelpMessage()
     strUsage += "  -debug=<category>      " + std::string(_("Output debugging information (default: 0, supplying "
                                                             "<category> is optional)")) + "\n";
     strUsage += "                         " + std::string(_("If <category> is not supplied, output all debugging information.")) + "\n";
-    strUsage += "                         " + std::string(_("<category> can be:"));
+    strUsage += "                         " + std::string(_("<category> can be:")) + "\n";
     strUsage += "                         " + std::string("   addrman, alert, db, lock, rand, rpc, selectcoins, mempool, net,\n");
     strUsage += "                         " + std::string("   coinage, coinstake, creation, stakemodifier");
 
