@@ -176,6 +176,7 @@ OBJS= \
     obj/xz/xz_crc32.o \
     obj/xz/xz_dec_lzma2.o \
     obj/xz/xz_dec_stream.o \
+    obj/bsarchive.o
 
 ifeq (${USE_WALLET}, 1)
     DEFS += -DENABLE_WALLET
