@@ -17,7 +17,7 @@ else
 	kill -CONT $PID
 fi
 
-xz -T0 -8 ${BLOCKFILE_DEST}.dat.tmp
+xz -T0 --check=crc32 --lzma2=dict=16MiB,nice=273,depth=512 ${BLOCKFILE_DEST}.dat.tmp
 
 HASH=$(sha256sum ${BLOCKFILE_DEST}.dat.tmp.xz)
 HASH=${HASH% *}
