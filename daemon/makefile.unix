@@ -107,6 +107,7 @@ xCCFLAGS=-O2 -rdynamic $(EXT_OPTIONS) -pthread -Wall -Wextra -Wno-ignored-qualif
 xLDFLAGS=$(LDHARDENING) $(LDFLAGS)
 
 OBJS= \
+    obj/downloader.o \
     obj/groestl.o \
     obj/backtrace.o \
     obj/blake.o \

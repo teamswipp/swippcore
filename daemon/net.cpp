@@ -7,6 +7,7 @@
 #include "init.h"
 #include "chainparams.h"
 #include "db.h"
+#include "downloader.h"
 #include "localization.h"
 #include "net.h"
 #include "main.h"
@@ -25,7 +26,6 @@
 #include <miniupnpc/upnperrors.h>
 #endif
 
-#include <curl/curl.h>
 #include <regex>
 
 // Dump addresses to peers.dat every 15 minutes (900s)
@@ -33,9 +33,6 @@
 
 // Check for release once every hour (3600s)
 #define FIND_RELEASES_INTERVAL 3600
-
-// Timeout (in seconds) for connecting to the releases atom feed
-#define CURL_CONNECT_TIMEOUT_RELEASES 5L
 
 using namespace std;
 using namespace boost;
@@ -2088,12 +2085,6 @@ bool CAddrDB::Read(CAddrMan& addr)
     return true;
 }
 
-static size_t handle_chunk(void *downloaded, size_t size, size_t nmemb, void *destination)
-{
-    ((std::string *) destination)->append((char *) downloaded);
-    return size * nmemb;
-}
-
 static std::list<ComparableVersion> parse_releases(std::string result)
 {
     std::regex version_regex("<title>[-A-Za-z ]*([0-9]+\\.[0-9]+\\.[0-9]+(\\.[0-9]+)?)[-A-Za-z)( ]*</title>");
@@ -2113,36 +2104,12 @@ static std::list<ComparableVersion> parse_releases(std::string result)
 
 std::list<ComparableVersion> GetAllReleases()
 {
-    CURL *curl;
-    CURLcode res;
-    curl = curl_easy_init();
-    std::string result;
+    std::string releaseFeed;
 
-    if(curl)
-    {
-        curl_easy_setopt(curl, CURLOPT_URL, SWIPPCORE_RELEASES_ATOM_LOCATION);
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, CURL_CONNECT_TIMEOUT_RELEASES);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_chunk);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
-#ifdef WIN32
-        // NOTE: The data here is not critical, so disabling verification should not have any unforseen consequences.
-        // However, we only do this under Windows, as certificates are usually bundled with Linux and OS X distributions.
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-#endif
-        res = curl_easy_perform(curl);
+    Downloader downloader(SWIPPCORE_RELEASES_ATOM_LOCATION, releaseFeed);
+    downloader.fetch();
 
-        if(res != CURLE_OK)
-        {
-            LogPrintf("Download of Swipp core release list failed: %s\n", curl_easy_strerror(res));
-        }
-
-
-        curl_easy_cleanup(curl);
-    }
-
-    curl_global_cleanup();
-    return parse_releases(result);
+    return parse_releases(releaseFeed);
 }
 
 std::string GetLatestRelease()
