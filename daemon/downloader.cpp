@@ -2,6 +2,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
+#include <cstdio>
 #include <curl/curl.h>
 
 #include "downloader.h"
@@ -11,7 +12,7 @@
 
 static size_t handle_file_chunk(void *downloaded, size_t size, size_t nmemb, void *destination)
 {
-    return fwrite(downloaded, size, nmemb, (FILE *) destination);
+    return std::fwrite(downloaded, size, nmemb, (std::FILE *) destination);
 }
 
 static size_t handle_string_chunk(void *downloaded, size_t size, size_t nmemb, void *destination)
@@ -45,7 +46,7 @@ Downloader::Downloader(std::string url, std::string& destination) : Downloader(u
     }
 }
 
-Downloader::Downloader(std::string url, FILE *destination) : Downloader(url)
+Downloader::Downloader(std::string url, std::FILE *destination) : Downloader(url)
 {
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_file_chunk);
