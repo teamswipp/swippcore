@@ -64,6 +64,12 @@ int main(int argc, char* argv[])
 
             fprintf(stdout, "%s", help.str().c_str());
             return false;
+        } else if (mapArgs.count("-version") || mapArgs.count("--version")) {
+            std::ostringstream help;
+            help << _("Swipp version") << " " << FormatFullVersion() << "\n";
+
+            fprintf(stdout, "%s", help.str().c_str());
+            return false;
         }
 
         for (int i = 1; i < argc; i++)

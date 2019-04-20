@@ -181,7 +181,8 @@ bool static Bind(const CService &addr, bool fError = true)
 std::string HelpMessage()
 {
     string strUsage = std::string(_("Options:")) + "\n";
-    strUsage += "  -?                     " + std::string(_("This help message")) + "\n";
+    strUsage += "  -?, --help             " + std::string(_("This help message")) + "\n";
+    strUsage += "  -version, --version    " + std::string(_("Show version information")) + "\n";
     strUsage += "  -conf=<file>           " + std::string(_("Specify configuration file (default: swipp.conf)")) + "\n";
     strUsage += "  -pid=<file>            " + std::string(_("Specify pid file (default: swippd.pid)")) + "\n";
     strUsage += "  -datadir=<dir>         " + std::string(_("Specify data directory")) + "\n";
