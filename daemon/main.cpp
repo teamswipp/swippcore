@@ -1460,7 +1460,6 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
             return error("ConnectBlock() : UpdateTxIndex failed");
     }
 
-
     // Write Address Index
     BOOST_FOREACH(CTransaction& tx, vtx)
     {
@@ -1642,7 +1641,6 @@ bool static Reorganize(CTxDB& txdb, CBlockIndex* pindexNew)
 
     return true;
 }
-
 
 // Called from inside SetBestChain: attaches a block to the new best chain being built
 bool CBlock::SetBestChainInner(CTxDB& txdb, CBlockIndex *pindexNew)
@@ -2111,7 +2109,6 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
     if (fCheckMerkleRoot && hashMerkleRoot != BuildMerkleTree())
         return DoS(100, error("CheckBlock() : hashMerkleRoot mismatch"));
 
-
     return true;
 }
 
@@ -2336,7 +2333,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
     // If we don't already have its previous block, shunt it off to holding area until we get it
     if (!mapBlockIndex.count(pblock->hashPrevBlock))
     {
-        LogPrintf("ProcessBlock: ORPHAN BLOCK %lu, prev=%s\n", (unsigned long)mapOrphanBlocks.size(),
+        LogPrintf("ProcessBlock: ORPHAN BLOCK %lu, prev=%s\n", (unsigned long) mapOrphanBlocks.size(),
                   pblock->hashPrevBlock.ToString());
 
         // Accept orphans as long as there is a node to request its parents from
@@ -2380,6 +2377,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
             if (!IsInitialBlockDownload())
                 pfrom->AskFor(CInv(MSG_BLOCK, WantedByOrphan(pblock2)));
         }
+
         return true;
     }
 
@@ -2561,8 +2559,6 @@ bool LoadBlockIndex(bool fAllowNew)
     return true;
 }
 
-
-
 void PrintBlockTree()
 {
     AssertLockHeld(cs_main);
@@ -2638,14 +2634,14 @@ void PrintBlockTree()
 bool LoadExternalBlockFile(FILE* fileIn)
 {
     int64_t nStart = GetTimeMillis();
-
     int nLoaded = 0;
+
     {
         try {
             CAutoFile blkdat(fileIn, SER_DISK, CLIENT_VERSION);
             unsigned int nPos = 0;
 
-            while (nPos != (unsigned int)-1 && blkdat.good())
+            while (nPos != (unsigned int) - 1 && blkdat.good())
             {
                 boost::this_thread::interruption_point();
                 unsigned char pchData[65536];
@@ -2657,21 +2653,21 @@ bool LoadExternalBlockFile(FILE* fileIn)
 
                     if (nRead <= 8)
                     {
-                        nPos = (unsigned int)-1;
+                        nPos = (unsigned int) -1;
                         break;
                     }
 
-                    void* nFind = memchr(pchData, Params().MessageStart()[0], nRead+1-MESSAGE_START_SIZE);
+                    void* nFind = memchr(pchData, Params().MessageStart()[0], nRead + 1 - MESSAGE_START_SIZE);
 
                     if (nFind)
                     {
-                        if (memcmp(nFind, Params().MessageStart(), MESSAGE_START_SIZE)==0)
+                        if (memcmp(nFind, Params().MessageStart(), MESSAGE_START_SIZE) == 0)
                         {
-                            nPos += ((unsigned char*)nFind - pchData) + MESSAGE_START_SIZE;
+                            nPos += ((unsigned char*) nFind - pchData) + MESSAGE_START_SIZE;
                             break;
                         }
 
-                        nPos += ((unsigned char*)nFind - pchData) + 1;
+                        nPos += ((unsigned char*) nFind - pchData) + 1;
                     }
                     else
                         nPos += sizeof(pchData) - MESSAGE_START_SIZE + 1;
@@ -2679,7 +2675,7 @@ bool LoadExternalBlockFile(FILE* fileIn)
                     boost::this_thread::interruption_point();
                 } while(true);
 
-                if (nPos == (unsigned int)-1)
+                if (nPos == (unsigned int) -1)
                     break;
 
                 fseek(blkdat, nPos, SEEK_SET);
@@ -2692,7 +2688,7 @@ bool LoadExternalBlockFile(FILE* fileIn)
                     blkdat >> block;
                     LOCK(cs_main);
 
-                    if (ProcessBlock(NULL,&block))
+                    if (ProcessBlock(NULL, &block))
                     {
                         nLoaded++;
                         nPos += 4 + nSize;
@@ -2734,15 +2730,18 @@ void ThreadImport(std::vector<boost::filesystem::path> vImportFiles)
     BOOST_FOREACH(boost::filesystem::path &path, vImportFiles)
     {
         FILE *file = fopen(path.string().c_str(), "rb");
+
         if (file)
             LoadExternalBlockFile(file);
     }
 
     // Hardcoded $DATADIR/bootstrap.dat
     filesystem::path pathBootstrap = GetDataDir() / "bootstrap.dat";
+
     if (filesystem::exists(pathBootstrap))
     {
         FILE *file = fopen(pathBootstrap.string().c_str(), "rb");
+
         if (file)
         {
             filesystem::path pathBootstrapOld = GetDataDir() / "bootstrap.dat.old";
@@ -2768,9 +2767,7 @@ string GetWarnings(string strFor)
 
     // Misc warnings like out of disk space and clock is wrong
     if (strMiscWarning != "")
-    {
         strStatusBar = strMiscWarning;
-    }
 
     if (strFor == "statusbar")
         return strStatusBar;
@@ -3745,7 +3742,6 @@ bool ProcessMessages(CNode* pfrom)
 
     return fOk;
 }
-
 
 bool SendMessages(CNode* pto, bool fSendTrickle)
 {
