@@ -40,7 +40,7 @@
 using namespace std;
 using namespace boost;
 
-static const int MAX_OUTBOUND_CONNECTIONS = 76;
+static const int MAX_OUTBOUND_CONNECTIONS = 100;
 static const int OPEN_ADDED_CONNECTION_RETRY_TIMEOUT_MS = 60000;
 
 bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOutbound = NULL, const char *strDest = NULL, bool fOneShot = false);
@@ -850,7 +850,7 @@ void ThreadSocketHandler()
                     if (nErr != WSAEWOULDBLOCK)
                         LogPrintf("socket error accept failed: %d\n", nErr);
                 }
-                else if (nInbound >= GetArg("-maxconnections", 150) - MAX_OUTBOUND_CONNECTIONS)
+                else if (nInbound >= GetArg("-maxconnections", 200) - MAX_OUTBOUND_CONNECTIONS)
                 {
                     closesocket(hSocket);
                 }
@@ -1743,7 +1743,7 @@ void StartNode(boost::thread_group& threadGroup)
     if (semOutbound == NULL)
     {
         // Initialize semaphore
-        int nMaxOutbound = min(MAX_OUTBOUND_CONNECTIONS, (int)GetArg("-maxconnections", 125));
+        int nMaxOutbound = min(MAX_OUTBOUND_CONNECTIONS, (int) GetArg("-maxconnections", 200));
         semOutbound = new CSemaphore(nMaxOutbound);
     }
 
@@ -1790,7 +1790,7 @@ bool StopNode()
     mempool.AddTransactionsUpdated(1);
 
     if (semOutbound)
-        for (int i=0; i<MAX_OUTBOUND_CONNECTIONS; i++)
+        for (int i=0; i < MAX_OUTBOUND_CONNECTIONS; i++)
             semOutbound->post();
 
     DumpAddresses();

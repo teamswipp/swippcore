@@ -13,7 +13,6 @@
 #include <boost/signals2/signal.hpp>
 #include <openssl/rand.h>
 
-
 #ifndef WIN32
 #include <arpa/inet.h>
 #endif
@@ -62,7 +61,6 @@ struct CNodeSignals
 };
 
 CNodeSignals& GetNodeSignals();
-
 typedef int NodeId;
 
 enum
@@ -90,7 +88,6 @@ bool GetLocal(CService &addr, const CNetAddr *paddrPeer = NULL);
 bool IsReachable(const CNetAddr &addr);
 void SetReachable(enum Network net, bool fFlag = true);
 CAddress GetLocalAddress(const CNetAddr *paddrPeer = NULL);
-
 
 enum {
     MSG_TX = 1,
@@ -122,7 +119,6 @@ extern CCriticalSection cs_vAddedNodes;
 extern NodeId nLastNodeId;
 extern CCriticalSection cs_nLastNodeId;
 
-
 class CNodeStats
 {
 public:
@@ -146,9 +142,6 @@ public:
     double dPingWait;
     std::string addrLocal;
 };
-
-
-
 
 class CNetMessage {
 public:
@@ -189,7 +182,6 @@ public:
     int readData(const char *pch, unsigned int nBytes);
 };
 
-
 class SecMsgNode
 {
 public:
@@ -214,9 +206,7 @@ public:
     
 };
 
-
-
-/** Information about a peer */
+// Information about a peer
 class CNode
 {
 public:
