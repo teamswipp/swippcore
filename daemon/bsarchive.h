@@ -8,9 +8,12 @@ class BSArchive
 {
 private:
     std::FILE *file;
+    unsigned char *in;
+    unsigned char *out;
 
 public:
     BSArchive(std::FILE *file);
+    ~BSArchive();
 
     bool verifyHash();
     int unarchive(std::FILE *destination);
