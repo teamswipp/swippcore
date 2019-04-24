@@ -194,7 +194,7 @@ std::string HelpMessage()
     strUsage += "  -tor=<ip:port>         " + std::string(_("Use proxy to reach tor hidden services (default: same as -proxy)")) + "\n";
     strUsage += "  -dns                   " + std::string(_("Allow DNS lookups for -addnode, -seednode and -connect")) + "\n";
     strUsage += "  -port=<port>           " + std::string(_("Listen for connections on <port> (default: 24055 or testnet: 18065)")) + "\n";
-    strUsage += "  -maxconnections=<n>    " + std::string(_("Maintain at most <n> connections to peers (default: 125)")) + "\n";
+    strUsage += "  -maxconnections=<n>    " + std::string(_("Maintain at most <n> connections to peers (default: 200)")) + "\n";
     strUsage += "  -addnode=<ip>          " + std::string(_("Add a node to connect to and attempt to keep the connection open")) + "\n";
     strUsage += "  -connect=<ip>          " + std::string(_("Connect only to the specified node(s)")) + "\n";
     strUsage += "  -seednode=<ip>         " + std::string(_("Connect to a node to retrieve peer addresses, and disconnect")) + "\n";
