@@ -282,7 +282,8 @@ std::string HelpMessage()
     strUsage += "  -salvagewallet         " + std::string(_("Attempt to recover private keys from a corrupt wallet.dat")) + "\n";
     strUsage += "  -checkblocks=<n>       " + std::string(_("How many blocks to check at startup (default: 500, 0 = all)")) + "\n";
     strUsage += "  -checklevel=<n>        " + std::string(_("How thorough the block verification is (0-6, default: 1)")) + "\n";
-    strUsage += "  -loadblock=<file>      " + std::string(_("Imports blocks from external blk000?.dat file")) + "\n";
+    strUsage += "  -loadblock=<file>/web  " + std::string(_("Import blocks from external bootstrap file or *.bsa archive.\n                         "
+                                                            "Specify \"web\" to download the latest bootstrap archive from the project website.")) + "\n";
     strUsage += "  -maxorphanblocks=<n>   " + std::string(strprintf(_("Keep at most <n> unconnectable blocks in memory (default: %u)"),
                                                                       DEFAULT_MAX_ORPHAN_BLOCKS)) + "\n";
 
@@ -961,15 +962,15 @@ int AppInit2(boost::thread_group& threadGroup)
     LogPrintf("No wallet compiled in!\n");
 #endif
 
-    std::vector<boost::filesystem::path> vImportFiles;
+    std::vector<std::string> arguments;
 
     if (mapArgs.count("-loadblock"))
     {
-        BOOST_FOREACH(string strFile, mapMultiArgs["-loadblock"])
-            vImportFiles.push_back(strFile);
+        BOOST_FOREACH(string arg, mapMultiArgs["-loadblock"])
+            arguments.push_back(arg);
     }
 
-    threadGroup.create_thread(boost::bind(&ThreadImport, vImportFiles));
+    threadGroup.create_thread(boost::bind(&ThreadImport, arguments));
     LogPrintf(_("Loading addresses...\n"));
     nStart = GetTimeMillis();
 

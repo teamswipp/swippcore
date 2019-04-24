@@ -4,16 +4,20 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
+#include <cstdio>
+#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
 
 #include "alert.h"
 #include "backtrace.h"
+#include "bsarchive.h"
 #include "chainparams.h"
 #include "checkpoints.h"
 #include "constraints.h"
 #include "darksend.h"
 #include "db.h"
+#include "downloader.h"
 #include "init.h"
 #include "instantx.h"
 #include "kernel.h"
@@ -736,7 +740,6 @@ int CMerkleTx::GetBlocksToMaturity() const
 
     return max(0, (nCoinbaseMaturity+1) - GetDepthInMainChain());
 }
-
 
 bool CMerkleTx::AcceptToMemoryPool(bool fLimitFree)
 {
@@ -2631,10 +2634,37 @@ void PrintBlockTree()
     }
 }
 
-bool LoadExternalBlockFile(FILE* fileIn)
+static const int IMPORT_BUFFER_SIZE = 1024 * 512; /* 0.5MB */
+
+static bool LoadExternalBlockFile(boost::filesystem::path path)
 {
+    std::FILE *file = std::fopen(path.string().c_str(), "rb");
+    std::string unarchivedPath;
+    std::FILE *unarchivedFile;
+    std::FILE *fileIn;
+
+    if (!file) {
+        LogPrintf("Failed to open bootstrap file/archive at \"%s\".\n", path);
+        return false;
+    }
+
     int64_t nStart = GetTimeMillis();
     int nLoaded = 0;
+
+    // Handle compressed bootstrap archives (*.bsa)
+    if (boost::algorithm::ends_with(path.native(), ".bsa")) {
+        unarchivedPath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).native();
+        unarchivedPath = unarchivedPath + ".bootstrap";
+        unarchivedFile = std::fopen(unarchivedPath.c_str(), "w+b");
+
+        BSArchive bsArchive(file);
+        bsArchive.unarchive(unarchivedFile);
+
+        fileIn = unarchivedFile;
+        std::fclose(file);
+    } else {
+        fileIn = file;
+    }
 
     {
         try {
@@ -2644,12 +2674,12 @@ bool LoadExternalBlockFile(FILE* fileIn)
             while (nPos != (unsigned int) - 1 && blkdat.good())
             {
                 boost::this_thread::interruption_point();
-                unsigned char pchData[65536];
+                unsigned char pchData[IMPORT_BUFFER_SIZE];
 
                 do
                 {
-                    fseek(blkdat, nPos, SEEK_SET);
-                    int nRead = fread(pchData, 1, sizeof(pchData), blkdat);
+                    std::fseek(blkdat, nPos, SEEK_SET);
+                    int nRead = std::fread(pchData, 1, sizeof(pchData), blkdat);
 
                     if (nRead <= 8)
                     {
@@ -2678,7 +2708,7 @@ bool LoadExternalBlockFile(FILE* fileIn)
                 if (nPos == (unsigned int) -1)
                     break;
 
-                fseek(blkdat, nPos, SEEK_SET);
+                std::fseek(blkdat, nPos, SEEK_SET);
                 unsigned int nSize;
                 blkdat >> nSize;
 
@@ -2702,6 +2732,10 @@ bool LoadExternalBlockFile(FILE* fileIn)
         }
     }
 
+    if (!unarchivedPath.empty()) {
+        std::remove(unarchivedPath.c_str());
+    }
+
     LogPrintf("Loaded %i blocks from external file in %dms\n", nLoaded, GetTimeMillis() - nStart);
     return nLoaded > 0;
 }
@@ -2721,33 +2755,69 @@ struct CImportingNow
     }
 };
 
-void ThreadImport(std::vector<boost::filesystem::path> vImportFiles)
+void ThreadImport(std::vector<std::string> arguments)
 {
-    RenameThread("Swipp-loadblk");
+    bool downloadBootstrap = false;
+    std::vector<boost::filesystem::path> vImportFiles;
+    std::string downloadedFilePath;
+    std::FILE *downloadedFile = nullptr;
+
+    RenameThread("Swipp-loadblock");
     CImportingNow imp;
 
-    // Loadblock
-    BOOST_FOREACH(boost::filesystem::path &path, vImportFiles)
-    {
-        FILE *file = fopen(path.string().c_str(), "rb");
-
-        if (file)
-            LoadExternalBlockFile(file);
+    BOOST_FOREACH(std::string arg, arguments) {
+        if (arg == "web") {
+            downloadBootstrap = true;
+        } else {
+            vImportFiles.push_back(arg);
+        }
     }
 
-    // Hardcoded $DATADIR/bootstrap.dat
-    filesystem::path pathBootstrap = GetDataDir() / "bootstrap.dat";
+    // Download bootstrap archive from the project web site
+    if (downloadBootstrap) {
+        std::string basePath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).native();
 
-    if (filesystem::exists(pathBootstrap))
-    {
-        FILE *file = fopen(pathBootstrap.string().c_str(), "rb");
+        downloadedFilePath = basePath + ".bsa";
+        downloadedFile = std::fopen(downloadedFilePath.c_str(), "w+");
 
-        if (file)
-        {
-            filesystem::path pathBootstrapOld = GetDataDir() / "bootstrap.dat.old";
-            LoadExternalBlockFile(file);
+        if (downloadedFile) {
+            LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", SWIPPCORE_BOOTSTRAP_LOCATION, downloadedFilePath);
+            Downloader downloader(SWIPPCORE_BOOTSTRAP_LOCATION, downloadedFile);
+            downloader.fetch();
+            std::rewind(downloadedFile);
+            BSArchive bsArchive(downloadedFile);
+            LogPrintf("Bootstrap download completed\n");
+
+            // If the file is not empty and hash can be verified, we can safely use it!
+            if (!std::feof(downloadedFile) && bsArchive.verifyHash()) {
+                vImportFiles.push_back(downloadedFilePath);
+            } else {
+                LogPrintf("Downloaded bootstrap archive appears to be empty or corrupted - will not be used\n");
+            }
+
+            std::fclose(downloadedFile);
+        }
+    }
+
+    // Loadblock
+    BOOST_FOREACH(boost::filesystem::path path, vImportFiles) {
+        LoadExternalBlockFile(path);
+    }
+
+    // Hardcoded $DATADIR/bootstrap.dat/bsa
+    BOOST_FOREACH(std::string path, std::vector<std::string>({ "bootstrap.dat", "bootstrap.bsa" })) {
+        filesystem::path pathBootstrap = GetDataDir() / path;
+
+        if (filesystem::exists(pathBootstrap)) {
+            filesystem::path pathBootstrapOld = GetDataDir() / (path + ".old");
+            LoadExternalBlockFile(pathBootstrap);
             RenameOver(pathBootstrap, pathBootstrapOld);
         }
+    }
+
+    // Remove any downloaded bootstrap
+    if (!downloadedFilePath.empty()) {
+        std::remove(downloadedFilePath.c_str());
     }
 }
 

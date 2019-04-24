@@ -22,6 +22,8 @@
 
 class CValidationState;
 
+#define SWIPPCORE_BOOTSTRAP_LOCATION "http://www.swippcoin.com/binaries/bootstrap.bsa"
+
 #define START_MASTERNODE_PAYMENTS_TESTNET 1432907775
 #define START_MASTERNODE_PAYMENTS 1432907775
 
@@ -153,7 +155,7 @@ void PrintBlockTree();
 CBlockIndex* FindBlockByHeight(int nHeight);
 bool ProcessMessages(CNode* pfrom);
 bool SendMessages(CNode* pto, bool fSendTrickle);
-void ThreadImport(std::vector<boost::filesystem::path> vImportFiles);
+void ThreadImport(std::vector<std::string> arguments);
 
 bool CheckProofOfWork(uint256 hash, unsigned int nBits);
 unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfStake);
@@ -536,8 +538,6 @@ public:
 
         return true;
     }
-
-
 
     std::string ToString() const
     {
