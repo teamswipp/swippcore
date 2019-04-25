@@ -9,6 +9,7 @@
 
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
 #include <boost/functional/hash.hpp>
 #include <boost/container/flat_set.hpp>
@@ -205,6 +206,7 @@ public:
 
     bool ReadAddrIndex(uint160 addrHash, boost::container::flat_set<uint256>& txHashes);
     bool ReadAddrIndex(uint160 addrHash, std::vector<uint256>& txHashes);
+    static bool WriteAddrIndexes(CTxDB txdb, boost::container::flat_set<std::tuple<uint160, uint256>> addrIds);
     bool WriteAddrIndex(uint160 addrHash, uint256 txHash);
     bool ReadTxIndex(uint256 hash, CTxIndex& txindex);
     bool UpdateTxIndex(uint256 hash, const CTxIndex& txindex);

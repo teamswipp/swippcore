@@ -219,6 +219,16 @@ std::size_t hash_value(const uint256& val)
     return boost::hash_range(val.begin(), val.end());
 }
 
+bool CTxDB::WriteAddrIndexes(CTxDB txdb, boost::container::flat_set<std::tuple<uint160, uint256>> addrIds)
+{
+	for(auto const& addrId : addrIds) {
+		if (!txdb.WriteAddrIndex(std::get<0>(addrId), std::get<1>(addrId))) {
+			LogPrintf("ConnectBlock(): txouts WriteAddrIndex failed addrId: %s txhash: %s\n",
+					  std::get<0>(addrId).ToString().c_str(), std::get<1>(addrId).ToString().c_str());
+		}
+	}
+}
+
 bool CTxDB::WriteAddrIndex(uint160 addrHash, uint256 txHash)
 {
     boost::container::flat_set<uint256> txHashes;
