@@ -18,6 +18,7 @@
 #include <cstring>
 #include <cstdio>
 
+#include <boost/container/flat_set.hpp>
 #include <boost/type_traits/is_fundamental.hpp>
 #include <boost/tuple/tuple.hpp>
 
@@ -463,6 +464,10 @@ template<typename K, typename Pred, typename A> unsigned int GetSerializeSize(co
 template<typename Stream, typename K, typename Pred, typename A> void Serialize(Stream& os, const std::set<K, Pred, A>& m, int nType, int nVersion);
 template<typename Stream, typename K, typename Pred, typename A> void Unserialize(Stream& is, std::set<K, Pred, A>& m, int nType, int nVersion);
 
+template<typename K, typename Pred, typename A> unsigned int GetSerializeSize(const boost::container::flat_set<K, Pred, A>& m, int nType, int nVersion);
+template<typename Stream, typename K, typename Pred, typename A> void Serialize(Stream& os, const boost::container::flat_set<K, Pred, A>& m, int nType, int nVersion);
+template<typename Stream, typename K, typename Pred, typename A> void Unserialize(Stream& is, boost::container::flat_set<K, Pred, A>& m, int nType, int nVersion);
+
 // If none of the specialized versions above matched, default to calling member function.
 // "int nType" is changed to "long nType" to keep from getting an ambiguous overload error.
 // The compiler will only cast int to long if none of the other templates matched.
@@ -725,6 +730,41 @@ void Unserialize(Stream& is, std::map<K, T, Pred, A>& m, int nType, int nVersion
         std::pair<K, T> item;
         Unserialize(is, item, nType, nVersion);
         mi = m.insert(mi, item);
+    }
+}
+
+template<typename K, typename Pred, typename A>
+unsigned int GetSerializeSize(const boost::container::flat_set<K, Pred, A>& m, int nType, int nVersion)
+{
+    unsigned int nSize = GetSizeOfCompactSize(m.size());
+
+    for (typename boost::container::flat_set<K, Pred, A>::const_iterator it = m.begin(); it != m.end(); ++it)
+        nSize += GetSerializeSize((*it), nType, nVersion);
+
+    return nSize;
+}
+
+template<typename Stream, typename K, typename Pred, typename A>
+void Serialize(Stream& os, const boost::container::flat_set<K, Pred, A>& m, int nType, int nVersion)
+{
+    WriteCompactSize(os, m.size());
+
+    for (typename boost::container::flat_set<K, Pred, A>::const_iterator it = m.begin(); it != m.end(); ++it)
+        Serialize(os, (*it), nType, nVersion);
+}
+
+template<typename Stream, typename K, typename Pred, typename A>
+void Unserialize(Stream& is, boost::container::flat_set<K, Pred, A>& m, int nType, int nVersion)
+{
+    m.clear();
+    unsigned int nSize = ReadCompactSize(is);
+    typename boost::container::flat_set<K, Pred, A>::iterator it = m.begin();
+
+    for (unsigned int i = 0; i < nSize; i++)
+    {
+        K key;
+        Unserialize(is, key, nType, nVersion);
+        it = m.insert(it, key);
     }
 }
 

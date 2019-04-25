@@ -1,14 +1,18 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 #include <map>
+#include <thread>
+#include <tuple>
 
 #include <boost/version.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
+#include <boost/functional/hash.hpp>
+#include <boost/container/flat_set.hpp>
 
 #include <leveldb/env.h>
 #include <leveldb/cache.h>
@@ -210,28 +214,35 @@ bool CTxDB::ScanBatch(const CDataStream &key, string *value, bool *deleted) cons
     return scanner.foundEntry;
 }
 
+std::size_t hash_value(const uint256& val)
+{
+    return boost::hash_range(val.begin(), val.end());
+}
+
 bool CTxDB::WriteAddrIndex(uint160 addrHash, uint256 txHash)
 {
-    std::vector<uint256> txHashes;
+    boost::container::flat_set<uint256> txHashes;
+    bool ret;
 
-    if(!ReadAddrIndex(addrHash, txHashes))
-    {
-        txHashes.push_back(txHash);
-        return Write(make_pair(string("adr"), addrHash), txHashes);
+    if(!ReadAddrIndex(addrHash, txHashes)) {
+       txHashes.insert(txHash);
+       ret = Write(make_pair(string("adr"), addrHash), txHashes);
+    } else if(txHashes.find(txHash) == txHashes.end()) {
+      txHashes.insert(txHash);
+      ret = Write(make_pair(string("adr"), addrHash), txHashes);
+    } else {
+      ret = true; // Already have this tx hash
     }
-    else
-    {
-        if(std::find(txHashes.begin(), txHashes.end(), txHash) == txHashes.end())
-        {
-            txHashes.push_back(txHash);
-            return Write(make_pair(string("adr"), addrHash), txHashes);
-        }
-        else
-            return true; // Already have this tx hash
-    }
+
+    return ret;
 }
 
 bool CTxDB::ReadAddrIndex(uint160 addrHash, std::vector<uint256>& txHashes)
+{
+    return Read(make_pair(string("adr"), addrHash), txHashes);
+}
+
+bool CTxDB::ReadAddrIndex(uint160 addrHash, boost::container::flat_set<uint256>& txHashes)
 {
     return Read(make_pair(string("adr"), addrHash), txHashes);
 }

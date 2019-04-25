@@ -1,5 +1,5 @@
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Authored by Google, Inc.
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
@@ -7,15 +7,18 @@
 #ifndef BITCOIN_LEVELDB_H
 #define BITCOIN_LEVELDB_H
 
-#include "main.h"
-#include "serialize.h"
-
 #include <map>
 #include <string>
 #include <vector>
-
+#include <boost/functional/hash.hpp>
+#include <boost/container/flat_set.hpp>
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
+
+#include "main.h"
+#include "serialize.h"
+
+std::size_t hash_value(const uint256& val);
 
 // Class that provides access to a LevelDB. Note that this class is frequently
 // instantiated on the stack and then destroyed again, so instantiation has to
@@ -200,6 +203,7 @@ public:
         return Write(std::string("version"), nVersion);
     }
 
+    bool ReadAddrIndex(uint160 addrHash, boost::container::flat_set<uint256>& txHashes);
     bool ReadAddrIndex(uint160 addrHash, std::vector<uint256>& txHashes);
     bool WriteAddrIndex(uint160 addrHash, uint256 txHash);
     bool ReadTxIndex(uint256 hash, CTxIndex& txindex);
