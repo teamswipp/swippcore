@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
@@ -15,23 +16,19 @@
 
 inline int Testuint256AdHoc(std::vector<std::string> vArg);
 
-
-/** Base class without constructors for uint256 and uint160.
- * This makes the compiler let u use it in a union.
- */
-template<unsigned int BITS>
-class base_uint
+template<unsigned int BITS> class base_uint
 {
 protected:
-    enum { WIDTH=BITS/32 };
+    enum { WIDTH=BITS / 32 };
     unsigned int pn[WIDTH];
-public:
 
+public:
     bool operator!() const
     {
         for (int i = 0; i < WIDTH; i++)
             if (pn[i] != 0)
                 return false;
+
         return true;
     }
 
@@ -40,6 +37,7 @@ public:
         base_uint ret;
         for (int i = 0; i < WIDTH; i++)
             ret.pn[i] = ~pn[i];
+
         return ret;
     }
 
@@ -48,6 +46,7 @@ public:
         base_uint ret;
         for (int i = 0; i < WIDTH; i++)
             ret.pn[i] = ~pn[i];
+
         ret++;
         return ret;
     }
@@ -60,6 +59,7 @@ public:
             ret += fact * pn[i];
             fact *= 4294967296.0;
         }
+
         return ret;
     }
 
@@ -67,8 +67,10 @@ public:
     {
         pn[0] = (unsigned int)b;
         pn[1] = (unsigned int)(b >> 32);
+
         for (int i = 2; i < WIDTH; i++)
             pn[i] = 0;
+
         return *this;
     }
 
@@ -76,6 +78,7 @@ public:
     {
         for (int i = 0; i < WIDTH; i++)
             pn[i] ^= b.pn[i];
+
         return *this;
     }
 
@@ -83,6 +86,7 @@ public:
     {
         for (int i = 0; i < WIDTH; i++)
             pn[i] &= b.pn[i];
+
         return *this;
     }
 
@@ -90,6 +94,7 @@ public:
     {
         for (int i = 0; i < WIDTH; i++)
             pn[i] |= b.pn[i];
+
         return *this;
     }
 
@@ -97,6 +102,7 @@ public:
     {
         pn[0] ^= (unsigned int)b;
         pn[1] ^= (unsigned int)(b >> 32);
+
         return *this;
     }
 
@@ -104,16 +110,20 @@ public:
     {
         pn[0] |= (unsigned int)b;
         pn[1] |= (unsigned int)(b >> 32);
+
         return *this;
     }
 
     base_uint& operator<<=(unsigned int shift)
     {
         base_uint a(*this);
+
         for (int i = 0; i < WIDTH; i++)
             pn[i] = 0;
+
         int k = shift / 32;
         shift = shift % 32;
+
         for (int i = 0; i < WIDTH; i++)
         {
             if (i+k+1 < WIDTH && shift != 0)
@@ -121,16 +131,20 @@ public:
             if (i+k < WIDTH)
                 pn[i+k] |= (a.pn[i] << shift);
         }
+
         return *this;
     }
 
     base_uint& operator>>=(unsigned int shift)
     {
         base_uint a(*this);
+
         for (int i = 0; i < WIDTH; i++)
             pn[i] = 0;
+
         int k = shift / 32;
         shift = shift % 32;
+
         for (int i = 0; i < WIDTH; i++)
         {
             if (i-k-1 >= 0 && shift != 0)
@@ -138,18 +152,21 @@ public:
             if (i-k >= 0)
                 pn[i-k] |= (a.pn[i] >> shift);
         }
+
         return *this;
     }
 
     base_uint& operator+=(const base_uint& b)
     {
         uint64_t carry = 0;
+
         for (int i = 0; i < WIDTH; i++)
         {
             uint64_t n = carry + pn[i] + b.pn[i];
             pn[i] = n & 0xffffffff;
             carry = n >> 32;
         }
+
         return *this;
     }
 
@@ -164,6 +181,7 @@ public:
         base_uint b;
         b = b64;
         *this += b;
+
         return *this;
     }
 
@@ -172,6 +190,7 @@ public:
         base_uint b;
         b = b64;
         *this += -b;
+
         return *this;
     }
 
@@ -180,8 +199,10 @@ public:
     {
         // prefix operator
         int i = 0;
+
         while (++pn[i] == 0 && i < WIDTH-1)
             i++;
+
         return *this;
     }
 
@@ -189,6 +210,7 @@ public:
     {
         // postfix operator
         const base_uint ret = *this;
+
         ++(*this);
         return ret;
     }
@@ -197,8 +219,10 @@ public:
     {
         // prefix operator
         int i = 0;
+
         while (--pn[i] == -1 && i < WIDTH-1)
             i++;
+
         return *this;
     }
 
@@ -206,10 +230,10 @@ public:
     {
         // postfix operator
         const base_uint ret = *this;
+
         --(*this);
         return ret;
     }
-
 
     friend inline bool operator<(const base_uint& a, const base_uint& b)
     {
@@ -220,6 +244,7 @@ public:
             else if (a.pn[i] > b.pn[i])
                 return false;
         }
+
         return false;
     }
 
@@ -232,6 +257,7 @@ public:
             else if (a.pn[i] > b.pn[i])
                 return false;
         }
+
         return true;
     }
 
@@ -244,6 +270,7 @@ public:
             else if (a.pn[i] < b.pn[i])
                 return false;
         }
+
         return false;
     }
 
@@ -256,6 +283,7 @@ public:
             else if (a.pn[i] < b.pn[i])
                 return false;
         }
+
         return true;
     }
 
@@ -264,6 +292,7 @@ public:
         for (int i = 0; i < base_uint::WIDTH; i++)
             if (a.pn[i] != b.pn[i])
                 return false;
+
         return true;
     }
 
@@ -271,11 +300,14 @@ public:
     {
         if (a.pn[0] != (unsigned int)b)
             return false;
+
         if (a.pn[1] != (unsigned int)(b >> 32))
             return false;
+
         for (int i = 2; i < base_uint::WIDTH; i++)
             if (a.pn[i] != 0)
                 return false;
+
         return true;
     }
 
@@ -289,13 +321,13 @@ public:
         return (!(a == b));
     }
 
-
-
     std::string GetHex() const
     {
         char psz[sizeof(pn)*2 + 1];
+
         for (unsigned int i = 0; i < sizeof(pn); i++)
             sprintf(psz + i*2, "%02x", ((unsigned char*)pn)[sizeof(pn) - i - 1]);
+
         return std::string(psz, psz + sizeof(pn)*2);
     }
 
@@ -315,14 +347,19 @@ public:
         // hex string to uint
         static const unsigned char phexdigit[256] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0, 0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0 };
         const char* pbegin = psz;
+
         while (phexdigit[(unsigned char)*psz] || *psz == '0')
             psz++;
+
         psz--;
+
         unsigned char* p1 = (unsigned char*)pn;
         unsigned char* pend = p1 + WIDTH * 4;
+
         while (psz >= pbegin && p1 < pend)
         {
             *p1 = phexdigit[(unsigned char)*psz--];
+
             if (psz >= pbegin)
             {
                 *p1 |= (phexdigit[(unsigned char)*psz--] << 4);
@@ -398,19 +435,6 @@ typedef base_uint<160> base_uint160;
 typedef base_uint<256> base_uint256;
 typedef base_uint<512> base_uint512;
 
-//
-// uint160 and uint256 could be implemented as templates, but to keep
-// compile errors and debugging cleaner, they're copy and pasted.
-//
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// uint160
-//
-
-/** 160-bit unsigned integer */
 class uint160 : public base_uint160
 {
 public:
@@ -432,6 +456,7 @@ public:
     {
         for (int i = 0; i < WIDTH; i++)
             pn[i] = b.pn[i];
+
         return *this;
     }
 
@@ -439,6 +464,7 @@ public:
     {
         pn[0] = (unsigned int)b;
         pn[1] = (unsigned int)(b >> 32);
+
         for (int i = 2; i < WIDTH; i++)
             pn[i] = 0;
     }
@@ -447,8 +473,10 @@ public:
     {
         pn[0] = (unsigned int)b;
         pn[1] = (unsigned int)(b >> 32);
+
         for (int i = 2; i < WIDTH; i++)
             pn[i] = 0;
+
         return *this;
     }
 
@@ -515,17 +543,6 @@ inline const uint160 operator|(const uint160& a, const uint160& b)      { return
 inline const uint160 operator+(const uint160& a, const uint160& b)      { return (base_uint160)a +  (base_uint160)b; }
 inline const uint160 operator-(const uint160& a, const uint160& b)      { return (base_uint160)a -  (base_uint160)b; }
 
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// uint256
-//
-
-/** 256-bit unsigned integer */
 class uint256 : public base_uint256
 {
 public:
@@ -547,6 +564,7 @@ public:
     {
         for (int i = 0; i < WIDTH; i++)
             pn[i] = b.pn[i];
+
         return *this;
     }
 
@@ -554,6 +572,7 @@ public:
     {
         pn[0] = (unsigned int)b;
         pn[1] = (unsigned int)(b >> 32);
+
         for (int i = 2; i < WIDTH; i++)
             pn[i] = 0;
     }
@@ -562,8 +581,10 @@ public:
     {
         pn[0] = (unsigned int)b;
         pn[1] = (unsigned int)(b >> 32);
+
         for (int i = 2; i < WIDTH; i++)
             pn[i] = 0;
+
         return *this;
     }
 
@@ -630,18 +651,6 @@ inline const uint256 operator|(const uint256& a, const uint256& b)      { return
 inline const uint256 operator+(const uint256& a, const uint256& b)      { return (base_uint256)a +  (base_uint256)b; }
 inline const uint256 operator-(const uint256& a, const uint256& b)      { return (base_uint256)a -  (base_uint256)b; }
 
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// uint512
-//
-
-/** 512-bit unsigned integer */
 class uint512 : public base_uint512
 {
 public:
@@ -663,6 +672,7 @@ public:
     {
         for (int i = 0; i < WIDTH; i++)
             pn[i] = b.pn[i];
+
         return *this;
     }
 
@@ -670,6 +680,7 @@ public:
     {
         pn[0] = (unsigned int)b;
         pn[1] = (unsigned int)(b >> 32);
+
         for (int i = 2; i < WIDTH; i++)
             pn[i] = 0;
     }
@@ -678,8 +689,10 @@ public:
     {
         pn[0] = (unsigned int)b;
         pn[1] = (unsigned int)(b >> 32);
+
         for (int i = 2; i < WIDTH; i++)
             pn[i] = 0;
+
         return *this;
     }
 
@@ -699,9 +712,11 @@ public:
     uint256 trim256() const
     {
         uint256 ret;
+
         for (unsigned int i = 0; i < uint256::WIDTH; i++){
             ret.pn[i] = pn[i];
         }
+
         return ret;
     }
 };
@@ -761,7 +776,6 @@ inline int Testuint256AdHoc(std::vector<std::string> vArg)
 {
     uint256 g(0);
 
-
     LogPrintf("%s\n", g.ToString());
     g--;  LogPrintf("g--\n");
     LogPrintf("%s\n", g.ToString());
@@ -775,8 +789,6 @@ inline int Testuint256AdHoc(std::vector<std::string> vArg)
     LogPrintf("%s\n", g.ToString());
     g++;  LogPrintf("g++\n");
     LogPrintf("%s\n", g.ToString());
-
-
 
     uint256 a(7);
     LogPrintf("a=7\n");
@@ -799,13 +811,9 @@ inline int Testuint256AdHoc(std::vector<std::string> vArg)
     b <<= 52;
 
     a |= b;
-
     a ^= 0x500;
-
     LogPrintf("a %s\n", a.ToString());
-
     a = a | b | (uint256)0x1000;
-
 
     LogPrintf("a %s\n", a.ToString());
     LogPrintf("b %s\n", b.ToString());
@@ -846,16 +854,15 @@ inline int Testuint256AdHoc(std::vector<std::string> vArg)
     neg = ~neg;
     LogPrintf("%s\n", neg.ToString());
 
-
     uint256 e = uint256("0xABCDEF123abcdef12345678909832180000011111111");
     LogPrintf("\n");
     LogPrintf("%s\n", e.ToString());
-
 
     LogPrintf("\n");
     uint256 x1 = uint256("0xABCDEF123abcdef12345678909832180000011111111");
     uint256 x2;
     LogPrintf("%s\n", x1.ToString());
+
     for (int i = 0; i < 270; i += 4)
     {
         x2 = x1 << i;
@@ -864,13 +871,13 @@ inline int Testuint256AdHoc(std::vector<std::string> vArg)
 
     LogPrintf("\n");
     LogPrintf("%s\n", x1.ToString());
+
     for (int i = 0; i < 270; i += 4)
     {
         x2 = x1;
         x2 >>= i;
         LogPrintf("%s\n", x2.ToString());
     }
-
 
     for (int i = 0; i < 100; i++)
     {
@@ -884,7 +891,7 @@ inline int Testuint256AdHoc(std::vector<std::string> vArg)
         LogPrintf("%s\n", k.ToString());
     }
 
-    return (0);
+    return 0;
 }
 
 #endif
