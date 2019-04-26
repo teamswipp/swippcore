@@ -2055,17 +2055,17 @@ bool CBlock::CheckBlock(CNode* pfrom, bool fCheckPOW, bool fCheckMerkleRoot, boo
     return true;
 }
 
-bool CBlock::AcceptBlock()
+bool CBlock::AcceptBlock(bool bootstrap)
 {
     AssertLockHeld(cs_main);
 
-    if (nVersion > CURRENT_VERSION)
+    if (!bootstrap && nVersion > CURRENT_VERSION)
         return DoS(100, error("AcceptBlock() : reject unknown block version %d", nVersion));
 
     // Check for duplicate
     uint256 hash = GetHash();
 
-    if (mapBlockIndex.count(hash))
+    if (!bootstrap && mapBlockIndex.count(hash))
         return error("AcceptBlock() : block already in mapBlockIndex");
 
     // Get prev block index
@@ -2082,26 +2082,28 @@ bool CBlock::AcceptBlock()
     else if (!IsProtocolV2(nHeight) && nVersion > 6)
         return DoS(100, error("AcceptBlock() : reject too new nVersion = %d", nVersion));
 
-    // Check coinbase timestamp
-    if (GetBlockTime() > FutureDrift((int64_t)vtx[0].nTime, nHeight))
-        return DoS(50, error("AcceptBlock() : coinbase timestamp is too early"));
+    if (!bootstrap) {
+        // Check coinbase timestamp
+        if (GetBlockTime() > FutureDrift((int64_t)vtx[0].nTime, nHeight))
+            return DoS(50, error("AcceptBlock() : coinbase timestamp is too early"));
 
-    // Check coinstake timestamp
-    if (IsProofOfStake() && !CheckCoinStakeTimestamp(nHeight, GetBlockTime(), (int64_t)vtx[1].nTime))
-        return DoS(50, error("AcceptBlock() : coinstake timestamp violation nTimeBlock=%d nTimeTx=%u", GetBlockTime(), vtx[1].nTime));
+        // Check coinstake timestamp
+        if (IsProofOfStake() && !CheckCoinStakeTimestamp(nHeight, GetBlockTime(), (int64_t)vtx[1].nTime))
+            return DoS(50, error("AcceptBlock() : coinstake timestamp violation nTimeBlock=%d nTimeTx=%u", GetBlockTime(), vtx[1].nTime));
 
-    // Check proof-of-work or proof-of-stake
-    if (nBits != GetNextTargetRequired(pindexPrev, IsProofOfStake()))
-        return DoS(100, error("AcceptBlock() : incorrect %s", IsProofOfWork() ? "proof-of-work" : "proof-of-stake"));
+        // Check proof-of-work or proof-of-stake
+        if (nBits != GetNextTargetRequired(pindexPrev, IsProofOfStake()))
+            return DoS(100, error("AcceptBlock() : incorrect %s", IsProofOfWork() ? "proof-of-work" : "proof-of-stake"));
 
-    // Check timestamp against prev
-    if (GetBlockTime() <= pindexPrev->GetPastTimeLimit() || FutureDrift(GetBlockTime(), nHeight) < pindexPrev->GetBlockTime())
-        return error("AcceptBlock() : block's timestamp is too early");
+        // Check timestamp against prev
+        if (GetBlockTime() <= pindexPrev->GetPastTimeLimit() || FutureDrift(GetBlockTime(), nHeight) < pindexPrev->GetBlockTime())
+            return error("AcceptBlock() : block's timestamp is too early");
 
-    // Check that all transactions are finalized
-    BOOST_FOREACH(const CTransaction& tx, vtx)
-        if (!IsFinalTx(tx, nHeight, GetBlockTime()))
-            return DoS(10, error("AcceptBlock() : contains a non-final transaction"));
+        // Check that all transactions are finalized
+        BOOST_FOREACH(const CTransaction& tx, vtx)
+            if (!IsFinalTx(tx, nHeight, GetBlockTime()))
+                return DoS(10, error("AcceptBlock() : contains a non-final transaction"));
+    }
 
     // Check that the block chain matches the known block chain up to a checkpoint
     if (!Checkpoints::CheckHardened(nHeight, hash))
@@ -2113,33 +2115,21 @@ bool CBlock::AcceptBlock()
     if (IsProofOfStake())
     {
         uint256 targetProofOfStake;
+
         if (!CheckProofOfStake(pindexPrev, vtx[1], nBits, hashProof, targetProofOfStake))
-        {
             return error("AcceptBlock() : check proof-of-stake failed for block %s", hash.ToString());
-        }
     }
 
     // PoW is checked in CheckBlock()
     if (IsProofOfWork())
-    {
         hashProof = GetPoWHash();
-    }
 
-    //bool cpSatisfies = Checkpoints::CheckSync(hash, pindexPrev);
-
-    /*// Check that the block satisfies synchronized checkpoint
-    if (CheckpointsMode == Checkpoints::STRICT && !cpSatisfies)
-        return error("AcceptBlock() : rejected by synchronized checkpoint");
-
-    if (CheckpointsMode == Checkpoints::ADVISORY && !cpSatisfies)
-        strMiscWarning = _("WARNING: syncronized checkpoint violation detected, but skipped!");*/
-
-    // Enforce rule that the coinbase starts with serialized block height
-    CScript expect = CScript() << nHeight;
-    if (vtx[0].vin[0].scriptSig.size() < expect.size() ||
-        !std::equal(expect.begin(), expect.end(), vtx[0].vin[0].scriptSig.begin()))
-    {
-        return DoS(100, error("AcceptBlock() : block height mismatch in coinbase"));
+    if (!bootstrap) {
+        // Enforce rule that the coinbase starts with serialized block height
+        CScript expect = CScript() << nHeight;
+        if (vtx[0].vin[0].scriptSig.size() < expect.size() ||
+            !std::equal(expect.begin(), expect.end(), vtx[0].vin[0].scriptSig.begin()))
+            return DoS(100, error("AcceptBlock() : block height mismatch in coinbase"));
     }
 
     // Write block to history file
@@ -2170,8 +2160,6 @@ bool CBlock::AcceptBlock()
                 pnode->PushInventory(CInv(MSG_BLOCK, hash));
     }
 
-    /*// ppcoin: check pending sync-checkpoint
-    Checkpoints::AcceptPendingSyncCheckpoint();*/
     return true;
 }
 
@@ -2658,7 +2646,7 @@ static bool LoadExternalBlockFile(boost::filesystem::path path)
                     blkdat >> block;
                     LOCK(cs_main);
 
-                    if (ProcessBlock(NULL, &block))
+                    if (block.AcceptBlock(true))
                     {
                         nLoaded++;
                         nPos += 4 + nSize;
