@@ -38,6 +38,8 @@ static leveldb::Options GetOptions()
 
     options.block_cache = leveldb::NewLRUCache(nCacheSizeMB * 1048576);
     options.filter_policy = leveldb::NewBloomFilterPolicy(10);
+    options.write_buffer_size = 32 * 1024 * 1024;
+
     return options;
 }
 
