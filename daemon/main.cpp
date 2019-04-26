@@ -1300,8 +1300,9 @@ bool CBlock::RebuildAddressIndex(CTxDB& txdb)
         }
     }
 
-    std::thread writeIndexes(CTxDB::WriteAddrIndexes, txdb, addrIds);
+    std::thread writeIndexes(CTxDB::WriteAddrIndexes, addrIds);
     writeIndexes.detach();
+    return true;
 }
 
 bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
