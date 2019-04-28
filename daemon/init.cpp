@@ -60,14 +60,9 @@ bool fOnlyTor = false;
 // the DetectShutdownThread(), which interrupts the main thread group.
 // DetectShutdownThread() then exits, which causes AppInit() to
 // continue (it .joins the shutdown thread).
-// Shutdown() is then
-// called to clean up database connections, and stop other
+// Shutdown() is then called to clean up database connections, and stop other
 // threads that should only be stopped after the main network-processing
 // threads have exited.
-//
-// Note that if running -daemon the parent process returns from AppInit2
-// before adding any threads to the threadGroup, so .join_all() returns
-// immediately and the parent exits from main().
 
 volatile bool fRequestShutdown = false;
 
@@ -227,27 +222,13 @@ std::string HelpMessage()
     strUsage += "  -paytxfee=<amt>        " + std::string(_("Fee per KB to add to transactions you send")) + "\n";
     strUsage += "  -mininput=<amt>        " + std::string(_("When creating transactions, ignore inputs with value less than this "
                                                             "(default: 0.01)")) + "\n";
-    if (fHaveGUI)
-        strUsage += "  -server                " + std::string(_("Accept command line and JSON-RPC commands")) + "\n";
-
-#if !defined(WIN32)
-    if (fHaveGUI)
-        strUsage += "  -daemon                " + std::string(_("Run in the background as a daemon and accept commands")) + "\n";
-#endif
-
     strUsage += "  -testnet               " + std::string(_("Use the test network")) + "\n";
     strUsage += "  -debug=<category>      " + std::string(_("Output debugging information (default: 0, supplying "
                                                             "<category> is optional)")) + "\n";
     strUsage += "                         " + std::string(_("If <category> is not supplied, output all debugging information.")) + "\n";
     strUsage += "                         " + std::string(_("<category> can be:")) + "\n";
     strUsage += "                         " + std::string("   addrman, alert, db, lock, rand, rpc, selectcoins, mempool, net,\n");
-    strUsage += "                         " + std::string("   coinage, coinstake, creation, stakemodifier");
-
-    if (fHaveGUI)
-        strUsage += ", qt.\n";
-    else
-        strUsage += ".\n";
-
+    strUsage += "                         " + std::string("   coinage, coinstake, creation, stakemodifier.\n");
     strUsage += "  -debugbacktrace        " + std::string(_("Output backtrace debugging information, disabled by default")) + "\n";
     strUsage += "  -logtimestamps         " + std::string(_("Prepend debug output with timestamp")) + "\n";
     strUsage += "  -shrinkdebugfile       " + std::string(_("Shrink debug.log file on client startup (default: 1 when no -debug)")) + "\n";
@@ -261,11 +242,8 @@ std::string HelpMessage()
                                                             "testnet: 15075)")) + "\n";
     strUsage += "  -rpcallowip=<ip>       " + std::string(_("Allow JSON-RPC connections from specified IP address")) + "\n";
 
-    if (!fHaveGUI)
-    {
-        strUsage += "  -rpcconnect=<ip>       " + std::string(_("Send commands to node running on <ip> (default: 127.0.0.1)")) + "\n";
-        strUsage += "  -rpcwait               " + std::string(_("Wait for RPC server to start")) + "\n";
-    }
+    strUsage += "  -rpcconnect=<ip>       " + std::string(_("Send commands to node running on <ip> (default: 127.0.0.1)")) + "\n";
+    strUsage += "  -rpcwait               " + std::string(_("Wait for RPC server to start")) + "\n";
 
     strUsage += "  -rpcthreads=<n>        " + std::string(_("Set the number of threads to service RPC calls (default: 4)")) + "\n";
     strUsage += "  -blocknotify=<cmd>     " + std::string(_("Execute command when the best block changes (%s in cmd is replaced "
@@ -505,14 +483,6 @@ int AppInit2(boost::thread_group& threadGroup)
     if (mapArgs.count("-socks"))
         return InitError(_("Error: Unsupported argument -socks found. Setting SOCKS version isn't possible anymore, "
                            "only SOCKS5 proxies are supported."));
-    if (fDaemon)
-        fServer = true;
-    else
-        fServer = GetBoolArg("-server", false);
-
-    /* Force fServer when running without GUI */
-    if (!fHaveGUI)
-        fServer = true;
 
     fPrintToConsole = GetBoolArg("-printtoconsole", false);
     fLogTimestamps = GetBoolArg("-logtimestamps", false);
@@ -606,9 +576,7 @@ int AppInit2(boost::thread_group& threadGroup)
             return InitError(_("Unable to sign spork message, wrong key?"));
     }
 
-    if (fDaemon)
-        fprintf(stdout, "Swipp server starting\n");
-
+    fprintf(stdout, "Swipp server starting\n");
     int64_t nStart;
 
 #ifdef ENABLE_WALLET
@@ -1140,8 +1108,7 @@ int AppInit2(boost::thread_group& threadGroup)
     InitRPCMining();
 #endif
 
-    if (fServer)
-        StartRPCThreads();
+    StartRPCThreads();
 
 #ifdef ENABLE_WALLET
     // Mine proof-of-stake blocks in the background
