@@ -50,7 +50,17 @@ app.on("ready", () => {
 
 	splashController.window.webContents.on("did-finish-load", () => {
 		Daemon.start(splashController.window).then(() => {
-			splashController.synchronize_wallet(new RPCClient());
+			var rpcClient = new RPCClient();
+
+			splashController.version_control(rpcClient).then(() => {
+				splashController.synchronize_wallet(rpcClient).then(() => {
+					/* If sync was a success, we close the splash and move on to the main wallet window */
+				}, (stderr) => {
+					console.error(stderr);
+				});
+			}, (stderr) => {
+				console.error(stderr);
+			});
 		}, (stderr) => {
 			console.error(stderr);
 		});

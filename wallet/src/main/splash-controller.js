@@ -16,8 +16,10 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
+import RPCClient from "common/rpc-client.js"
 import { BrowserWindow } from "electron";
 import { remote } from "electron";
+import Version from "common/version";
 
 export default class SplashController {
 	constructor() {
@@ -59,11 +61,34 @@ export default class SplashController {
 		return window;
 	}
 
-	synchronize_wallet(rpcClient) {
-		rpcClient.getinfo().then((response) => {
-			console.log(response);
-		}, (stderr) => {
-			/* Empty for now */
+	async version_control(rpcClient) {
+		return await new Promise((resolve, reject) => {
+			rpcClient.getinfo().then((response) => {
+				var latest_version = Version.get_cleaned_up(response["latest-version"]);
+
+				if (Version.is_latest(response["version"], latest_version)) {
+					resolve();
+				} else {
+					var errorMessage = "The daemon of this wallet is outdated. " +
+					                   `Please download version ${latest_version}`;
+
+					this.window.webContents.send("fatal-error", errorMessage);
+					this.window.webContents.send("state", "idle");
+					reject(errorMessage);
+				}
+			}, (stderr) => {
+				reject(stderr);
+			});
+		});
+	}
+
+	async synchronize_wallet(rpcClient) {
+		return await new Promise((resolve, reject) => {
+			rpcClient.getinfo().then((response) => {
+				resolve();
+			}, (stderr) => {
+				reject(stderr);
+			});
 		});
 	}
 }
