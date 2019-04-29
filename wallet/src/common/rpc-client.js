@@ -39,6 +39,10 @@ export default class RPCClient {
 		}
 	}
 
+	async getblockcount() {
+		return await this.send_command("getblockcount");
+	}
+
 	async getinfo() {
 		return await this.send_command("getinfo");
 	}
