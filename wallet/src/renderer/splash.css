@@ -78,6 +78,44 @@ h2 {
 	margin-block-start: 0em;
 }
 
-div:empty {
+div:empty, p:empty {
+	display: none !important;
+}
+
+progress {
+	display: flex;
+	width: 100%;
+	height: 5px;
+	margin: 10px 0 0px 0;
+	vertical-align: 0;
+	border-radius: 2px;
+	-webkit-appearance: none;
+}
+
+progress[value]::-webkit-progress-bar {
+	background-color: #171717;
+	border-radius: 2px;
+}
+
+progress::-webkit-progress-value {
+	background-image: -webkit-linear-gradient(left, #3a9, #3dc);
+	border-radius: 2px;
+}
+
+@keyframes cycle {
+	0% {
+		background-position: 0 0;
+	} 100% {
+		background-position: 5000000px 0px;
+	}
+}
+
+progress:indeterminate {
+	width: 100%;
+	background: -webkit-linear-gradient(left, #171717, #4cb, #371717, #171717);
+	animation: cycle 20000s linear infinite;
+}
+
+progress:indeterminate::-webkit-progress-bar {
 	display: none;
 }
