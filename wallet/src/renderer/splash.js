@@ -29,7 +29,10 @@ library.add(faSpinner, faTimes)
 export default class Splash extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { errorMessage: null };
+		this.state = {
+			errorMessage: null,
+			infoMessage: null
+		};
 
 		ipcRenderer.on("fatal-error", (event, message) => {
 			this.setState({ errorMessage: message });
@@ -53,6 +56,8 @@ export default class Splash extends React.Component {
 						based on work between 2009 and 2017.
 					</p>
 					<div className="error">{this.state.errorMessage}</div>
+					<progress></progress>
+					<p>{this.infoMessage}</p>
 				</div>
 			</div>
 		);
