@@ -19,6 +19,7 @@
 import RPCClient from "common/rpc-client.js"
 import { BrowserWindow } from "electron";
 import { remote } from "electron";
+import Explorer from "common/explorer";
 import Version from "common/version";
 
 export default class SplashController {
@@ -85,7 +86,11 @@ export default class SplashController {
 	async synchronize_wallet(rpcClient) {
 		return await new Promise((resolve, reject) => {
 			rpcClient.getinfo().then((response) => {
-				resolve();
+				new Explorer().getblockcount().then((response) => {
+					resolve(/* Do something else here */);
+				}, (stderr) => {
+					reject(stderr);
+				});
 			}, (stderr) => {
 				reject(stderr);
 			});
