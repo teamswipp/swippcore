@@ -81,23 +81,27 @@ int main(int argc, char* argv[])
         }
 
 #if !defined(WIN32)
-        pid_t pid = fork();
+        fDaemon = GetBoolArg("-daemon", false);
 
-        if (pid < 0) {
-            fprintf(stderr, "Error: fork() returned %d errno %d\n", pid, errno);
-            return 1;
+        if (fDaemon) {
+            pid_t pid = fork();
+
+            if (pid < 0) {
+                fprintf(stderr, "Error: fork() returned %d errno %d\n", pid, errno);
+                return 1;
+            }
+
+            if (pid > 0)  {
+                CreatePidFile(GetPidFile(), pid);
+                return 0;
+            }
+
+            // Child process falls through to rest of initialization
+            pid_t sid = setsid();
+
+            if (sid < 0)
+                fprintf(stderr, "Error: setsid() returned %d errno %d\n", sid, errno);
         }
-
-        if (pid > 0)  {
-            CreatePidFile(GetPidFile(), pid);
-            return 0;
-        }
-
-        // Child process falls through to rest of initialization
-        pid_t sid = setsid();
-
-        if (sid < 0)
-            fprintf(stderr, "Error: setsid() returned %d errno %d\n", sid, errno);
 #endif
 
         fRet = AppInit2(threadGroup);

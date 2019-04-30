@@ -136,6 +136,7 @@ extern bool fDebugBacktrace;
 extern bool fNoSmsg;
 extern bool fPrintToConsole;
 extern bool fPrintToDebugLog;
+extern bool fDaemon;
 extern bool fCommandLine;
 extern std::string strMiscWarning;
 extern bool fNoListen;

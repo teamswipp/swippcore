@@ -229,6 +229,9 @@ std::string HelpMessage()
     strUsage += "                         " + std::string(_("<category> can be:")) + "\n";
     strUsage += "                         " + std::string("   addrman, alert, db, lock, rand, rpc, selectcoins, mempool, net,\n");
     strUsage += "                         " + std::string("   coinage, coinstake, creation, stakemodifier.\n");
+#if !defined(WIN32)
+    strUsage += "  -daemon                " + std::string(_("Run in the background as a daemon (default: false)")) + "\n";
+#endif
     strUsage += "  -debugbacktrace        " + std::string(_("Output backtrace debugging information, disabled by default")) + "\n";
     strUsage += "  -logtimestamps         " + std::string(_("Prepend debug output with timestamp")) + "\n";
     strUsage += "  -shrinkdebugfile       " + std::string(_("Shrink debug.log file on client startup (default: 1 when no -debug)")) + "\n";
@@ -575,7 +578,9 @@ int AppInit2(boost::thread_group& threadGroup)
             return InitError(_("Unable to sign spork message, wrong key?"));
     }
 
-    fprintf(stdout, "Swipp server starting\n");
+    if (fDaemon)
+        fprintf(stdout, _("Swipp daemon starting\n"));
+
     int64_t nStart;
 
 #ifdef ENABLE_WALLET

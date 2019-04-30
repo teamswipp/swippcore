@@ -89,6 +89,7 @@ bool fDebugBacktrace = false;
 bool fNoSmsg = false;
 bool fPrintToConsole = false;
 bool fPrintToDebugLog = true;
+bool fDaemon = false;
 bool fCommandLine = false;
 string strMiscWarning;
 bool fNoListen = false;
