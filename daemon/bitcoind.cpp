@@ -30,7 +30,7 @@ void WaitForShutdown(boost::thread_group* threadGroup)
 int main(int argc, char* argv[])
 {
     boost::thread_group threadGroup;
-    int fRet = false;
+    int fRet = 0;
 
     try {
         ParseParameters(argc, argv);
@@ -58,13 +58,13 @@ int main(int argc, char* argv[])
             help << "\n" << HelpMessage();
 
             fprintf(stdout, "%s", help.str().c_str());
-            return false;
+            return 0;
         } else if (mapArgs.count("-version") || mapArgs.count("--version")) {
             std::ostringstream help;
             help << _("Swipp version") << " " << FormatFullVersion() << "\n";
 
             fprintf(stdout, "%s", help.str().c_str());
-            return false;
+            return 0;
         }
 
         for (int i = 1; i < argc; i++)
@@ -74,11 +74,10 @@ int main(int argc, char* argv[])
         if (fCommandLine) {
             if (!SelectParamsFromCommandLine()) {
                 fprintf(stderr, "Error: invalid combination of -regtest and -testnet.\n");
-                return false;
+                return 1;
             }
 
-            int ret = CommandLineRPC(argc, argv);
-            exit(ret);
+            exit(CommandLineRPC(argc, argv));
         }
 
 #if !defined(WIN32)
@@ -86,12 +85,12 @@ int main(int argc, char* argv[])
 
         if (pid < 0) {
             fprintf(stderr, "Error: fork() returned %d errno %d\n", pid, errno);
-            return false;
+            return 1;
         }
 
         if (pid > 0)  {
             CreatePidFile(GetPidFile(), pid);
-            return true;
+            return 0;
         }
 
         // Child process falls through to rest of initialization
