@@ -18,24 +18,32 @@
 
 import { execFile } from "child_process";
 import crypto from "crypto";
+import emptyPromise from "empty-promise";
 import portscanner from "portscanner";
 import tcpPortUsed from "tcp-port-used";
 
-const defaultRPCPort = 35075;
+const DEFAULT_RPC_PORT = 35075;
+const DAEMON_DONE_PROMISE = emptyPromise();
 
 export default class Daemon {
-	static execute(window, location) {
+	static execute(window, location, downloadBootstrap) {
 		return new Promise((resolve, reject) => {
 			var clargs = process.argv.slice(global.isDevelopment ? 3 : 1);
 
-			global.credentials = {
-				user: crypto.randomBytes(6).toString('hex'),
-				password: crypto.randomBytes(20).toString('hex')
-			};
+			if (global.credentials == undefined)  {
+				global.credentials = {
+					user: crypto.randomBytes(6).toString('hex'),
+					password: crypto.randomBytes(20).toString('hex')
+				};
+			}
 
 			clargs.push(`-rpcuser=${global.credentials.user}` , `-rpcpassword=${global.credentials.password}`);
 
-			portscanner.findAPortNotInUse(defaultRPCPort, defaultRPCPort + 1024,
+			if (downloadBootstrap) {
+				clargs.push("-loadblock=web");
+			}
+
+			portscanner.findAPortNotInUse(DEFAULT_RPC_PORT, DEFAULT_RPC_PORT + 1024,
 			                              "127.0.0.1", (error, port) => {
 				var executionError = false;
 
@@ -49,9 +57,11 @@ export default class Daemon {
 						window.webContents.send("state", "idle");
 						reject(stderr);
 					}
+				}).on("exit", () => {
+					DAEMON_DONE_PROMISE.resolve();
 				});
 
-				tcpPortUsed.waitUntilUsed(global.rpcPort, 200, 3000).then(() => {
+				tcpPortUsed.waitUntilUsed(global.rpcPort, 200, 5000).then(() => {
 					resolve();
 				}, (err) => {
 					if (!executionError) {
@@ -65,16 +75,20 @@ export default class Daemon {
 		});
 	}
 
-	static async start(window) {
+	static async start(window, downloadBootStrap = false) {
 		var p;
 
 		if (isDevelopment) {
-			p = await Daemon.execute(window, "../daemon/swippd");
+			p = await Daemon.execute(window, "../daemon/swippd", downloadBootStrap);
 		} else {
-			p = await Daemon.execute(window, process.resourcesPath + "/../swippd");
+			p = await Daemon.execute(window, process.resourcesPath + "/../swippd", downloadBootStrap);
 		}
 
 		return p;
+	}
+
+	static async done() {
+		return await DAEMON_DONE_PROMISE;
 	}
 }
 

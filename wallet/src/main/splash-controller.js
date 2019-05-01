@@ -16,11 +16,15 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import RPCClient from "common/rpc-client.js"
 import { BrowserWindow } from "electron";
 import { remote } from "electron";
+import tcpPortUsed from "tcp-port-used";
+import Daemon from "common/daemon";
 import Explorer from "common/explorer";
+import RPCClient from "common/rpc-client.js"
 import Version from "common/version";
+
+const BOOTSTRAP_DOWNLOAD_THRESHOLD_BLOCKS = 5000;
 
 export default class SplashController {
 	constructor() {
@@ -83,16 +87,62 @@ export default class SplashController {
 		});
 	}
 
-	async synchronize_wallet(rpcClient) {
-		return await new Promise((resolve, reject) => {
-			rpcClient.getinfo().then((response) => {
-				new Explorer().getblockcount().then((response) => {
-					resolve(/* Do something else here */);
+	async handle_synchronization(rpcClient) {
+		this.window.webContents.send(
+			"progress", "indeterminate", "Downloading and decompressing Swipp bootstrap archive..."
+		);
+
+		var startHeight = -1;
+		var remoteHeight = 0;
+		var localHeight = 0;
+		var explorer = new Explorer();
+
+		do {
+			await new Promise((resolve, reject) => {
+				Promise.all([
+					rpcClient.getblockcount(), explorer.getblockcount(),
+					new Promise(resolve => setTimeout(resolve, 500))
+				]).then((response) => {
+					localHeight = response[0];
+					remoteHeight = response[1];
+
+					if (startHeight == -1) {
+						startHeight = localHeight;
+					} else if (localHeight > startHeight) {
+						this.window.webContents.send(
+							"progress", localHeight / remoteHeight,
+							`Synchronizing block ${localHeight} of ${remoteHeight}...`
+						);
+					}
+
+					resolve();
 				}, (stderr) => {
-					reject(stderr);
+					console.error(stderr);
+					reject();
 				});
-			}, (stderr) => {
-				reject(stderr);
+			});
+		} while (remoteHeight > localHeight);
+	}
+
+	async synchronize_wallet(rpcClient) {
+		this.window.webContents.send(
+			"progress", "indeterminate", "Preparing wallet sycnhronization..."
+		);
+
+		return await new Promise((resolve, reject) => {
+			Promise.all([rpcClient.getinfo(), new Explorer().getblockcount()]).then((response) => {
+				/* Should we restart the daemon and download the bootstrap? */
+				if (response[1] - response[0]["blocks"] > BOOTSTRAP_DOWNLOAD_THRESHOLD_BLOCKS) {
+					Promise.all([rpcClient.stop(), Daemon.done()]).then((response) => {
+						Daemon.start(this.window, true).then((response) => {
+							this.handle_synchronization(rpcClient);
+						});
+					});
+				} else {
+					resolve();
+				}
+			}).catch((reason) => {
+				reject();
 			});
 		});
 	}

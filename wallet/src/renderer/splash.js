@@ -30,12 +30,17 @@ export default class Splash extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
+			infoMessage: null,
 			errorMessage: null,
-			infoMessage: null
+			percentage: "indeterminate"
 		};
 
 		ipcRenderer.on("fatal-error", (event, message) => {
-			this.setState({ errorMessage: message });
+			this.setState({ infoMessage: null, errorMessage: message });
+		});
+
+		ipcRenderer.on("progress", (event, percentage, message) => {
+			this.setState({ infoMessage: message, errorMessage: null, percentage: percentage });
 		});
 	}
 
@@ -56,8 +61,13 @@ export default class Splash extends React.Component {
 						based on work between 2009 and 2017.
 					</p>
 					<div className="error">{this.state.errorMessage}</div>
-					<progress></progress>
-					<p>{this.infoMessage}</p>
+					{this.state.infoMessage != null && this.state.percentage == "indeterminate" &&
+						<progress />
+					}
+					{this.state.infoMessage != null && this.state.percentage != "indeterminate" &&
+						<progress value={this.state.percentage} />
+					}
+					<p>{this.state.infoMessage}</p>
 				</div>
 			</div>
 		);

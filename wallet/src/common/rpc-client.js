@@ -31,9 +31,9 @@ export default class RPCClient {
 				this.client.call({ method: command, params: args }, (err, response) => {
 					if(err) {
 						reject(err);
+					} else {
+						resolve(response.result);
 					}
-
-					resolve(response.result);
 				});
 			});
 		}

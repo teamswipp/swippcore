@@ -22,7 +22,7 @@ export default class Explorer {
 	constructor() {
 		this.send_command = (command, args = []) => {
 			return new Promise((resolve, reject) => {
-				http.get("http://explorer.swippcoin.com/apiz/" + command, (resp) => {
+				http.get("http://explorer.swippcoin.com/api/" + command, (resp) => {
 					let data = "";
 
 					resp.on("data", (chunk) => {
