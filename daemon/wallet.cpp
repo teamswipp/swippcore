@@ -4833,7 +4833,7 @@ void CWallet::GetKeyBirthTimes(std::map<CKeyID, int64_t> &mapKeyBirth) const
     {
         // Iterate over all wallet transactions ...
         const CWalletTx &wtx = (*it).second;
-        std::map<uint256, CBlockIndex*>::const_iterator blit = mapBlockIndex.find(wtx.hashBlock);
+        auto blit = mapBlockIndex.find(wtx.hashBlock);
 
         if (blit != mapBlockIndex.end() && blit->second->IsInMainChain())
         {

@@ -904,7 +904,7 @@ public:
 
     explicit CBlockLocator(uint256 hashBlock)
     {
-        std::map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hashBlock);
+        auto mi = mapBlockIndex.find(hashBlock);
 
         if (mi != mapBlockIndex.end())
             Set((*mi).second);
@@ -960,7 +960,7 @@ public:
 
         BOOST_FOREACH(const uint256& hash, vHave)
         {
-            std::map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hash);
+            auto mi = mapBlockIndex.find(hash);
 
             if (mi != mapBlockIndex.end())
             {
@@ -984,7 +984,7 @@ public:
         // Find the first block the caller has in the main chain
         BOOST_FOREACH(const uint256& hash, vHave)
         {
-            std::map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hash);
+            auto mi = mapBlockIndex.find(hash);
 
             if (mi != mapBlockIndex.end())
             {
@@ -1002,7 +1002,7 @@ public:
         // Find the first block the caller has in the main chain
         BOOST_FOREACH(const uint256& hash, vHave)
         {
-            std::map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hash);
+            auto mi = mapBlockIndex.find(hash);
 
             if (mi != mapBlockIndex.end())
             {

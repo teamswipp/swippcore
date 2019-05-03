@@ -738,7 +738,7 @@ unsigned int GetSerializeSize(const boost::container::flat_set<K, Pred, A>& m, i
 {
     unsigned int nSize = GetSizeOfCompactSize(m.size());
 
-    for (typename boost::container::flat_set<K, Pred, A>::const_iterator it = m.begin(); it != m.end(); ++it)
+    for (auto it = m.begin(); it != m.end(); ++it)
         nSize += GetSerializeSize((*it), nType, nVersion);
 
     return nSize;
@@ -749,7 +749,7 @@ void Serialize(Stream& os, const boost::container::flat_set<K, Pred, A>& m, int 
 {
     WriteCompactSize(os, m.size());
 
-    for (typename boost::container::flat_set<K, Pred, A>::const_iterator it = m.begin(); it != m.end(); ++it)
+    for (auto it = m.begin(); it != m.end(); ++it)
         Serialize(os, (*it), nType, nVersion);
 }
 
@@ -758,7 +758,7 @@ void Unserialize(Stream& is, boost::container::flat_set<K, Pred, A>& m, int nTyp
 {
     m.clear();
     unsigned int nSize = ReadCompactSize(is);
-    typename boost::container::flat_set<K, Pred, A>::iterator it = m.begin();
+    auto it = m.begin();
 
     for (unsigned int i = 0; i < nSize; i++)
     {
