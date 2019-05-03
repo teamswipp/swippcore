@@ -5,8 +5,10 @@
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 #include <cstdio>
+#include <cstddef>
 #include <tuple>
 #include <thread>
+#include <utility>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
@@ -30,6 +32,7 @@
 #include "spork.h"
 #include "txdb.h"
 #include "txmempool.h"
+#include "uint256.h"
 
 using namespace std;
 using namespace boost;

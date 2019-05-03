@@ -7,6 +7,9 @@
 #ifndef BITCOIN_MAIN_H
 #define BITCOIN_MAIN_H
 
+#include <map>
+#include <set>
+
 #include "bignum.h"
 #include "constraints.h"
 #include "core.h"
@@ -17,8 +20,6 @@
 #include "sync.h"
 #include "transaction.h"
 #include "txmempool.h"
-
-#include <list>
 
 class CValidationState;
 
