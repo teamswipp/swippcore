@@ -1790,6 +1790,13 @@ bool CBlock::AddToBlockIndex(unsigned int nFile, unsigned int nBlockPos, const u
     uint64_t nStakeModifier = 0;
     bool fGeneratedStakeModifier = false;
 
+    if (fDebug) {
+        LogPrintf("hash: %s\n", hash.ToString());
+
+        if (pindexNew->pprev)
+            LogPrintf("prev: %s\n", pindexNew->pprev->ToString());
+    }
+
     if (!ComputeNextStakeModifier(pindexNew->pprev, nStakeModifier, fGeneratedStakeModifier))
         return error("AddToBlockIndex() : ComputeNextStakeModifier() failed");
 
