@@ -9,6 +9,7 @@
 #include <iomanip>
 
 #include "bsarchive.h"
+#include "init.h"
 #include "xz/xz.h"
 #include "util.h"
 
@@ -94,7 +95,7 @@ int BSArchive::unarchive(std::FILE *destination)
             }
         }
 
-        while (true) {
+        while (!ShutdownRequested()) {
             ret = xz_dec_run(s, &b);
 
             if(b.out_pos == BUFFER_SIZE) {

@@ -5,6 +5,7 @@
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstddef>
 #include <tuple>
 #include <thread>
@@ -2579,10 +2580,21 @@ void PrintBlockTree()
 
 static const int IMPORT_BUFFER_SIZE = 1024 * 512; /* 0.5MB */
 
+static std::string downloadedFilePath;
+static std::string unarchivedFilePath;
+
+static void removeBootstrapFiles()
+{
+    BOOST_FOREACH(auto path, std::vector<std::string>({ downloadedFilePath, unarchivedFilePath })) {
+        if (!path.empty()) {
+            std::remove(path.c_str());
+        }
+    }
+}
+
 static bool LoadExternalBlockFile(boost::filesystem::path path)
 {
     std::FILE *file = std::fopen(path.string().c_str(), "rb");
-    std::string unarchivedPath;
     std::FILE *unarchivedFile;
     std::FILE *fileIn;
 
@@ -2596,9 +2608,9 @@ static bool LoadExternalBlockFile(boost::filesystem::path path)
 
     // Handle compressed bootstrap archives (*.bsa)
     if (boost::algorithm::ends_with(path.native(), ".bsa")) {
-        unarchivedPath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).native();
-        unarchivedPath = unarchivedPath + ".bootstrap";
-        unarchivedFile = std::fopen(unarchivedPath.c_str(), "w+b");
+        unarchivedFilePath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).native();
+        unarchivedFilePath = unarchivedFilePath + ".bootstrap";
+        unarchivedFile = std::fopen(unarchivedFilePath.c_str(), "w+b");
 
         BSArchive bsArchive(file);
         bsArchive.unarchive(unarchivedFile);
@@ -2674,10 +2686,6 @@ static bool LoadExternalBlockFile(boost::filesystem::path path)
         }
     }
 
-    if (!unarchivedPath.empty()) {
-        std::remove(unarchivedPath.c_str());
-    }
-
     LogPrintf("Loaded %i blocks from external file in %dms\n", nLoaded, GetTimeMillis() - nStart);
     return nLoaded > 0;
 }
@@ -2699,9 +2707,10 @@ struct CImportingNow
 
 void ThreadImport(std::vector<std::string> arguments)
 {
+    std::atexit(removeBootstrapFiles);
+
     bool downloadBootstrap = false;
     std::vector<boost::filesystem::path> vImportFiles;
-    std::string downloadedFilePath;
     std::FILE *downloadedFile = nullptr;
 
     RenameThread("Swipp-loadblock");
@@ -2718,7 +2727,6 @@ void ThreadImport(std::vector<std::string> arguments)
     // Download bootstrap archive from the project web site
     if (downloadBootstrap) {
         std::string basePath = (boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()).native();
-
         downloadedFilePath = basePath + ".bsa";
         downloadedFile = std::fopen(downloadedFilePath.c_str(), "w+");
 
@@ -2758,9 +2766,7 @@ void ThreadImport(std::vector<std::string> arguments)
     }
 
     // Remove any downloaded bootstrap
-    if (!downloadedFilePath.empty()) {
-        std::remove(downloadedFilePath.c_str());
-    }
+    removeBootstrapFiles();
 }
 
 extern map<uint256, CAlert> mapAlerts;
