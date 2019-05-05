@@ -9,13 +9,16 @@
 
 #include <map>
 #include <set>
+#include <sparsehash/dense_hash_set>
 
 #include "bignum.h"
+#include "collectionhashing.h"
 #include "constraints.h"
 #include "core.h"
 #include "disk.h"
 #include "hashblock.h"
 #include "net.h"
+#include "ordered_map.h"
 #include "script.h"
 #include "sync.h"
 #include "transaction.h"
@@ -107,8 +110,8 @@ inline unsigned int GetTargetSpacing(int nHeight) { return IsProtocolV2(nHeight)
 extern CScript COINBASE_FLAGS;
 extern CCriticalSection cs_main;
 extern CTxMemPool mempool;
-extern std::map<uint256, CBlockIndex*> mapBlockIndex;
-extern std::set<std::pair<COutPoint, unsigned int> > setStakeSeen;
+extern tsl::ordered_map<uint256, CBlockIndex*> mapBlockIndex;
+extern google::dense_hash_set<std::pair<COutPoint, unsigned int>> setStakeSeen;
 extern CBlockIndex* pindexGenesisBlock;
 extern unsigned int nStakeMinAge;
 extern unsigned int nNodeLifespan;
@@ -126,7 +129,7 @@ extern int64_t nTimeBestReceived;
 extern bool fImporting;
 extern bool fReindex;
 struct COrphanBlock;
-extern std::map<uint256, COrphanBlock*> mapOrphanBlocks;
+extern tsl::ordered_map<uint256, COrphanBlock*> mapOrphanBlocks;
 extern bool fHaveGUI;
 
 // Settings

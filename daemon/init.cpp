@@ -7,7 +7,7 @@
 #include "activemasternode.h"
 #include "chainparams.h"
 #include "checkpoints.h"
-//#include "collectionhashing.h"
+#include "collectionhashing.h"
 #include "constraints.h"
 #include "init.h"
 #include "localization.h"
@@ -339,6 +339,11 @@ bool InitSanityCheck(void)
     return true;
 }
 
+static inline void InitializeCollections()
+{
+    setStakeSeen.set_empty_key(std::make_pair(COutPoint(), std::numeric_limits<unsigned int>::max()));
+}
+
 int AppInit2(boost::thread_group& threadGroup)
 {
 #ifdef _MSC_VER
@@ -585,6 +590,8 @@ int AppInit2(boost::thread_group& threadGroup)
         fprintf(stdout, _("Swipp daemon starting\n"));
 
     int64_t nStart;
+
+    InitializeCollections();
 
 #ifdef ENABLE_WALLET
     if (!fDisableWallet)

@@ -30,6 +30,7 @@
 #include "localization.h"
 #include "masternode.h"
 #include "memorypool.h"
+#include "ordered_map.h"
 #include "net.h"
 #include "smessage.h"
 #include "spork.h"
@@ -45,8 +46,8 @@ set<CWallet*> setpwalletRegistered;
 CCriticalSection cs_main;
 CTxMemPool mempool;
 
-std::map<uint256, CBlockIndex*> mapBlockIndex;
-std::set<std::pair<COutPoint, unsigned int> > setStakeSeen;
+tsl::ordered_map<uint256, CBlockIndex*> mapBlockIndex;
+google::dense_hash_set<std::pair<COutPoint, unsigned int>> setStakeSeen;
 
 CBigNum bnProofOfStakeLimit(~uint256(0) >> 20);
 CBigNum bnProofOfStakeLimitV2(~uint256(0) >> 34);
@@ -76,9 +77,9 @@ struct COrphanBlock {
     vector<unsigned char> vchBlock;
 };
 
-std::map<uint256, COrphanBlock *> mapOrphanBlocks;
+tsl::ordered_map<uint256, COrphanBlock *> mapOrphanBlocks;
 std::multimap<uint256, COrphanBlock *> mapOrphanBlocksByPrev;
-std::set<pair<COutPoint, unsigned int> > setStakeSeenOrphan;
+google::dense_hash_set<pair<COutPoint, unsigned int>> setStakeSeenOrphan;
 size_t nOrphanBlocksSize = 0;
 
 std::map<uint256, CTransaction> mapOrphanTransactions;
@@ -206,14 +207,14 @@ bool AddOrphanTx(const CTransaction& tx)
 
 void static EraseOrphanTx(uint256 hash)
 {
-    map<uint256, CTransaction>::iterator it = mapOrphanTransactions.find(hash);
+    auto it = mapOrphanTransactions.find(hash);
 
     if (it == mapOrphanTransactions.end())
         return;
 
     BOOST_FOREACH(const CTxIn& txin, it->second.vin)
     {
-        map<uint256, set<uint256> >::iterator itPrev = mapOrphanTransactionsByPrev.find(txin.prevout.hash);
+        auto itPrev = mapOrphanTransactionsByPrev.find(txin.prevout.hash);
 
         if (itPrev == mapOrphanTransactionsByPrev.end())
             continue;
@@ -235,7 +236,7 @@ unsigned int LimitOrphanTxSize(unsigned int nMaxOrphans)
     {
         // Evict a random orphan:
         uint256 randomhash = GetRandHash();
-        map<uint256, CTransaction>::iterator it = mapOrphanTransactions.lower_bound(randomhash);
+        auto it = mapOrphanTransactions.lower_bound(randomhash);
 
         if (it == mapOrphanTransactions.end())
             it = mapOrphanTransactions.begin();
@@ -477,7 +478,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CTransaction &tx, bool fLimitFree, boo
             return false;
 
         MapPrevTx mapInputs;
-        map<uint256, CTxIndex> mapUnused;
+        std::map<uint256, CTxIndex> mapUnused;
         bool fInvalid = false;
 
         if (!tx.FetchInputs(txdb, mapUnused, false, false, mapInputs, fInvalid))
@@ -624,7 +625,7 @@ bool AcceptableInputs(CTxMemPool& pool, const CTransaction &txo, bool fLimitFree
             return false;
 
         MapPrevTx mapInputs;
-        map<uint256, CTxIndex> mapUnused;
+        std::map<uint256, CTxIndex> mapUnused;
         bool fInvalid = false;
 
         if (!tx.FetchInputs(txdb, mapUnused, false, false, mapInputs, fInvalid))
@@ -866,14 +867,14 @@ bool CBlock::ReadFromDisk(const CBlockIndex* pindex, bool fReadTransactions)
 
 uint256 static GetOrphanRoot(const uint256& hash)
 {
-    map<uint256, COrphanBlock*>::iterator it = mapOrphanBlocks.find(hash);
+    auto it = mapOrphanBlocks.find(hash);
 
     if (it == mapOrphanBlocks.end())
         return hash;
 
     // Work back to the first block in the orphan chain
     do {
-        map<uint256, COrphanBlock*>::iterator it2 = mapOrphanBlocks.find(it->second->hashPrev);
+        auto it2 = mapOrphanBlocks.find(it->second->hashPrev);
 
         if (it2 == mapOrphanBlocks.end())
             return it->first;
@@ -901,13 +902,13 @@ void static PruneOrphanBlocks()
     {
         // Pick a random orphan block.
         int pos = insecure_rand() % mapOrphanBlocksByPrev.size();
-        std::multimap<uint256, COrphanBlock*>::iterator it = mapOrphanBlocksByPrev.begin();
+        auto it = mapOrphanBlocksByPrev.begin();
 
         while (pos--) it++;
 
         // As long as this block has other orphans depending on it, move to one of those successors.
         do {
-            std::multimap<uint256, COrphanBlock*>::iterator it2 = mapOrphanBlocksByPrev.find(it->second->hashBlock);
+            auto it2 = mapOrphanBlocksByPrev.find(it->second->hashBlock);
 
             if (it2 == mapOrphanBlocksByPrev.end())
                 break;
@@ -1291,7 +1292,7 @@ bool CBlock::RebuildAddressIndex(CTxDB& txdb)
         if (!tx.IsCoinBase())
         {
             MapPrevTx mapInputs;
-            map<uint256, CTxIndex> mapQueuedChangesT;
+            std::map<uint256, CTxIndex> mapQueuedChangesT;
             bool fInvalid;
 
             if (!tx.FetchInputs(txdb, mapQueuedChangesT, true, false, mapInputs, fInvalid))
@@ -1337,7 +1338,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
         nTxPos = pindex->nBlockPos + ::GetSerializeSize(CBlock(), SER_DISK, CLIENT_VERSION) -
                  (2 * GetSizeOfCompactSize(0)) + GetSizeOfCompactSize(vtx.size());
 
-    map<uint256, CTxIndex> mapQueuedChanges;
+    std::map<uint256, CTxIndex> mapQueuedChanges;
     int64_t nFees = 0;
     int64_t nValueIn = 0;
     int64_t nValueOut = 0;
@@ -1459,7 +1460,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
         return true;
 
     // Write queued txindex changes
-    for (map<uint256, CTxIndex>::iterator mi = mapQueuedChanges.begin(); mi != mapQueuedChanges.end(); ++mi)
+    for (auto mi = mapQueuedChanges.begin(); mi != mapQueuedChanges.end(); ++mi)
     {
         if (!txdb.UpdateTxIndex((*mi).first, (*mi).second))
             return error("ConnectBlock() : UpdateTxIndex failed");
@@ -2081,7 +2082,11 @@ bool CBlock::AcceptBlock(bool bootstrap)
     uint256 hash = GetHash();
 
     if (mapBlockIndex.count(hash))
-        return error("AcceptBlock() : block already in mapBlockIndex");
+        return error("AcceptBlock() : block already in mapBlockIndex: %s", hash.ToString());
+
+    if (mapOrphanBlocks.count(hash))
+        return error("AcceptBlock() : block already in mapOprhanBlocks (orphan): %s", hash.ToString());
+
 
     // Get prev block index
     auto mi = mapBlockIndex.find(hashPrevBlock);
@@ -2338,7 +2343,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
     for (unsigned int i = 0; i < vWorkQueue.size(); i++)
     {
         uint256 hashPrev = vWorkQueue[i];
-        for (multimap<uint256, COrphanBlock*>::iterator mi = mapOrphanBlocksByPrev.lower_bound(hashPrev);
+        for (auto mi = mapOrphanBlocksByPrev.lower_bound(hashPrev);
              mi != mapOrphanBlocksByPrev.upper_bound(hashPrev); ++mi)
         {
             CBlock block;
@@ -2507,7 +2512,7 @@ bool LoadBlockIndex(bool fAllowNew)
 void PrintBlockTree()
 {
     AssertLockHeld(cs_main);
-    map<CBlockIndex*, vector<CBlockIndex*> > mapNext;
+    map<CBlockIndex*, vector<CBlockIndex*>> mapNext;
 
     for (auto mi = mapBlockIndex.begin(); mi != mapBlockIndex.end(); ++mi)
     {
@@ -3184,7 +3189,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
                     int nRelayNodes = fReachable ? 2 : 1; // limited relaying of addresses outside our network(s)
 
-                    for (multimap<uint256, CNode*>::iterator mi = mapMix.begin(); mi != mapMix.end() && nRelayNodes-- > 0; ++mi)
+                    for (auto mi = mapMix.begin(); mi != mapMix.end() && nRelayNodes-- > 0; ++mi)
                         ((*mi).second)->PushAddress(addr);
                 }
             }
@@ -3400,7 +3405,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             // Recursively process any orphan transactions that depended on this one
             for (unsigned int i = 0; i < vWorkQueue.size(); i++)
             {
-                map<uint256, set<uint256> >::iterator itByPrev = mapOrphanTransactionsByPrev.find(vWorkQueue[i]);
+                auto itByPrev = mapOrphanTransactionsByPrev.find(vWorkQueue[i]);
                 if (itByPrev == mapOrphanTransactionsByPrev.end())
                     continue;
 
