@@ -21,6 +21,7 @@ template <class T> MemoryPool<T>::MemoryPool(std::function<void(T *object)> init
 
 template <class T> MemoryPool<T>::~MemoryPool()
 {
+    LOCK(cs_memoryPool);
     for (auto object : objects) {
         delete object;
     }
@@ -49,6 +50,7 @@ template <class T> T *MemoryPool<T>::fetch()
 
 template <class T> void MemoryPool<T>::put(T *object)
 {
+    LOCK(cs_memoryPool);
     objects.push_back(object);
 }
 
