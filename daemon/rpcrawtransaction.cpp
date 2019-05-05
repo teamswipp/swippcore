@@ -1,20 +1,25 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/assign/list_of.hpp>
 
 #include "base58.h"
+#include "collectionhashing.h"
 #include "rpcserver.h"
 #include "txdb.h"
 #include "init.h"
 #include "main.h"
 #include "net.h"
 #include "keystore.h"
+
 #ifdef ENABLE_WALLET
 #include "wallet.h"
 #endif
+
+#include <sparsehash/dense_hash_map>
 
 using namespace std;
 using namespace boost;

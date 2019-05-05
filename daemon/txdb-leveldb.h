@@ -12,9 +12,9 @@
 #include <tuple>
 #include <vector>
 #include <boost/functional/hash.hpp>
-#include <boost/container/flat_set.hpp>
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
+#include <sparsehash/dense_hash_set>
 
 #include "main.h"
 #include "serialize.h"
@@ -204,10 +204,10 @@ public:
         return Write(std::string("version"), nVersion);
     }
 
-    bool ReadAddrIndex(uint160 addrHash, boost::container::flat_set<uint256>& txHashes);
+    bool ReadAddrIndex(uint160 addrHash, google::dense_hash_set<uint256>& txHashes);
     bool ReadAddrIndex(uint160 addrHash, std::vector<uint256>& txHashes);
-    static void WriteAddrIndexes(boost::container::flat_set<std::tuple<uint160, uint256>> addrIds);
-    bool WriteAddrIndex(boost::container::flat_set<uint256>& txHashes, uint160 addrHash, uint256 txHash);
+    static void WriteAddrIndexes(google::dense_hash_set<std::tuple<uint160, uint256>> *addrIds);
+    bool WriteAddrIndex(google::dense_hash_set<uint256>& txHashes, uint160 addrHash, uint256 txHash);
     bool ReadTxIndex(uint256 hash, CTxIndex& txindex);
     bool UpdateTxIndex(uint256 hash, const CTxIndex& txindex);
     bool AddTxIndex(const CTransaction& tx, const CDiskTxPos& pos, int nHeight);

@@ -7,6 +7,7 @@
 #include "activemasternode.h"
 #include "chainparams.h"
 #include "checkpoints.h"
+//#include "collectionhashing.h"
 #include "constraints.h"
 #include "init.h"
 #include "localization.h"
@@ -24,6 +25,8 @@
 #endif
 
 #include <errno.h>
+#include <limits>
+#include <utility>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/convenience.hpp>

@@ -12,12 +12,14 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem.hpp>
+#include <sparsehash/dense_hash_set>
 
 #include "alert.h"
 #include "backtrace.h"
 #include "bsarchive.h"
 #include "chainparams.h"
 #include "checkpoints.h"
+#include "collectionhashing.h"
 #include "constraints.h"
 #include "darksend.h"
 #include "db.h"
@@ -27,6 +29,7 @@
 #include "kernel.h"
 #include "localization.h"
 #include "masternode.h"
+#include "memorypool.h"
 #include "net.h"
 #include "smessage.h"
 #include "spork.h"
@@ -42,8 +45,8 @@ set<CWallet*> setpwalletRegistered;
 CCriticalSection cs_main;
 CTxMemPool mempool;
 
-map<uint256, CBlockIndex*> mapBlockIndex;
-set<pair<COutPoint, unsigned int> > setStakeSeen;
+std::map<uint256, CBlockIndex*> mapBlockIndex;
+std::set<std::pair<COutPoint, unsigned int> > setStakeSeen;
 
 CBigNum bnProofOfStakeLimit(~uint256(0) >> 20);
 CBigNum bnProofOfStakeLimitV2(~uint256(0) >> 34);
@@ -73,13 +76,13 @@ struct COrphanBlock {
     vector<unsigned char> vchBlock;
 };
 
-map<uint256, COrphanBlock*> mapOrphanBlocks;
-multimap<uint256, COrphanBlock*> mapOrphanBlocksByPrev;
-set<pair<COutPoint, unsigned int> > setStakeSeenOrphan;
+std::map<uint256, COrphanBlock *> mapOrphanBlocks;
+std::multimap<uint256, COrphanBlock *> mapOrphanBlocksByPrev;
+std::set<pair<COutPoint, unsigned int> > setStakeSeenOrphan;
 size_t nOrphanBlocksSize = 0;
 
-map<uint256, CTransaction> mapOrphanTransactions;
-map<uint256, set<uint256> > mapOrphanTransactionsByPrev;
+std::map<uint256, CTransaction> mapOrphanTransactions;
+std::map<uint256, set<uint256> > mapOrphanTransactionsByPrev;
 
 // Constant stuff for coinbase transactions we create:
 CScript COINBASE_FLAGS;
@@ -386,6 +389,7 @@ int CMerkleTx::SetMerkleBranch(const CBlock* pblock)
 
     // Fill in merkle branch
     vMerkleBranch = pblock->GetMerkleBranch(nIndex);
+
     // Is the tx in a block that's in the main chain
     auto mi = mapBlockIndex.find(hashBlock);
 
@@ -1192,7 +1196,7 @@ bool CBlock::DisconnectBlock(CTxDB& txdb, CBlockIndex* pindex)
     return true;
 }
 
-static bool BuildAddrIndex(const CScript &script, boost::container::flat_set<std::tuple<uint160, uint256>>& addrIds, uint256& hashTx)
+static bool BuildAddrIndex(const CScript &script, google::dense_hash_set<std::tuple<uint160, uint256>>& addrIds, uint256& hashTx)
 {
     CScript::const_iterator pc = script.begin();
     CScript::const_iterator pend = script.end();
@@ -1271,9 +1275,14 @@ bool FindTransactionsByDestination(const CTxDestination &dest, std::vector<uint2
     return true;
 }
 
+MemoryPool<google::dense_hash_set<std::tuple<uint160, uint256>>>
+addrIdPool([](google::dense_hash_set<std::tuple<uint160, uint256>> *object) -> void {
+    object->set_empty_key(std::make_tuple(uint160(), uint256()));
+});
+
 bool CBlock::RebuildAddressIndex(CTxDB& txdb)
 {
-    boost::container::flat_set<std::tuple<uint160, uint256>> addrIds;
+    google::dense_hash_set<std::tuple<uint160, uint256>> *addrIds = addrIdPool.fetch();
 
     BOOST_FOREACH(CTransaction& tx, vtx)
     {
@@ -1293,19 +1302,20 @@ bool CBlock::RebuildAddressIndex(CTxDB& txdb)
             for(MapPrevTx::const_iterator mi = mapInputs.begin(); mi != mapInputs.end(); ++mi)
             {
                 BOOST_FOREACH(const CTxOut &atxout, (*mi).second.second.vout)
-                    BuildAddrIndex(atxout.scriptPubKey, addrIds, hashTx);
+                    BuildAddrIndex(atxout.scriptPubKey, *addrIds, hashTx);
             }
         }
 
         // outputs
         BOOST_FOREACH(const CTxOut &atxout, tx.vout)
-        {
-            BuildAddrIndex(atxout.scriptPubKey, addrIds, hashTx);
-        }
+            BuildAddrIndex(atxout.scriptPubKey, *addrIds, hashTx);
     }
 
     std::thread writeIndexes(CTxDB::WriteAddrIndexes, addrIds);
     writeIndexes.detach();
+
+    addrIds->clear_no_resize();
+    addrIdPool.put(addrIds);
     return true;
 }
 
@@ -2063,7 +2073,7 @@ bool CBlock::AcceptBlock(bool bootstrap)
     // Check for duplicate
     uint256 hash = GetHash();
 
-    if (!bootstrap && mapBlockIndex.count(hash))
+    if (mapBlockIndex.count(hash))
         return error("AcceptBlock() : block already in mapBlockIndex");
 
     // Get prev block index
@@ -2639,8 +2649,7 @@ static bool LoadExternalBlockFile(boost::filesystem::path path)
                     blkdat >> block;
                     LOCK(cs_main);
 
-                    if (block.AcceptBlock(true))
-                    {
+                    if (block.AcceptBlock(true)) {
                         nLoaded++;
                         nPos += 4 + nSize;
                     }
@@ -3334,25 +3343,31 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
             if (mi == mapBlockIndex.end())
                 return true;
+
             pindex = (*mi).second;
         }
         else
         {
             // Find the last block the caller has in the main chain
             pindex = locator.GetBlockIndex();
+
             if (pindex)
                 pindex = pindex->pnext;
         }
 
         vector<CBlock> vHeaders;
         int nLimit = 2000;
+
         LogPrint("net", "getheaders %d to %s\n", (pindex ? pindex->nHeight : -1), hashStop.ToString());
+
         for (; pindex; pindex = pindex->pnext)
         {
             vHeaders.push_back(pindex->GetBlockHeader());
+
             if (--nLimit <= 0 || pindex->GetBlockHash() == hashStop)
                 break;
         }
+
         pfrom->PushMessage("headers", vHeaders);
     }
     else if (strCommand == "tx")

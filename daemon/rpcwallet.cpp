@@ -4,6 +4,10 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
+#include <tuple>
+
+#include <sparsehash/dense_hash_map>
+
 #include "base58.h"
 #include "constraints.h"
 #include "rpcserver.h"
@@ -14,8 +18,6 @@
 #include "util.h"
 #include "wallet.h"
 #include "walletdb.h"
-
-#include <tuple>
 
 using namespace std;
 using namespace json_spirit;

@@ -12,15 +12,16 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/container/flat_set.hpp>
-
 #include <leveldb/env.h>
 #include <leveldb/cache.h>
 #include <leveldb/filter_policy.h>
 #include <memenv/memenv.h>
+#include <sparsehash/dense_hash_set>
 
 #include "kernel.h"
 #include "checkpoints.h"
+#include "collectionhashing.h"
+#include "memorypool.h"
 #include "txdb.h"
 #include "util.h"
 #include "main.h"
@@ -216,25 +217,27 @@ bool CTxDB::ScanBatch(const CDataStream &key, string *value, bool *deleted) cons
     return scanner.foundEntry;
 }
 
-std::size_t hash_value(const uint256& val)
-{
-    return boost::hash_range(val.begin(), val.end());
-}
+MemoryPool<google::dense_hash_set<uint256>> txHashesPool([](google::dense_hash_set<uint256> *object) -> void {
+    object->set_empty_key(uint256());
+});
 
-void CTxDB::WriteAddrIndexes(boost::container::flat_set<std::tuple<uint160, uint256>> addrIds)
+void CTxDB::WriteAddrIndexes(google::dense_hash_set<std::tuple<uint160, uint256>> *addrIds)
 {
     CTxDB txdb;
-    boost::container::flat_set<uint256> txHashes;
+    google::dense_hash_set<uint256> *txHashes = txHashesPool.fetch();
 
-	for(auto const& addrId : addrIds) {
-		if (!txdb.WriteAddrIndex(txHashes, std::get<0>(addrId), std::get<1>(addrId))) {
-			LogPrintf("ConnectBlock(): txouts WriteAddrIndex failed addrId: %s txhash: %s\n",
-					  std::get<0>(addrId).ToString().c_str(), std::get<1>(addrId).ToString().c_str());
-		}
-	}
+    for(auto const& addrId : *addrIds) {
+        if (!txdb.WriteAddrIndex(*txHashes, std::get<0>(addrId), std::get<1>(addrId))) {
+            LogPrintf("ConnectBlock(): txouts WriteAddrIndex failed addrId: %s txhash: %s\n",
+                      std::get<0>(addrId).ToString().c_str(), std::get<1>(addrId).ToString().c_str());
+        }
+    }
+
+    txHashes->clear_no_resize();
+    txHashesPool.put(txHashes);
 }
 
-bool CTxDB::WriteAddrIndex(boost::container::flat_set<uint256>& txHashes, uint160 addrHash, uint256 txHash)
+bool CTxDB::WriteAddrIndex(google::dense_hash_set<uint256>& txHashes, uint160 addrHash, uint256 txHash)
 {
     bool ret;
 
@@ -257,7 +260,7 @@ bool CTxDB::ReadAddrIndex(uint160 addrHash, std::vector<uint256>& txHashes)
     return Read(make_pair(string("adr"), addrHash), txHashes);
 }
 
-bool CTxDB::ReadAddrIndex(uint160 addrHash, boost::container::flat_set<uint256>& txHashes)
+bool CTxDB::ReadAddrIndex(uint160 addrHash, google::dense_hash_set<uint256>& txHashes)
 {
     return Read(make_pair(string("adr"), addrHash), txHashes);
 }
