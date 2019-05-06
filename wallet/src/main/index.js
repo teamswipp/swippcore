@@ -49,6 +49,8 @@ app.on("ready", () => {
 	var splashController = new SplashController();
 
 	splashController.window.webContents.on("did-finish-load", () => {
+		splashController.window.webContents.send("progress", "indeterminate", "Initializing Swipp daemon...");
+
 		Daemon.start(splashController.window).then(() => {
 			var rpcClient = new RPCClient();
 

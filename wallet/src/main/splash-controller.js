@@ -87,55 +87,96 @@ export default class SplashController {
 		});
 	}
 
-	async handle_synchronization(rpcClient) {
-		this.window.webContents.send(
-			"progress", "indeterminate", "Downloading and decompressing Swipp bootstrap archive..."
-		);
-
+	async handle_synchronization(remoteHeight, rpcClient) {
+	    var syncing = false;
 		var startHeight = -1;
-		var remoteHeight = 0;
 		var localHeight = 0;
-		var explorer = new Explorer();
 
 		do {
 			await new Promise((resolve, reject) => {
-				Promise.all([
-					rpcClient.getblockcount(), explorer.getblockcount(),
-					new Promise(resolve => setTimeout(resolve, 500))
-				]).then((response) => {
-					localHeight = response[0];
-					remoteHeight = response[1];
+				if (syncing) {
+					Promise.all([
+						rpcClient.getblockcount(),
+						new Promise(resolve => setTimeout(resolve, 500))
+					]).then((response) => {
+						localHeight = response[0];
 
-					if (startHeight == -1) {
-						startHeight = localHeight;
-					} else if (localHeight > startHeight) {
-						this.window.webContents.send(
-							"progress", localHeight / remoteHeight,
-							`Synchronizing block ${localHeight} of ${remoteHeight}...`
-						);
-					}
+						if (startHeight == -1) {
+							startHeight = localHeight;
+						} else if (localHeight > startHeight) {
+							this.window.webContents.send(
+								"progress", localHeight / remoteHeight,
+								`Synchronizing block ${localHeight} of ${remoteHeight}...`
+							);
+						}
 
-					resolve();
-				}, (stderr) => {
-					console.error(stderr);
-					reject();
-				});
+						resolve();
+					}, (stderr) => {
+						console.error(stderr);
+						reject();
+					});
+				} else {
+					Promise.all([
+						rpcClient.getinfo(),
+						new Promise(resolve => setTimeout(resolve, 500))
+					]).then((response) => {
+						var progress = response[0].bootstraping.progress;
+
+						switch (response[0].bootstraping.status) {
+							case "downloading":
+								this.window.webContents.send(
+									"progress", "indeterminate",
+									`Downloading bootstrap archive (${progress.toFixed(2)}%)...`
+								);
+								break;
+
+							case "unarchiving":
+								this.window.webContents.send(
+									"progress", "indeterminate",
+									`Unarchiving bootstrap archive (${progress.toFixed(2)}%)...`
+								);
+								break;
+
+							case "syncing":
+								this.window.webContents.send(
+									"progress", "indeterminate",
+									"Scanning local block cache..."
+								);
+							    syncing = true;
+								break;
+
+							default:
+								this.window.webContents.send("progress", "indeterminate", "");
+						}
+
+						resolve();
+					}, (stderr) => {
+						console.error(stderr);
+						reject();
+					});
+				}
 			});
-		} while (remoteHeight > localHeight);
+		} while (startHeight == -1 || remoteHeight > localHeight);
 	}
 
 	async synchronize_wallet(rpcClient) {
-		this.window.webContents.send(
-			"progress", "indeterminate", "Preparing wallet sycnhronization..."
-		);
-
 		return await new Promise((resolve, reject) => {
-			Promise.all([rpcClient.getinfo(), new Explorer().getblockcount()]).then((response) => {
+			Promise.all([
+				rpcClient.getinfo(),
+				new Explorer().getblockcount(),
+				new Promise(resolve => setTimeout(resolve, 1000))
+			]).then((response) => {
+			    var remoteHeight = response[1];
+
 				/* Should we restart the daemon and download the bootstrap? */
-				if (response[1] - response[0]["blocks"] > BOOTSTRAP_DOWNLOAD_THRESHOLD_BLOCKS) {
+				if (remoteHeight - response[0]["blocks"] > BOOTSTRAP_DOWNLOAD_THRESHOLD_BLOCKS) {
+					this.window.webContents.send(
+						"progress", "indeterminate", "Preparing sycnhronization..."
+					);
+
 					Promise.all([rpcClient.stop(), Daemon.done()]).then((response) => {
 						Daemon.start(this.window, true).then((response) => {
-							this.handle_synchronization(rpcClient);
+							this.handle_synchronization(remoteHeight, rpcClient);
 						});
 					});
 				} else {

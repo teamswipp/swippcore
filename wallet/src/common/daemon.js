@@ -61,7 +61,7 @@ export default class Daemon {
 					DAEMON_DONE_PROMISE.resolve();
 				});
 
-				tcpPortUsed.waitUntilUsed(global.rpcPort, 200, 5000).then(() => {
+				tcpPortUsed.waitUntilUsed(global.rpcPort, 200, 20000).then(() => {
 					resolve();
 				}, (err) => {
 					if (!executionError) {
