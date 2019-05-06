@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <curl/curl.h>
+#include <functional>
 
 #include "downloader.h"
 #include "util.h"
@@ -21,7 +22,14 @@ static size_t handle_string_chunk(void *downloaded, size_t size, size_t nmemb, v
     return size * nmemb;
 }
 
-Downloader::Downloader(std::string url) : url(url)
+int handle_progress(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow)
+{
+    Downloader *downloader = (Downloader *) clientp;
+    downloader->progress(((double) dlnow) / dltotal * 100);
+    return 0;
+}
+
+Downloader::Downloader(std::string url, std::function<void(double percentage)> progress) : url(url), progress(progress)
 {
     curl = curl_easy_init();
 
@@ -29,6 +37,9 @@ Downloader::Downloader(std::string url) : url(url)
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, CURL_CONNECTION_TIMEOUT);
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, this);
+        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, handle_progress);
 
         #ifdef WIN32
         // NOTE: The data here is not critical, so disabling verification should not have any unforseen consequences.
@@ -38,7 +49,8 @@ Downloader::Downloader(std::string url) : url(url)
     }
 }
 
-Downloader::Downloader(std::string url, std::string& destination) : Downloader(url)
+Downloader::Downloader(std::string url, std::string& destination,
+                       std::function<void(double percentage)> progress) : Downloader(url, progress)
 {
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_string_chunk);
@@ -46,7 +58,8 @@ Downloader::Downloader(std::string url, std::string& destination) : Downloader(u
     }
 }
 
-Downloader::Downloader(std::string url, std::FILE *destination) : Downloader(url)
+Downloader::Downloader(std::string url, std::FILE *destination,
+                       std::function<void(double percentage)> progress) : Downloader(url, progress)
 {
     if(curl) {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_file_chunk);

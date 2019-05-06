@@ -15,7 +15,7 @@
 
 #define BUFFER_SIZE 1024 * 1024 /* 1MB */
 
-BSArchive::BSArchive(std::FILE *file) : file(file)
+BSArchive::BSArchive(std::FILE *file, std::function<void(double percentage)> progress) : file(file), progress(progress)
 {
     in = new unsigned char[BUFFER_SIZE];
     out = new unsigned char[BUFFER_SIZE];
@@ -73,6 +73,8 @@ bool BSArchive::verifyHash()
 
 int BSArchive::unarchive(std::FILE *destination)
 {
+    progress(0.0);
+
     struct xz_buf b;
     enum xz_ret ret;
     struct xz_dec *s = xz_dec_init(XZ_DYNALLOC, 1 << 24); /* 16MB dictionary */
@@ -85,6 +87,10 @@ int BSArchive::unarchive(std::FILE *destination)
         b.out = out;
         b.out_pos = 0;
         b.out_size = BUFFER_SIZE;
+
+        std::fseek(file, 0, SEEK_END);
+        size_t size = std::ftell(file);
+        int pos = 0;
 
         std::fseek(file, SHA256_DIGEST_LENGTH * 2, SEEK_SET);
 
@@ -111,6 +117,8 @@ int BSArchive::unarchive(std::FILE *destination)
                     }
                 }
 
+                pos += b.in_pos;
+                progress((double) pos / size * 100);
                 b.in_pos = 0;
             }
 
@@ -129,6 +137,7 @@ int BSArchive::unarchive(std::FILE *destination)
             if(ret == XZ_STREAM_END) {
                 xz_dec_end(s);
                 std::fflush(destination);
+                progress(100.0);
                 return 0;
             }
 
