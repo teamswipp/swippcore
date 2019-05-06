@@ -135,8 +135,10 @@ extern bool fHaveGUI;
 // Settings
 extern bool fUseFastIndex;
 extern unsigned int nDerivationMethodIndex;
-
 extern bool fMinimizeCoinAge;
+
+extern double bootstrapingProgress;
+extern std::string bootstrapingStatus;
 
 class CReserveKey;
 class CTxDB;

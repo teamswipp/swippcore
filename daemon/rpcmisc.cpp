@@ -39,7 +39,7 @@ Value getinfo(const Array& params, bool fHelp)
     proxyType proxy;
     GetProxy(NET_IPV4, proxy);
 
-    Object obj, diff;
+    Object diff, bootstraping, obj;
     obj.push_back(Pair("version",       FormatFullVersion()));
     obj.push_back(Pair("latest-version", GetLatestRelease()));
     obj.push_back(Pair("protocolversion",(int)PROTOCOL_VERSION));
@@ -53,6 +53,16 @@ Value getinfo(const Array& params, bool fHelp)
         obj.push_back(Pair("stake",         ValueFromAmount(pwalletMain->GetStake())));
     }
 #endif
+
+    bootstraping.push_back(Pair("status",  bootstrapingStatus));
+
+    if (bootstrapingProgress == -1) {
+        bootstraping.push_back(Pair("progress", "none"));
+    } else {
+        bootstraping.push_back(Pair("progress", bootstrapingProgress));
+    }
+
+    obj.push_back(Pair("bootstraping",  bootstraping));
 
     obj.push_back(Pair("blocks",        (int)nBestHeight));
     obj.push_back(Pair("timeoffset",    (int64_t)GetTimeOffset()));

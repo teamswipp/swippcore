@@ -2592,6 +2592,9 @@ static void removeBootstrapFiles()
     }
 }
 
+double bootstrapingProgress = 0.0;
+std::string bootstrapingStatus = "inactive";
+
 static bool LoadExternalBlockFile(boost::filesystem::path path)
 {
     std::FILE *file = std::fopen(path.string().c_str(), "rb");
@@ -2605,6 +2608,7 @@ static bool LoadExternalBlockFile(boost::filesystem::path path)
 
     int64_t nStart = GetTimeMillis();
     int nLoaded = 0;
+    int nRead = 0; /* Will not count orphans - but speeds things up significantly */
 
     // Handle compressed bootstrap archives (*.bsa)
     if (boost::algorithm::ends_with(path.native(), ".bsa")) {
@@ -2612,7 +2616,11 @@ static bool LoadExternalBlockFile(boost::filesystem::path path)
         unarchivedFilePath = unarchivedFilePath + ".bootstrap";
         unarchivedFile = std::fopen(unarchivedFilePath.c_str(), "w+b");
 
-        BSArchive bsArchive(file);
+        BSArchive bsArchive(file, [](double percentage) -> void {
+            bootstrapingProgress = percentage;
+        });
+
+        bootstrapingStatus = "unarchiving";
         bsArchive.unarchive(unarchivedFile);
 
         fileIn = unarchivedFile;
@@ -2622,6 +2630,9 @@ static bool LoadExternalBlockFile(boost::filesystem::path path)
     }
 
     {
+        bootstrapingProgress = -1;
+        bootstrapingStatus = "syncing";
+
         try {
             CAutoFile blkdat(fileIn, SER_DISK, CLIENT_VERSION);
             unsigned int nPos = 0;
@@ -2671,11 +2682,15 @@ static bool LoadExternalBlockFile(boost::filesystem::path path)
                 {
                     CBlock block;
                     blkdat >> block;
-                    LOCK(cs_main);
+                    nRead++;
 
-                    if (block.AcceptBlock(true)) {
-                        nLoaded++;
-                        nPos += 4 + nSize;
+                    if (nBestHeight < nRead) {
+                        LOCK(cs_main);
+
+                        if (block.AcceptBlock(true)) {
+                            nLoaded++;
+                            nPos += 4 + nSize;
+                        }
                     }
                 }
             }
@@ -2732,7 +2747,12 @@ void ThreadImport(std::vector<std::string> arguments)
 
         if (downloadedFile) {
             LogPrintf("Starting to download bootstrap \"%s\" to \"%s\"...\n", SWIPPCORE_BOOTSTRAP_LOCATION, downloadedFilePath);
-            Downloader downloader(SWIPPCORE_BOOTSTRAP_LOCATION, downloadedFile);
+
+            Downloader downloader(SWIPPCORE_BOOTSTRAP_LOCATION, downloadedFile, [](double percentage) -> void {
+                bootstrapingProgress = percentage;
+            });
+
+            bootstrapingStatus = "downloading";
             downloader.fetch();
             std::rewind(downloadedFile);
             BSArchive bsArchive(downloadedFile);
@@ -2767,6 +2787,7 @@ void ThreadImport(std::vector<std::string> arguments)
 
     // Remove any downloaded bootstrap
     removeBootstrapFiles();
+    bootstrapingStatus = "inactive";
 }
 
 extern map<uint256, CAlert> mapAlerts;
