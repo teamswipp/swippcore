@@ -346,6 +346,8 @@ static inline void InitializeCollections()
 
 int AppInit2(boost::thread_group& threadGroup)
 {
+    InitializeCollections();
+
 #ifdef _MSC_VER
     // Turn off Microsoft heap dump noise
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
@@ -590,8 +592,6 @@ int AppInit2(boost::thread_group& threadGroup)
         fprintf(stdout, _("Swipp daemon starting\n"));
 
     int64_t nStart;
-
-    InitializeCollections();
 
 #ifdef ENABLE_WALLET
     if (!fDisableWallet)
