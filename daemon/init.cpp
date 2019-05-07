@@ -342,6 +342,7 @@ bool InitSanityCheck(void)
 static inline void InitializeCollections()
 {
     setStakeSeen.set_empty_key(std::make_pair(COutPoint(), std::numeric_limits<unsigned int>::max()));
+    setStakeSeenOrphan.set_empty_key(std::make_pair(COutPoint(), std::numeric_limits<unsigned int>::max()));
 }
 
 int AppInit2(boost::thread_group& threadGroup)

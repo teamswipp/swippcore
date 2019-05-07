@@ -112,6 +112,7 @@ extern CCriticalSection cs_main;
 extern CTxMemPool mempool;
 extern tsl::ordered_map<uint256, CBlockIndex*> mapBlockIndex;
 extern google::dense_hash_set<std::pair<COutPoint, unsigned int>> setStakeSeen;
+extern google::dense_hash_set<std::pair<COutPoint, unsigned int>> setStakeSeenOrphan;
 extern CBlockIndex* pindexGenesisBlock;
 extern unsigned int nStakeMinAge;
 extern unsigned int nNodeLifespan;
