@@ -2086,7 +2086,7 @@ bool CBlock::AcceptBlock(bool bootstrap)
     if (mapBlockIndex.count(hash))
         return error("AcceptBlock() : block already in mapBlockIndex: %s", hash.ToString());
 
-    if (mapOrphanBlocks.count(hash))
+    if (!bootstrap && mapOrphanBlocks.count(hash))
         return error("AcceptBlock() : block already in mapOprhanBlocks (orphan): %s", hash.ToString());
 
 
