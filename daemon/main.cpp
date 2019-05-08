@@ -1279,7 +1279,8 @@ bool FindTransactionsByDestination(const CTxDestination &dest, std::vector<uint2
 
 MemoryPool<google::dense_hash_set<std::tuple<uint160, uint256>>>
 addrIdPool([](google::dense_hash_set<std::tuple<uint160, uint256>> *object) -> void {
-    object->set_empty_key(std::make_tuple(uint160(), uint256()));
+    object->set_empty_key(std::make_tuple(uint160("0xfeedfacecafebeefbaadf00dc0ded00dd15ea5e"),
+                                          uint256("0xfeedfacecafebeefbaadf00dc0ded00dd15ea5ec0ded00ddeadc0dedeadd00d")));
 });
 
 bool CBlock::RebuildAddressIndex(CTxDB& txdb)

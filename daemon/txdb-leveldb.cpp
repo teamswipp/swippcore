@@ -218,7 +218,7 @@ bool CTxDB::ScanBatch(const CDataStream &key, string *value, bool *deleted) cons
 }
 
 MemoryPool<google::dense_hash_set<uint256>> txHashesPool([](google::dense_hash_set<uint256> *object) -> void {
-    object->set_empty_key(uint256());
+    object->set_empty_key(uint256("0xfeedfacecafebeefbaadf00dc0ded00dd15ea5ec0ded00ddeadc0dedeadd00d"));
 });
 
 void CTxDB::WriteAddrIndexes(google::dense_hash_set<std::tuple<uint160, uint256>> *addrIds)
