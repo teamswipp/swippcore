@@ -345,7 +345,13 @@ public:
             psz += 2;
 
         // hex string to uint
-        static const unsigned char phexdigit[256] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0, 0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0 };
+        static const unsigned char phexdigit[256] = {
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0,
+            0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+            0,0xa,0xb,0xc,0xd,0xe,0xf,0,0,0,0,0,0,0,0,0
+        };
+
         const char* pbegin = psz;
 
         while (phexdigit[(unsigned char)*psz] || *psz == '0')
@@ -770,130 +776,5 @@ inline const uint512 operator|(const uint512& a, const uint512& b)      { return
 inline const uint512 operator+(const uint512& a, const uint512& b)      { return (base_uint512)a +  (base_uint512)b; }
 inline const uint512 operator-(const uint512& a, const uint512& b)      { return (base_uint512)a -  (base_uint512)b; }
 
-#ifdef TEST_UINT256
-
-inline int Testuint256AdHoc(std::vector<std::string> vArg)
-{
-    uint256 g(0);
-
-    LogPrintf("%s\n", g.ToString());
-    g--;  LogPrintf("g--\n");
-    LogPrintf("%s\n", g.ToString());
-    g--;  LogPrintf("g--\n");
-    LogPrintf("%s\n", g.ToString());
-    g++;  LogPrintf("g++\n");
-    LogPrintf("%s\n", g.ToString());
-    g++;  LogPrintf("g++\n");
-    LogPrintf("%s\n", g.ToString());
-    g++;  LogPrintf("g++\n");
-    LogPrintf("%s\n", g.ToString());
-    g++;  LogPrintf("g++\n");
-    LogPrintf("%s\n", g.ToString());
-
-    uint256 a(7);
-    LogPrintf("a=7\n");
-    LogPrintf("%s\n", a.ToString());
-
-    uint256 b;
-    LogPrintf("b undefined\n");
-    LogPrintf("%s\n", b.ToString());
-    int c = 3;
-
-    a = c;
-    a.pn[3] = 15;
-    LogPrintf("%s\n", a.ToString());
-    uint256 k(c);
-
-    a = 5;
-    a.pn[3] = 15;
-    LogPrintf("%s\n", a.ToString());
-    b = 1;
-    b <<= 52;
-
-    a |= b;
-    a ^= 0x500;
-    LogPrintf("a %s\n", a.ToString());
-    a = a | b | (uint256)0x1000;
-
-    LogPrintf("a %s\n", a.ToString());
-    LogPrintf("b %s\n", b.ToString());
-
-    a = 0xfffffffe;
-    a.pn[4] = 9;
-
-    LogPrintf("%s\n", a.ToString());
-    a++;
-    LogPrintf("%s\n", a.ToString());
-    a++;
-    LogPrintf("%s\n", a.ToString());
-    a++;
-    LogPrintf("%s\n", a.ToString());
-    a++;
-    LogPrintf("%s\n", a.ToString());
-
-    a--;
-    LogPrintf("%s\n", a.ToString());
-    a--;
-    LogPrintf("%s\n", a.ToString());
-    a--;
-    LogPrintf("%s\n", a.ToString());
-    uint256 d = a--;
-    LogPrintf("%s\n", d.ToString());
-    LogPrintf("%s\n", a.ToString());
-    a--;
-    LogPrintf("%s\n", a.ToString());
-    a--;
-    LogPrintf("%s\n", a.ToString());
-
-    d = a;
-
-    LogPrintf("%s\n", d.ToString());
-    for (int i = uint256::WIDTH-1; i >= 0; i--) LogPrintf("%08x", d.pn[i]); LogPrintf("\n");
-
-    uint256 neg = d;
-    neg = ~neg;
-    LogPrintf("%s\n", neg.ToString());
-
-    uint256 e = uint256("0xABCDEF123abcdef12345678909832180000011111111");
-    LogPrintf("\n");
-    LogPrintf("%s\n", e.ToString());
-
-    LogPrintf("\n");
-    uint256 x1 = uint256("0xABCDEF123abcdef12345678909832180000011111111");
-    uint256 x2;
-    LogPrintf("%s\n", x1.ToString());
-
-    for (int i = 0; i < 270; i += 4)
-    {
-        x2 = x1 << i;
-        LogPrintf("%s\n", x2.ToString());
-    }
-
-    LogPrintf("\n");
-    LogPrintf("%s\n", x1.ToString());
-
-    for (int i = 0; i < 270; i += 4)
-    {
-        x2 = x1;
-        x2 >>= i;
-        LogPrintf("%s\n", x2.ToString());
-    }
-
-    for (int i = 0; i < 100; i++)
-    {
-        uint256 k = (~uint256(0) >> i);
-        LogPrintf("%s\n", k.ToString());
-    }
-
-    for (int i = 0; i < 100; i++)
-    {
-        uint256 k = (~uint256(0) << i);
-        LogPrintf("%s\n", k.ToString());
-    }
-
-    return 0;
-}
-
 #endif
 
-#endif
