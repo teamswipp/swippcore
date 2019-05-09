@@ -2,8 +2,9 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
-#include <map>
 #include <functional>
+#include <map>
+#include <set>
 #include <sparsehash/dense_hash_set>
 
 #include "memorypool.h"
@@ -11,7 +12,7 @@
 #include "txdb.h"
 #include "uint256.h"
 
-template class MemoryPool<google::dense_hash_set<uint256>>;
+template class MemoryPool<std::set<uint256>>;
 template class MemoryPool<google::dense_hash_set<std::tuple<uint160, uint256>>>;
 
 template <class T> MemoryPool<T>::MemoryPool(std::function<void(T *object)> initializer) : initializer(initializer)

@@ -2089,7 +2089,6 @@ bool CBlock::AcceptBlock(bool bootstrap)
     if (!bootstrap && mapOrphanBlocks.count(hash))
         return error("AcceptBlock() : block already in mapOprhanBlocks (orphan): %s", hash.ToString());
 
-
     // Get prev block index
     auto mi = mapBlockIndex.find(hashPrevBlock);
 

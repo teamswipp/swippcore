@@ -8,6 +8,7 @@
 #define BITCOIN_LEVELDB_H
 
 #include <map>
+#include <set>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -204,10 +205,10 @@ public:
         return Write(std::string("version"), nVersion);
     }
 
-    bool ReadAddrIndex(uint160 addrHash, google::dense_hash_set<uint256>& txHashes);
+    bool ReadAddrIndex(uint160 addrHash, std::set<uint256>& txHashes);
     bool ReadAddrIndex(uint160 addrHash, std::vector<uint256>& txHashes);
     static void WriteAddrIndexes(google::dense_hash_set<std::tuple<uint160, uint256>> *addrIds);
-    bool WriteAddrIndex(google::dense_hash_set<uint256>& txHashes, uint160 addrHash, uint256 txHash);
+    bool WriteAddrIndex(std::set<uint256>& txHashes, uint160 addrHash, uint256 txHash);
     bool ReadTxIndex(uint256 hash, CTxIndex& txindex);
     bool UpdateTxIndex(uint256 hash, const CTxIndex& txindex);
     bool AddTxIndex(const CTransaction& tx, const CDiskTxPos& pos, int nHeight);

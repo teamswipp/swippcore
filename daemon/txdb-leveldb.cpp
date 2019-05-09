@@ -5,6 +5,7 @@
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 #include <map>
+#include <set>
 #include <thread>
 #include <tuple>
 
@@ -217,14 +218,12 @@ bool CTxDB::ScanBatch(const CDataStream &key, string *value, bool *deleted) cons
     return scanner.foundEntry;
 }
 
-MemoryPool<google::dense_hash_set<uint256>> txHashesPool([](google::dense_hash_set<uint256> *object) -> void {
-    object->set_empty_key(uint256("0xfeedfacecafebeefbaadf00dc0ded00dd15ea5ec0ded00ddeadc0dedeadd00d"));
-});
+MemoryPool<std::set<uint256>> txHashesPool;
 
 void CTxDB::WriteAddrIndexes(google::dense_hash_set<std::tuple<uint160, uint256>> *addrIds)
 {
     CTxDB txdb;
-    google::dense_hash_set<uint256> *txHashes = txHashesPool.fetch();
+    std::set<uint256> *txHashes = txHashesPool.fetch();
 
     for(auto const& addrId : *addrIds) {
         if (!txdb.WriteAddrIndex(*txHashes, std::get<0>(addrId), std::get<1>(addrId))) {
@@ -233,11 +232,11 @@ void CTxDB::WriteAddrIndexes(google::dense_hash_set<std::tuple<uint160, uint256>
         }
     }
 
-    txHashes->clear_no_resize();
+    txHashes->clear();
     txHashesPool.put(txHashes);
 }
 
-bool CTxDB::WriteAddrIndex(google::dense_hash_set<uint256>& txHashes, uint160 addrHash, uint256 txHash)
+bool CTxDB::WriteAddrIndex(std::set<uint256>& txHashes, uint160 addrHash, uint256 txHash)
 {
     bool ret;
 
@@ -251,7 +250,6 @@ bool CTxDB::WriteAddrIndex(google::dense_hash_set<uint256>& txHashes, uint160 ad
       ret = true; // Already have this tx hash
     }
 
-    txHashes.clear();
     return ret;
 }
 
@@ -260,7 +258,7 @@ bool CTxDB::ReadAddrIndex(uint160 addrHash, std::vector<uint256>& txHashes)
     return Read(make_pair(string("adr"), addrHash), txHashes);
 }
 
-bool CTxDB::ReadAddrIndex(uint160 addrHash, google::dense_hash_set<uint256>& txHashes)
+bool CTxDB::ReadAddrIndex(uint160 addrHash, std::set<uint256>& txHashes)
 {
     return Read(make_pair(string("adr"), addrHash), txHashes);
 }
