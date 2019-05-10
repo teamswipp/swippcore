@@ -28,23 +28,22 @@ sudo apt-get install build-essential make g++
 
 After we have prepared the needed build environment, we also need to install a number of library dependencies used by the Swipp wallet:
 ```
-sudo apt-get install libboost-all-dev libssl1.0-dev libdb5.3++-dev libminiupnpc-dev libz-dev libcurl4-openssl-dev
+sudo apt-get install libboost-all-dev libssl1.0-dev libdb5.3++-dev libminiupnpc-dev libz-dev libcurl4-openssl-dev libsparsehash-dev
 ```
 
-# Building the CLI/RPC version
+# Building the CLI/RPC daemon
 If the build environment is properly prepared, we should be able to build the wallet by executing the following command:
 ```
-cd swippcore/src
+cd swippcore/daemon
 make -j8 -f makefile.unix
 ```
 
 With a little luck, the build succeeds, leaving you with an executable file "swippd" in the current directory.
 
-# Building the QT version
-The QT wallet needs a number of additional dependencies. Execute the following command to complement the build environment with
-the default libraries and build tools from QT:
+# Building the wallet
+The Electron wallet needs an additional dependency. Execute the following command to complement the build environment:
 ```
-sudo apt-get install qt5-default qttools5-dev-tools
+sudo apt-get install yarn nodejs
 ```
 
 Once completed, we should be able to generate the make file from the Swipp project file by running the following command:
