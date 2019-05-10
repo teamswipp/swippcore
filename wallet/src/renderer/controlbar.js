@@ -37,7 +37,7 @@ export default class ControlBar extends React.Component {
 	}
 
 	render() {
-		var onMinimzie = () => {
+		var onMinimize = () => {
 			window.minimize();
 		}
 
