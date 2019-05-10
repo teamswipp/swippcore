@@ -21,6 +21,7 @@ import { ipcRenderer } from "electron";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faWindowMinimize, faWindowMaximize, faWindowClose } from "@fortawesome/free-solid-svg-icons";
+import File from "common/file";
 import "./controlbar.css"
 
 library.add(faSpinner, faWindowMinimize, faWindowMaximize, faWindowClose);
@@ -49,9 +50,11 @@ export default class ControlBar extends React.Component {
 		}
 
 		return(
-			<div className="controlbar">
+			<div className={"controlbar " + this.props.className}>
 				<div>
-					<img className="piclet"/>
+					{this.props.fullControls == true &&
+						<img src={File.get("logo.png")} className="piclet"/>
+					}
 					<div>{this.props.headerText}</div>
 				</div>
 				<div>

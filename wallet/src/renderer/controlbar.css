@@ -1,26 +1,53 @@
 div.controlbar {
 	display: flex;
 	align-items: center;
-	padding: 10px 6px 6px 6px;
+	padding: 10px 6px 6px 12px;
 	background-color: #171717;
+	color: #eee;
+}
+
+div.controlbar img.piclet {
+	width: 32px;
+	heiht: auto;
+	padding-right: 10px;
+	vertical-align: middle;
+}
+
+div.controlbar > div:first-child {
+	font-size: 13pt;
+}
+
+div.controlbar > div > div {
+	display: inline-block;
+}
+
+div.controlbar.nobg {
+	background-color: black;
 }
 
 div.controlbar > div:first-child {
 	flex-grow: 1;
 }
 
+div.controlbar svg {
+	color: #eee;
+}
+
 div.controlbar svg.close {
+	color: #d55;
+}
+
+div.controlbar svg {
 	transition: transform .2s ease-in-out;
 	cursor: pointer;
-	color: #d55;
 	transform: scale(1.15);
 }
 
-div.controlbar svg.close:hover {
+div.controlbar svg:hover {
 	transform: scale(1.35);
 }
 
-div.controlbar svg.close:active {
+div.controlbar svg:active {
 	transform: scale(1.15);
 	color: #f77;
 }
@@ -33,6 +60,6 @@ svg {
 	margin-right: 10px;
 }
 
-svg:last-child {
+div.controlbar > div > svg:last-child {
 	margin-right: 6px;
 }

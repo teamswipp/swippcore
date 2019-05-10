@@ -21,6 +21,7 @@ import * as path from "path";
 import { format as formatUrl } from "url";
 import Daemon from "common/daemon";
 import RPCClient from "common/rpc-client.js"
+import MainController from "./main-controller";
 import SplashController from "./splash-controller";
 
 global.isDevelopment = process.env.NODE_ENV !== "production";
@@ -57,6 +58,8 @@ app.on("ready", () => {
 			splashController.version_control(rpcClient).then(() => {
 				splashController.synchronize_wallet(rpcClient).then(() => {
 					/* If sync was a success, we close the splash and move on to the main wallet window */
+					var mainController = new MainController();
+					splashController.window.close();
 				}, (stderr) => {
 					console.error(stderr);
 				});

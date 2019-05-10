@@ -16,17 +16,12 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import React from "react";
-import ReactDOM from "react-dom";
-import { Router } from "common/router";
-import ControlBar from "./controlbar"
-import Splash from "./splash"
-import "./index.css"
+import * as React from "react";
 
-const routes = {
-	main: <ControlBar headerText="Swipp Wallet" fullControls={true} />,
-	splash: [<ControlBar key={1} className="nobg" fullControls={false} />, <Splash key={2} />]
-};
+function Router ({ routes }) {
+	const route = new URLSearchParams ( window.location.search ).get ("route") || "default";
+	return routes[route] || routes.default;
+}
 
-ReactDOM.render (<Router routes={routes} />, document.getElementById ("app"));
+export {Router};
 
