@@ -4,6 +4,11 @@ div.controlbar {
 	padding: 10px 6px 6px 12px;
 	background-color: #171717;
 	color: #eee;
+	-webkit-app-region: drag;
+}
+
+div.controlbar div:last-child {
+	-webkit-app-region: no-drag;
 }
 
 div.controlbar img.piclet {
