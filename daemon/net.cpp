@@ -4,16 +4,8 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
-#include "init.h"
-#include "chainparams.h"
-#include "db.h"
-#include "downloader.h"
-#include "localization.h"
-#include "net.h"
-#include "main.h"
-#include "addrman.h"
-#include "darksend.h"
-#include "wallet.h"
+#include <chrono>
+#include <regex>
 
 #ifdef WIN32
 #include <string.h>
@@ -26,13 +18,25 @@
 #include <miniupnpc/upnperrors.h>
 #endif
 
-#include <regex>
+#include "init.h"
+#include "chainparams.h"
+#include "db.h"
+#include "downloader.h"
+#include "localization.h"
+#include "net.h"
+#include "main.h"
+#include "addrman.h"
+#include "darksend.h"
+#include "wallet.h"
 
 // Dump addresses to peers.dat every 15 minutes (900s)
 #define DUMP_ADDRESSES_INTERVAL 900
 
 // Check for release once every hour (3600s)
 #define FIND_RELEASES_INTERVAL 3600
+
+// Cache the downloaded releases for a minimum of 10 minutes
+#define FIND_RELEASES_CACHETIME (60 * 10)
 
 using namespace std;
 using namespace boost;
@@ -2092,8 +2096,7 @@ static std::list<ComparableVersion> parse_releases(std::string result)
     std::sregex_iterator end;
     std::list<ComparableVersion> versions;
 
-    while(iter != end)
-    {
+    while(iter != end) {
         versions.push_back(ComparableVersion((*iter)[1]));
         ++iter;
     }
@@ -2120,17 +2123,23 @@ std::string GetLatestRelease()
 
 void FindReleases()
 {
-    std::list<ComparableVersion> versions = GetAllReleases();
-    std::string latest_version = versions.back().ToString();
+    thread_local auto time = std::chrono::system_clock::now();
+    thread_local std::list<ComparableVersion> versions = GetAllReleases();
+    thread_local std::string latest_version = versions.back().ToString();
 
-    if(fDebug)
-    {
+    if (latest_version == "unknown" ||
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - time).count() >
+        FIND_RELEASES_CACHETIME)  {
+        versions = GetAllReleases();
+        latest_version = versions.back().ToString();
+    }
+
+    if(fDebug) {
         LogPrintf("Latest version: %s\n", latest_version);
         LogPrintf("Client version: %s\n", FormatVersion(CLIENT_VERSION, true));
     }
 
-    if (latest_version > FormatVersion(CLIENT_VERSION, true))
-    {
+    if (latest_version > FormatVersion(CLIENT_VERSION, true)) {
         LogPrintf("This wallet is outdated. Please update to the latest version!");
     }
 }
