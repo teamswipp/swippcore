@@ -24,11 +24,12 @@ import { faSpinner, faTimes } from "@fortawesome/free-solid-svg-icons";
 import File from "common/file";
 import "./splash.css"
 
-library.add(faSpinner, faTimes)
+library.add(faSpinner, faTimes);
 
 export default class Splash extends React.Component {
 	constructor(props) {
 		super(props);
+
 		this.state = {
 			infoMessage: null,
 			errorMessage: null,

@@ -18,9 +18,19 @@
 
 @import "~roboto-fontface/css/roboto/roboto-fontface.css";
 
+html, body, div#app {
+	height: 100%;
+}
+
+div#app {
+	display: flex;
+	flex-direction: column;
+}
+
 body {
 	font-family: 'Roboto', sans-serif;
 	font-size: 16pt;
 	margin: 0;
 	user-select: none;
 }
+

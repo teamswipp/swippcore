@@ -15,24 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
-
+ 
 import React from "react";
-import ReactDOM from "react-dom";
-import { Router } from "common/router";
-import ControlBar from "./controlbar";
-import NavBar from "./navbar";
-import Splash from "./splash";
-import "./index.css";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCogs } from "@fortawesome/free-solid-svg-icons";
 
-const routes = {
-	main: [
-		<ControlBar key={1} headerText="Swipp Wallet" fullControls={true} />,
-		<div className="nav" key={2}><NavBar /><div /></div>
-	],
-	splash: [
-		<ControlBar key={1} className="nobg" fullControls={false} />, <Splash key={2} />
-	]
-};
+library.add(faCogs);
 
-ReactDOM.render (<Router routes={routes} />, document.getElementById ("app"));
+export default class Settings extends React.Component {
+	render() {
+		return(
+			<li className={this.props.className} onClick={this.props.onClick}>
+				<FontAwesomeIcon size="lg" icon="cogs"/>Settings
+			</li>
+		);
+	}
+}
 
