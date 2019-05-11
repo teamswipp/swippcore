@@ -19,7 +19,8 @@ div.controlbar img.piclet {
 }
 
 div.controlbar > div:first-child {
-	font-size: 13pt;
+	font-size: 12pt;
+	font-weight: 400;
 }
 
 div.controlbar > div > div {

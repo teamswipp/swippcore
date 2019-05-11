@@ -29,7 +29,6 @@ img.logo {
 
 html {
 	background-color: black;
-	font-family: Arial, Helvetica, sans-serif;
 	color: #3a9;
 }
 
@@ -66,12 +65,14 @@ h1 {
 	font-size: 16pt;
 	margin-block-start: 0;
 	margin-block-end: 0.1em;
+	font-weight: 400;
 }
 
 h2 {
-	font-size: 11pt;
+	font-size: 12pt;
 	color: #3dc;
 	margin-block-start: 0em;
+	font-weight: 400;
 }
 
 div:empty, p:empty {

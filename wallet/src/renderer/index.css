@@ -16,7 +16,10 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
+@import "~roboto-fontface/css/roboto/roboto-fontface.css";
+
 body {
+	font-family: 'Roboto', sans-serif;
 	font-size: 16pt;
 	margin: 0;
 	user-select: none;
