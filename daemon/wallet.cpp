@@ -446,7 +446,6 @@ bool CWallet::EncryptWallet(const SecureString& strWalletPassphrase)
 
     }
 
-    NotifyStatusChanged(this);
     return true;
 }
 

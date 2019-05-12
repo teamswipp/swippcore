@@ -1,4 +1,5 @@
 // Copyright (c) 2009-2012 The Bitcoin Developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
@@ -28,16 +29,18 @@ with the double-sha256 of the public key as the IV, and the
 master key's key as the encryption key (see keystore.[ch]).
 */
 
-/** Master key for wallet encryption */
+// Master key for wallet encryption
 class CMasterKey
 {
 public:
     std::vector<unsigned char> vchCryptedKey;
     std::vector<unsigned char> vchSalt;
+
     // 0 = EVP_sha512()
     // 1 = scrypt()
     unsigned int nDerivationMethod;
     unsigned int nDeriveIterations;
+
     // Use this for more parameters to key derivation,
     // such as the various parameters to scrypt
     std::vector<unsigned char> vchOtherDerivationParameters;
@@ -50,6 +53,7 @@ public:
         READWRITE(nDeriveIterations);
         READWRITE(vchOtherDerivationParameters);
     )
+
     CMasterKey()
     {
         // 25000 rounds is just under 0.1 seconds on a 1.86 GHz Pentium M
@@ -68,13 +72,13 @@ public:
                 nDeriveIterations = 25000;
                 nDerivationMethod = 0;
                 vchOtherDerivationParameters = std::vector<unsigned char>(0);
-            break;
+                break;
 
             case 1: // scrypt+sha512
                 nDeriveIterations = 10000;
                 nDerivationMethod = 1;
                 vchOtherDerivationParameters = std::vector<unsigned char>(0);
-            break;
+                break;
         }
     }
 
@@ -82,7 +86,7 @@ public:
 
 typedef std::vector<unsigned char, secure_allocator<unsigned char> > CKeyingMaterial;
 
-/** Encryption/decryption context with key information */
+// Encryption/decryption context with key information
 class CCrypter
 {
 private:
@@ -91,7 +95,8 @@ private:
     bool fKeySet;
 
 public:
-    bool SetKeyFromPassphrase(const SecureString &strKeyData, const std::vector<unsigned char>& chSalt, const unsigned int nRounds, const unsigned int nDerivationMethod);
+    bool SetKeyFromPassphrase(const SecureString &strKeyData, const std::vector<unsigned char>& chSalt,
+                              const unsigned int nRounds, const unsigned int nDerivationMethod);
     bool Encrypt(const CKeyingMaterial& vchPlaintext, std::vector<unsigned char> &vchCiphertext);
     bool Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingMaterial& vchPlaintext);
     bool SetKey(const CKeyingMaterial& chNewKey, const std::vector<unsigned char>& chNewIV);
@@ -107,9 +112,10 @@ public:
     {
         fKeySet = false;
 
-        // Try to keep the key data out of swap (and be a bit over-careful to keep the IV that we don't even use out of swap)
-        // Note that this does nothing about suspend-to-disk (which will put all our key data on disk)
-        // Note as well that at no point in this program is any attempt made to prevent stealing of keys by reading the memory of the running process.
+        // Try to keep the key data out of swap (and be a bit over-careful to keep the IV that we don't
+        // even use out of swap). Note that this does nothing about suspend-to-disk (which will put all our keyChild
+        // data on disk). Note as well that at no point in this program is any attempt made to prevent stealing of keys
+        // by reading the memory of the running process.
         LockedPageManager::instance.LockRange(&chKey[0], sizeof chKey);
         LockedPageManager::instance.LockRange(&chIV[0], sizeof chIV);
     }
@@ -123,20 +129,20 @@ public:
     }
 };
 
-bool EncryptSecret(const CKeyingMaterial& vMasterKey, const CKeyingMaterial &vchPlaintext, const uint256& nIV, std::vector<unsigned char> &vchCiphertext);
-bool DecryptSecret(const CKeyingMaterial& vMasterKey, const std::vector<unsigned char>& vchCiphertext, const uint256& nIV, CKeyingMaterial& vchPlaintext);
-
+bool EncryptSecret(const CKeyingMaterial& vMasterKey, const CKeyingMaterial &vchPlaintext, const uint256& nIV,
+                   std::vector<unsigned char> &vchCiphertext);
+bool DecryptSecret(const CKeyingMaterial& vMasterKey, const std::vector<unsigned char>& vchCiphertext,
+                   const uint256& nIV, CKeyingMaterial& vchPlaintext);
 bool EncryptAES256(const SecureString& sKey, const SecureString& sPlaintext, const std::string& sIV, std::string& sCiphertext);
 bool DecryptAES256(const SecureString& sKey, const std::string& sCiphertext, const std::string& sIV, SecureString& sPlaintext);
 
-/** Keystore which keeps the private keys encrypted.
- * It derives from the basic key store, which is used if no encryption is active.
- */
+// Keystore which keeps the private keys encrypted.
+// It derives from the basic key store, which is used if no encryption is active.
 class CCryptoKeyStore : public CBasicKeyStore
 {
 private:
-    // if fUseCrypto is true, mapKeys must be empty
-    // if fUseCrypto is false, vMasterKey must be empty
+    // If fUseCrypto is true, mapKeys must be empty
+    // If fUseCrypto is false, vMasterKey must be empty
     bool fUseCrypto;
 
 protected:
@@ -145,15 +151,13 @@ protected:
 
     bool SetCrypted();
 
-    // will encrypt previously unencrypted keys
+    // Will encrypt previously unencrypted keys
     bool EncryptKeys(CKeyingMaterial& vMasterKeyIn);
 
     bool Unlock(const CKeyingMaterial& vMasterKeyIn);
 
 public:
-    CCryptoKeyStore() : fUseCrypto(false)
-    {
-    }
+    CCryptoKeyStore() : fUseCrypto(false) { }
 
     bool IsCrypted() const
     {
@@ -162,55 +166,58 @@ public:
 
     bool IsLocked() const
     {
-        if (!IsCrypted())
+        if (!IsCrypted()) {
             return false;
+        }
+
         bool result;
+
         {
             LOCK(cs_KeyStore);
             result = vMasterKey.empty();
         }
+
         return result;
     }
 
     bool LockKeyStore();
-
     virtual bool AddCryptedKey(const CPubKey &vchPubKey, const std::vector<unsigned char> &vchCryptedSecret);
     bool AddKeyPubKey(const CKey& key, const CPubKey &pubkey);
+
     bool HaveKey(const CKeyID &address) const
     {
         {
             LOCK(cs_KeyStore);
-            if (!IsCrypted())
+
+            if (!IsCrypted()) {
                 return CBasicKeyStore::HaveKey(address);
+            }
+
             return mapCryptedKeys.count(address) > 0;
         }
+
         return false;
     }
+
     bool GetKey(const CKeyID &address, CKey& keyOut) const;
     bool GetPubKey(const CKeyID &address, CPubKey& vchPubKeyOut) const;
+
     void GetKeys(std::set<CKeyID> &setAddress) const
     {
-        if (!IsCrypted())
-        {
+        if (!IsCrypted()) {
             CBasicKeyStore::GetKeys(setAddress);
             return;
         }
+
         setAddress.clear();
         CryptedKeyMap::const_iterator mi = mapCryptedKeys.begin();
-        while (mi != mapCryptedKeys.end())
-        {
+
+        while (mi != mapCryptedKeys.end()) {
             setAddress.insert((*mi).first);
             mi++;
         }
     }
-
-    /* Wallet status (encrypted, locked) changed.
-     * Note: Called without locks held.
-     */
-    boost::signals2::signal<void (CCryptoKeyStore* wallet)> NotifyStatusChanged;
 };
 
-
-
-
 #endif
+
