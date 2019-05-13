@@ -107,6 +107,7 @@ xCCFLAGS=-O3 -ftree-parallelize-loops=4 -rdynamic $(EXT_OPTIONS) -pthread -Wall 
 xLDFLAGS=$(LDHARDENING) $(LDFLAGS)
 
 OBJS= \
+    obj/opensslcompat.o \
     obj/downloader.o \
     obj/groestl.o \
     obj/backtrace.o \

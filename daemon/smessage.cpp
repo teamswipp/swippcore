@@ -5,15 +5,12 @@
 
 // WARNING: Running with -debug could leave to and from address hashes and public keys in the log
 
-#include "smessage.h"
-
 #include <stdint.h>
 #include <time.h>
 #include <map>
 #include <stdexcept>
 #include <sstream>
 #include <errno.h>
-
 #include <openssl/crypto.h>
 #include <openssl/ec.h>
 #include <openssl/ecdh.h>
@@ -21,7 +18,6 @@
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
-
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
@@ -31,8 +27,10 @@
 #include "main.h"
 #include "txdb.h"
 #include "sync.h"
+#include "smessage.h"
 #include "eckey.h"
 #include "lz4/lz4.c"
+#include "opensslcompat.h"
 #include "xxhash/xxhash.h"
 #include "xxhash/xxhash.c"
 
@@ -86,21 +84,21 @@ bool SecMsgCrypter::Encrypt(uint8_t* chPlaintext, uint32_t nPlain, std::vector<u
 
     int nCLen = nLen + AES_BLOCK_SIZE, nFLen = 0;
     vchCiphertext = std::vector<uint8_t> (nCLen);
-    EVP_CIPHER_CTX ctx;
+    DEF_EVP_CIPHER_CTX ctx;
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
+    DEF_EVP_CIPHER_CTX_init(ctx);
 
     if (fOk)
-        fOk = EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, &chKey[0], &chIV[0]);
+        fOk = EVP_EncryptInit_ex(SSL_ADDR(ctx), EVP_aes_256_cbc(), NULL, &chKey[0], &chIV[0]);
 
     if (fOk)
-        fOk = EVP_EncryptUpdate(&ctx, &vchCiphertext[0], &nCLen, chPlaintext, nLen);
+        fOk = EVP_EncryptUpdate(SSL_ADDR(ctx), &vchCiphertext[0], &nCLen, chPlaintext, nLen);
 
     if (fOk)
-        fOk = EVP_EncryptFinal_ex(&ctx, (&vchCiphertext[0])+nCLen, &nFLen);
+        fOk = EVP_EncryptFinal_ex(SSL_ADDR(ctx), (&vchCiphertext[0])+nCLen, &nFLen);
 
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_cleanup(SSL_ADDR(ctx));
 
     if (!fOk)
         return false;
@@ -117,21 +115,21 @@ bool SecMsgCrypter::Decrypt(uint8_t* chCiphertext, uint32_t nCipher, std::vector
     // Plaintext will always be equal to or lesser than length of ciphertext
     int nPLen = nCipher, nFLen = 0;
     vchPlaintext.resize(nCipher);
-    EVP_CIPHER_CTX ctx;
+    DEF_EVP_CIPHER_CTX ctx;
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
+    DEF_EVP_CIPHER_CTX_init(ctx);
 
     if (fOk)
-        fOk = EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, &chKey[0], &chIV[0]);
+        fOk = EVP_DecryptInit_ex(SSL_ADDR(ctx), EVP_aes_256_cbc(), NULL, &chKey[0], &chIV[0]);
 
     if (fOk)
-        fOk = EVP_DecryptUpdate(&ctx, &vchPlaintext[0], &nPLen, &chCiphertext[0], nCipher);
+        fOk = EVP_DecryptUpdate(SSL_ADDR(ctx), &vchPlaintext[0], &nPLen, &chCiphertext[0], nCipher);
 
     if (fOk)
-        fOk = EVP_DecryptFinal_ex(&ctx, (&vchPlaintext[0])+nPLen, &nFLen);
+        fOk = EVP_DecryptFinal_ex(SSL_ADDR(ctx), (&vchPlaintext[0])+nPLen, &nFLen);
 
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_cleanup(SSL_ADDR(ctx));
 
     if (!fOk)
         return false;
@@ -2936,42 +2934,38 @@ int SecureMsgValidate(uint8_t *pHeader, uint8_t *pPayload, uint32_t nPayload)
     for (int i = 0; i < 32; i += 4)
         memcpy(civ+i, &nonse, 4);
 
-    HMAC_CTX ctx;
-    HMAC_CTX_init(&ctx);
+    DEF_HMAC_CTX ctx;
+    DEF_HMAC_CTX_init(ctx);
     uint32_t nBytes;
 
-    if (!HMAC_Init_ex(&ctx, &civ[0], 32, EVP_sha256(), NULL) ||
-        !HMAC_Update(&ctx, (uint8_t*) pHeader + 4, SMSG_HDR_LEN - 4) ||
-        !HMAC_Update(&ctx, (uint8_t*) pPayload, nPayload) ||
-        !HMAC_Update(&ctx, pPayload, nPayload) ||
-        !HMAC_Final(&ctx, sha256Hash, &nBytes) || nBytes != 32)
-    {
+    if (!HMAC_Init_ex(SSL_ADDR(ctx), &civ[0], 32, EVP_sha256(), NULL) ||
+        !HMAC_Update(SSL_ADDR(ctx), (uint8_t*) pHeader + 4, SMSG_HDR_LEN - 4) ||
+        !HMAC_Update(SSL_ADDR(ctx), (uint8_t*) pPayload, nPayload) ||
+        !HMAC_Update(SSL_ADDR(ctx), pPayload, nPayload) ||
+        !HMAC_Final(SSL_ADDR(ctx), sha256Hash, &nBytes) || nBytes != 32) {
         if (fDebugSmsg)
             LogPrintf("HMAC error.\n");
 
         rv = 1;
-    }
-    else
-    {
+    } else {
         if (sha256Hash[31] == 0 && sha256Hash[30] == 0 &&
-            (~(sha256Hash[29]) & ((1 << 0) || (1 << 1) || (1 << 2)) ))
-        {
+            (~(sha256Hash[29]) & ((1 << 0) || (1 << 1) || (1 << 2)) )) {
             if (fDebugSmsg)
                 LogPrintf("Hash Valid.\n");
 
             rv = 0;
         }
 
-        if (memcmp(psmsg->hash, sha256Hash, 4) != 0)
-        {
-             if (fDebugSmsg)
+        if (memcmp(psmsg->hash, sha256Hash, 4) != 0) {
+            if (fDebugSmsg) {
                 LogPrintf("Checksum mismatch.\n");
+            }
 
             rv = 3;
         }
     }
 
-    HMAC_CTX_cleanup(&ctx);
+    DEF_HMAC_CTX_cleanup(ctx);
     return rv;
 }
 
@@ -2986,8 +2980,8 @@ int SecureMsgSetHash(uint8_t *pHeader, uint8_t *pPayload, uint32_t nPayload)
     uint8_t sha256Hash[32];
 
     bool found = false;
-    HMAC_CTX ctx;
-    HMAC_CTX_init(&ctx);
+    DEF_HMAC_CTX ctx;
+    DEF_HMAC_CTX_init(ctx);
     uint32_t nonse = 0;
 
     // Break for HMAC_CTX_cleanup
@@ -3003,26 +2997,27 @@ int SecureMsgSetHash(uint8_t *pHeader, uint8_t *pPayload, uint32_t nPayload)
 
         uint32_t nBytes;
 
-        if (!HMAC_Init_ex(&ctx, &civ[0], 32, EVP_sha256(), NULL) ||
-            !HMAC_Update(&ctx, (uint8_t*) pHeader + 4, SMSG_HDR_LEN - 4) ||
-            !HMAC_Update(&ctx, (uint8_t*) pPayload, nPayload) ||
-            !HMAC_Update(&ctx, pPayload, nPayload) ||
-            !HMAC_Final(&ctx, sha256Hash, &nBytes) || nBytes != 32)
+        if (!HMAC_Init_ex(SSL_ADDR(ctx), &civ[0], 32, EVP_sha256(), NULL) ||
+            !HMAC_Update(SSL_ADDR(ctx), (uint8_t*) pHeader + 4, SMSG_HDR_LEN - 4) ||
+            !HMAC_Update(SSL_ADDR(ctx), (uint8_t*) pPayload, nPayload) ||
+            !HMAC_Update(SSL_ADDR(ctx), pPayload, nPayload) ||
+            !HMAC_Final(SSL_ADDR(ctx), sha256Hash, &nBytes) || nBytes != 32) {
             break;
+        }
 
-        if (sha256Hash[31] == 0 && sha256Hash[30] == 0 && (~(sha256Hash[29]) & ((1<<0) || (1<<1) || (1<<2))))
-        {
-            if (fDebugSmsg)
+        if (sha256Hash[31] == 0 && sha256Hash[30] == 0 && (~(sha256Hash[29]) & ((1<<0) || (1<<1) || (1<<2)))) {
+            if (fDebugSmsg) {
                 LogPrintf("SecureMsgSetHash() match %u\n", nonse);
+            }
 
             found = true;
             break;
         }
 
-        if (nonse >= 4294967295U)
-        {
-            if (fDebugSmsg)
+        if (nonse >= 4294967295U) {
+            if (fDebugSmsg) {
                 LogPrintf("SecureMsgSetHash() no match %u\n", nonse);
+            }
 
             break;
         }
@@ -3030,28 +3025,30 @@ int SecureMsgSetHash(uint8_t *pHeader, uint8_t *pPayload, uint32_t nPayload)
         nonse++;
     }
 
-    HMAC_CTX_cleanup(&ctx);
+    DEF_HMAC_CTX_cleanup(ctx);
 
-    if (!fSecMsgEnabled)
-    {
-        if (fDebugSmsg)
+    if (!fSecMsgEnabled) {
+        if (fDebugSmsg) {
             LogPrintf("SecureMsgSetHash() stopped, shutdown detected.\n");
+        }
 
         return 2;
     }
 
-    if (!found)
-    {
-        if (fDebugSmsg)
+    if (!found) {
+        if (fDebugSmsg) {
             LogPrintf("SecureMsgSetHash() failed, took %d ms, nonse %u\n",
                       GetTimeMillis() - nStart, nonse);
+        }
+
         return 1;
     }
 
     memcpy(psmsg->hash, sha256Hash, 4);
 
-    if (fDebugSmsg)
+    if (fDebugSmsg) {
         LogPrintf("SecureMsgSetHash() took %d ms, nonse %u\n", GetTimeMillis() - nStart, nonse);
+    }
 
     return 0;
 }
@@ -3063,11 +3060,11 @@ int SecureMsgSetHash(uint8_t *pHeader, uint8_t *pPayload, uint32_t nPayload)
 // (9, could not compress message data), (10, could not generate MAC), (11, encrypt failed)
 int SecureMsgEncrypt(SecureMessage& smsg, std::string& addressFrom, std::string& addressTo, std::string& message)
 {
-    if (fDebugSmsg)
+    if (fDebugSmsg) {
         LogPrintf("SecureMsgEncrypt(%s, %s, ...)\n", addressFrom.c_str(), addressTo.c_str());
+    }
 
-    if (message.size() > SMSG_MAX_MSG_BYTES)
-    {
+    if (message.size() > SMSG_MAX_MSG_BYTES) {
         LogPrintf("Message is too long, %u.\n", message.size());
         return 2;
     }
@@ -3149,7 +3146,7 @@ int SecureMsgEncrypt(SecureMessage& smsg, std::string& addressFrom, std::string&
     EC_KEY* pkeyK = ecKeyK.GetECKey();
 
     // ECDH_compute_key returns the same P if fed compressed or uncompressed public keys
-    ECDH_set_method(pkeyr, ECDH_OpenSSL());
+    DEF_ECDHKEY_set_method(pkeyr);
     int lenP = ECDH_compute_key(&vchP[0], 32, EC_KEY_get0_public_key(pkeyK), pkeyr, NULL);
 
     if (lenP != 32)
@@ -3295,16 +3292,16 @@ int SecureMsgEncrypt(SecureMessage& smsg, std::string& addressFrom, std::string&
     // Message authentication code (hash of timestamp + destination + payload)
     bool fHmacOk = true;
     uint32_t nBytes = 32;
-    HMAC_CTX ctx;
-    HMAC_CTX_init(&ctx);
+    DEF_HMAC_CTX ctx;
+    DEF_HMAC_CTX_init(ctx);
 
-    if (!HMAC_Init_ex(&ctx, &key_m[0], 32, EVP_sha256(), NULL) ||
-        !HMAC_Update(&ctx, (uint8_t*) &smsg.timestamp, sizeof(smsg.timestamp)) ||
-        !HMAC_Update(&ctx, &vchCiphertext[0], vchCiphertext.size()) ||
-        !HMAC_Final(&ctx, smsg.mac, &nBytes) || nBytes != 32)
+    if (!HMAC_Init_ex(SSL_ADDR(ctx), &key_m[0], 32, EVP_sha256(), NULL) ||
+        !HMAC_Update(SSL_ADDR(ctx), (uint8_t*) &smsg.timestamp, sizeof(smsg.timestamp)) ||
+        !HMAC_Update(SSL_ADDR(ctx), &vchCiphertext[0], vchCiphertext.size()) ||
+        !HMAC_Final(SSL_ADDR(ctx), smsg.mac, &nBytes) || nBytes != 32)
         fHmacOk = false;
 
-    HMAC_CTX_cleanup(&ctx);
+    DEF_HMAC_CTX_cleanup(ctx);
 
     if (!fHmacOk)
     {
@@ -3551,7 +3548,7 @@ int SecureMsgDecrypt(bool fTestOnly, std::string& address, uint8_t *pHeader, uin
     vchP.resize(32);
     EC_KEY* pkeyk = ecKeyDest.GetECKey();
     EC_KEY* pkeyR = ecKeyR.GetECKey();
-    ECDH_set_method(pkeyk, ECDH_OpenSSL());
+    DEF_ECDHKEY_set_method(pkeyk);
     int lenPdec = ECDH_compute_key(&vchP[0], 32, EC_KEY_get0_public_key(pkeyR), pkeyk, NULL);
 
     if (lenPdec != 32)
@@ -3572,16 +3569,16 @@ int SecureMsgDecrypt(bool fTestOnly, std::string& address, uint8_t *pHeader, uin
     uint8_t MAC[32];
     bool fHmacOk = true;
     uint32_t nBytes = 32;
-    HMAC_CTX ctx;
-    HMAC_CTX_init(&ctx);
+    DEF_HMAC_CTX ctx;
+    DEF_HMAC_CTX_init(ctx);
 
-    if (!HMAC_Init_ex(&ctx, &key_m[0], 32, EVP_sha256(), NULL) ||
-        !HMAC_Update(&ctx, (uint8_t*) &psmsg->timestamp, sizeof(psmsg->timestamp)) ||
-        !HMAC_Update(&ctx, pPayload, nPayload) ||
-        !HMAC_Final(&ctx, MAC, &nBytes) || nBytes != 32)
+    if (!HMAC_Init_ex(SSL_ADDR(ctx), &key_m[0], 32, EVP_sha256(), NULL) ||
+        !HMAC_Update(SSL_ADDR(ctx), (uint8_t*) &psmsg->timestamp, sizeof(psmsg->timestamp)) ||
+        !HMAC_Update(SSL_ADDR(ctx), pPayload, nPayload) ||
+        !HMAC_Final(SSL_ADDR(ctx), MAC, &nBytes) || nBytes != 32)
         fHmacOk = false;
 
-    HMAC_CTX_cleanup(&ctx);
+    DEF_HMAC_CTX_cleanup(ctx);
 
     if (!fHmacOk)
     {
@@ -3734,3 +3731,4 @@ int SecureMsgDecrypt(bool fTestOnly, std::string& address, SecureMessage& smsg, 
 {
     return SecureMsgDecrypt(fTestOnly, address, &smsg.hash[0], smsg.pPayload, smsg.nPayload, msg);
 }
+

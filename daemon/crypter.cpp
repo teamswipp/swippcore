@@ -9,6 +9,7 @@
 #include <openssl/crypto.h>
 #include <openssl/ec.h>
 #include <openssl/ecdh.h>
+#include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <openssl/aes.h>
 #include <openssl/evp.h>
@@ -21,6 +22,7 @@
 #include "crypter.h"
 #include "script.h"
 #include "scrypt.h"
+#include "opensslcompat.h"
 
 bool CCrypter::SetKeyFromPassphrase(const SecureString& strKeyData, const std::vector<unsigned char>& chSalt,
                                     const unsigned int nRounds, const unsigned int nDerivationMethod)
@@ -81,24 +83,24 @@ bool CCrypter::Encrypt(const CKeyingMaterial& vchPlaintext, std::vector<unsigned
     int nCLen = nLen + AES_BLOCK_SIZE, nFLen = 0;
     vchCiphertext = std::vector<unsigned char> (nCLen);
 
-    EVP_CIPHER_CTX ctx;
+    DEF_EVP_CIPHER_CTX ctx;
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
+    DEF_EVP_CIPHER_CTX_init(ctx);
 
     if (fOk) {
-        fOk = EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, chKey, chIV);
+        fOk = EVP_EncryptInit_ex(SSL_ADDR(ctx), EVP_aes_256_cbc(), NULL, chKey, chIV);
     }
 
     if (fOk) {
-        fOk = EVP_EncryptUpdate(&ctx, &vchCiphertext[0], &nCLen, &vchPlaintext[0], nLen);
+        fOk = EVP_EncryptUpdate(SSL_ADDR(ctx), &vchCiphertext[0], &nCLen, &vchPlaintext[0], nLen);
     }
 
     if (fOk) {
-        fOk = EVP_EncryptFinal_ex(&ctx, (&vchCiphertext[0])+nCLen, &nFLen);
+        fOk = EVP_EncryptFinal_ex(SSL_ADDR(ctx), (&vchCiphertext[0])+nCLen, &nFLen);
     }
 
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_cleanup(SSL_ADDR(ctx));
 
     if (!fOk) {
         return false;
@@ -119,24 +121,24 @@ bool CCrypter::Decrypt(const std::vector<unsigned char>& vchCiphertext, CKeyingM
     int nPLen = nLen, nFLen = 0;
 
     vchPlaintext = CKeyingMaterial(nPLen);
-    EVP_CIPHER_CTX ctx;
+    DEF_EVP_CIPHER_CTX ctx;
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
+    DEF_EVP_CIPHER_CTX_init(ctx);
 
     if (fOk) {
-        fOk = EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, chKey, chIV);
+        fOk = EVP_DecryptInit_ex(SSL_ADDR(ctx), EVP_aes_256_cbc(), NULL, chKey, chIV);
     }
 
     if (fOk) {
-        fOk = EVP_DecryptUpdate(&ctx, &vchPlaintext[0], &nPLen, &vchCiphertext[0], nLen);
+        fOk = EVP_DecryptUpdate(SSL_ADDR(ctx), &vchPlaintext[0], &nPLen, &vchCiphertext[0], nLen);
     }
 
     if (fOk) {
-        fOk = EVP_DecryptFinal_ex(&ctx, (&vchPlaintext[0])+nPLen, &nFLen);
+        fOk = EVP_DecryptFinal_ex(SSL_ADDR(ctx), (&vchPlaintext[0])+nPLen, &nFLen);
     }
 
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_cleanup(SSL_ADDR(ctx));
 
     if (!fOk) {
         return false;
@@ -193,25 +195,25 @@ bool EncryptAES256(const SecureString& sKey, const SecureString& sPlaintext, con
     sCiphertext.resize(nCLen);
 
     // Perform the encryption
-    EVP_CIPHER_CTX ctx;
+    DEF_EVP_CIPHER_CTX ctx;
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
+    DEF_EVP_CIPHER_CTX_init(ctx);
 
     if (fOk) {
-        fOk = EVP_EncryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*) &sKey[0],
+        fOk = EVP_EncryptInit_ex(SSL_ADDR(ctx), EVP_aes_256_cbc(), NULL, (const unsigned char*) &sKey[0],
                                  (const unsigned char*) &sIV[0]);
     }
     if (fOk) {
-        fOk = EVP_EncryptUpdate(&ctx, (unsigned char*) &sCiphertext[0], &nCLen,
+        fOk = EVP_EncryptUpdate(SSL_ADDR(ctx), (unsigned char*) &sCiphertext[0], &nCLen,
                                 (const unsigned char*) &sPlaintext[0], nLen);
     }
 
     if (fOk) {
-        fOk = EVP_EncryptFinal_ex(&ctx, (unsigned char*) (&sCiphertext[0])+nCLen, &nFLen);
+        fOk = EVP_EncryptFinal_ex(SSL_ADDR(ctx), (unsigned char*) (&sCiphertext[0]) + nCLen, &nFLen);
     }
 
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_cleanup(SSL_ADDR(ctx));
 
     if (!fOk) {
         return false;
@@ -235,26 +237,26 @@ bool DecryptAES256(const SecureString& sKey, const std::string& sCiphertext, con
     }
 
     sPlaintext.resize(nPLen);
-    EVP_CIPHER_CTX ctx;
+    DEF_EVP_CIPHER_CTX ctx;
     bool fOk = true;
 
-    EVP_CIPHER_CTX_init(&ctx);
+    DEF_EVP_CIPHER_CTX_init(ctx);
 
     if (fOk) {
-        fOk = EVP_DecryptInit_ex(&ctx, EVP_aes_256_cbc(), NULL, (const unsigned char*) &sKey[0],
+        fOk = EVP_DecryptInit_ex(SSL_ADDR(ctx), EVP_aes_256_cbc(), NULL, (const unsigned char*) &sKey[0],
                                  (const unsigned char*) &sIV[0]);
     }
 
     if (fOk) {
-        fOk = EVP_DecryptUpdate(&ctx, (unsigned char *) &sPlaintext[0], &nPLen,
+        fOk = EVP_DecryptUpdate(SSL_ADDR(ctx), (unsigned char *) &sPlaintext[0], &nPLen,
                                 (const unsigned char *) &sCiphertext[0], nLen);
     }
 
     if (fOk) {
-        fOk = EVP_DecryptFinal_ex(&ctx, (unsigned char *) (&sPlaintext[0])+nPLen, &nFLen);
+        fOk = EVP_DecryptFinal_ex(SSL_ADDR(ctx), (unsigned char *) (&sPlaintext[0])+nPLen, &nFLen);
     }
 
-    EVP_CIPHER_CTX_cleanup(&ctx);
+    EVP_CIPHER_CTX_cleanup(SSL_ADDR(ctx));
 
     if (!fOk) {
         return false;

@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
@@ -955,7 +956,9 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, co
                     // (in -- out)
                     if (stack.size() < 1)
                         return false;
+
                     CBigNum bn = CastToBigNum(stacktop(-1));
+
                     switch (opcode)
                     {
                     case OP_1ADD:       bn += bnOne; break;
@@ -968,6 +971,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, co
                     case OP_0NOTEQUAL:  bn = (bn != bnZero); break;
                     default:            assert(!"invalid opcode"); break;
                     }
+
                     popstack(stack);
                     stack.push_back(bn.getvch());
                 }
@@ -993,11 +997,14 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, co
                 case OP_MAX:
                 {
                     // (x1 x2 -- out)
-                    if (stack.size() < 2)
+                    if (stack.size() < 2) {
                         return false;
+                    }
+
                     CBigNum bn1 = CastToBigNum(stacktop(-2));
                     CBigNum bn2 = CastToBigNum(stacktop(-1));
                     CBigNum bn;
+
                     switch (opcode)
                     {
                     case OP_ADD:
@@ -1009,29 +1016,30 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, co
                         break;
 
                     case OP_MUL:
-                        if (!BN_mul(&bn, &bn1, &bn2, pctx))
-                            return false;
+                        bn = bn1 * bn2;
                         break;
 
                     case OP_DIV:
-                        if (!BN_div(&bn, NULL, &bn1, &bn2, pctx))
-                            return false;
+                        bn = bn1 / bn2;
                         break;
 
                     case OP_MOD:
-                        if (!BN_mod(&bn, &bn1, &bn2, pctx))
+                        // Keep it like this, as its using BN_mod() instead of BN_nnmod()
+                        if (!BN_mod(bn.getBN(), bn1.getBNConst(), bn2.getBNConst(), pctx))
                             return false;
                         break;
 
                     case OP_LSHIFT:
                         if (bn2 < bnZero || bn2 > CBigNum(2048))
                             return false;
+
                         bn = bn1 << bn2.getulong();
                         break;
 
                     case OP_RSHIFT:
                         if (bn2 < bnZero || bn2 > CBigNum(2048))
                             return false;
+
                         bn = bn1 >> bn2.getulong();
                         break;
 
@@ -1048,6 +1056,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, co
                     case OP_MAX:                 bn = (bn1 > bn2 ? bn1 : bn2); break;
                     default:                     assert(!"invalid opcode"); break;
                     }
+
                     popstack(stack);
                     popstack(stack);
                     stack.push_back(bn.getvch());
@@ -1067,17 +1076,18 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, co
                     // (x min max -- out)
                     if (stack.size() < 3)
                         return false;
+
                     CBigNum bn1 = CastToBigNum(stacktop(-3));
                     CBigNum bn2 = CastToBigNum(stacktop(-2));
                     CBigNum bn3 = CastToBigNum(stacktop(-1));
                     bool fValue = (bn2 <= bn1 && bn1 < bn3);
+
                     popstack(stack);
                     popstack(stack);
                     popstack(stack);
                     stack.push_back(fValue ? vchTrue : vchFalse);
                 }
                 break;
-
 
                 //
                 // Crypto
