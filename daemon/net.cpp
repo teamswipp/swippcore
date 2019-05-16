@@ -2107,7 +2107,7 @@ static std::list<ComparableVersion> parse_releases(std::string result)
 
 std::list<ComparableVersion> GetAllReleases()
 {
-    std::string releaseFeed;
+    static std::string releaseFeed;
 
     Downloader downloader(SWIPPCORE_RELEASES_ATOM_LOCATION, releaseFeed);
     downloader.fetch();
