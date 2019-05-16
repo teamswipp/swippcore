@@ -926,16 +926,15 @@ int SecureMsgReadIni()
         return 1;
     }
 
-    char cLine[512];
+    char cLine[512] = { '\0' };
     char *pName, *pValue;
-    char cAddress[64];
+    char cAddress[64 + 1] = { '\0' };
     int addrRecv, addrRecvAnon;
 
     while (fgets(cLine, 512, fp))
     {
         cLine[strcspn(cLine, "\n")] = '\0';
         cLine[strcspn(cLine, "\r")] = '\0';
-        cLine[511] = '\0';
 
         // Check that line contains a name value pair and is not a comment, or section header
         if (cLine[0] == '#' || cLine[0] == '[' || strcspn(cLine, "=") < 1)
