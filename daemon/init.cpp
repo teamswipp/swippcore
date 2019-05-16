@@ -79,6 +79,14 @@ bool ShutdownRequested()
     return fRequestShutdown;
 }
 
+static void FreeCollections()
+{
+    /* The values of mapBlockIndex were allocated with 'new', so we have to dispose them */
+    for(auto it = mapBlockIndex.begin(); it != mapBlockIndex.end(); it++) {
+        delete it->second;
+    }
+}
+
 void Shutdown()
 {
     LogPrintf("Shutdown : In progress...\n");
@@ -124,6 +132,7 @@ void Shutdown()
     pwalletMain = NULL;
 #endif
 
+    FreeCollections();
     LogPrintf("Shutdown : done\n");
 }
 
