@@ -5,6 +5,7 @@
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
 #include <chrono>
+#include <memory>
 #include <regex>
 
 #ifdef WIN32
@@ -2109,7 +2110,7 @@ std::list<ComparableVersion> GetAllReleases()
 {
     static std::string releaseFeed;
 
-    Downloader downloader(SWIPPCORE_RELEASES_ATOM_LOCATION, releaseFeed);
+    Downloader downloader(SWIPPCORE_RELEASES_ATOM_LOCATION, std::addressof(releaseFeed));
     downloader.fetch();
 
     return parse_releases(releaseFeed);

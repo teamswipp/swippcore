@@ -49,7 +49,7 @@ Downloader::Downloader(std::string url, std::function<void(double percentage)> p
     }
 }
 
-Downloader::Downloader(std::string url, std::string& destination,
+Downloader::Downloader(std::string url, std::string *destination,
                        std::function<void(double percentage)> progress) : Downloader(url, progress)
 {
     if(curl) {
