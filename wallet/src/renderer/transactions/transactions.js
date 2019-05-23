@@ -15,18 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 import React from "react";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExchangeAlt } from "@fortawesome/free-solid-svg-icons";
+import NavEntry from "../naventry";
 
 library.add(faExchangeAlt);
 
 export default class Transactions extends React.Component {
+	getContent() {
+		return(
+			<div>
+			</div>
+		);
+	}
+
 	render() {
 		return(
-			<li onClick={this.props.onClick}><FontAwesomeIcon size="lg" icon="exchange-alt"/>Transactions</li>
+			<NavEntry><FontAwesomeIcon size="lg" icon="exchange-alt"/>Transactions</NavEntry>
 		);
 	}
 }

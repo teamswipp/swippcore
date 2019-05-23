@@ -17,22 +17,35 @@
  */
 
 import React from "react";
-import ReactDOM from "react-dom";
-import { Router } from "common/router";
-import ControlBar from "./controlbar";
-import NavBar from "./navbar";
-import Splash from "./splash";
-import "./index.css";
+import { ipcRenderer, remote } from "electron";
+import "./naventry.css"
 
-const routes = {
-	main: [
-		<ControlBar key={1} headerText="Swipp" fullControls={true} />,
-		<div className="nav" key={2}><NavBar /><div /></div>
-	],
-	splash: [
-		<ControlBar key={1} className="nobg" fullControls={false} />, <Splash key={2} />
-	]
-};
+export default class NavEntry extends React.Component {
+	constructor(props) {
+		super(props);
 
-ReactDOM.render (<Router routes={routes} />, document.getElementById ("app"));
+		this.state = {
+			active: this.props.children[0]._owner.pendingProps.active
+		};
+
+		ipcRenderer.on("navigate", (event, source) => {
+			if (source != this.props.children[1]) {
+				this.setState({ active: false });
+			}
+		});
+	}
+
+	render() {
+		var onClick = (e) => {
+			ipcRenderer.sendTo(remote.getCurrentWebContents().id, "navigate", this.props.children[1]);
+			this.setState({ active: true });
+		}
+
+		return(
+			<li onClick={onClick} className={this.state.active ? "active " : "inactive " + this.props.className}>
+				{this.props.children}
+			</li>
+		);
+	}
+}
 

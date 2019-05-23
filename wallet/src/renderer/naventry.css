@@ -16,23 +16,32 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import React from "react";
-import ReactDOM from "react-dom";
-import { Router } from "common/router";
-import ControlBar from "./controlbar";
-import NavBar from "./navbar";
-import Splash from "./splash";
-import "./index.css";
+nav > ul > li {
+	cursor: pointer;
+	margin: 0px 0px 30px 0px;
+	padding: 12px 16px 12px 16px;
+	border-radius: 6px;
+	border: 2px transparent solid;
+	transition: background-color .2s ease-in-out;
+	transition: border-color .2s ease-in-out;
+	pointer-events: auto;
+}
 
-const routes = {
-	main: [
-		<ControlBar key={1} headerText="Swipp" fullControls={true} />,
-		<div className="nav" key={2}><NavBar /><div /></div>
-	],
-	splash: [
-		<ControlBar key={1} className="nobg" fullControls={false} />, <Splash key={2} />
-	]
-};
+nav > ul > li:hover {
+	border-color: #255;
+}
 
-ReactDOM.render (<Router routes={routes} />, document.getElementById ("app"));
+nav > ul > li.active {
+	border-color: #255;
+	background-color: #000;
+	pointer-events: none;
+}
+
+nav > ul > li:last-child {
+	margin-top: auto;
+}
+
+nav > ul > li > svg {
+	padding-right: 5px;
+}
 

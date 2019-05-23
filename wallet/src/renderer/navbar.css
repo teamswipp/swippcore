@@ -21,8 +21,12 @@ div.nav {
 	flex-grow: 1;
 }
 
-div.nav > nav {
+div.nav > nav, div.nav > nav > ul {
 	display: flex;
+}
+
+div.nav > nav > ul {
+	flex-direction: column;
 }
 
 nav > ul {
@@ -31,27 +35,9 @@ nav > ul {
 	color: #3dc;
 	list-style-type: none;
 	padding-top: 30px;
-	padding-inline-start: 50px;
-	padding-inline-end: 50px;
+	padding-inline-start: 35px;
+	padding-inline-end: 35px;
 	font-size: 12pt;
 	flex-grow: 1;
-}
-
-nav > ul > li {
-	cursor: pointer;
-	margin: 0px 0px 40px 0px;
-}
-
-nav > ul > li:last-child {
-	margin-bottom: 30px;
-}
-
-nav > ul > li.bottom {
-	position: absolute;
-	bottom: 0;
-}
-
-nav > ul > li > svg {
-	padding-right: 5px;
 }
 

@@ -25,34 +25,14 @@ import Settings from "./settings/settings.js";
 import "./navbar.css"
 
 export default class NavBar extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {};
-
-		if (this.props.active == "undefined") {
-			this.state.active = false;
-		} else {
-			this.state.active = this.props.active;
-		}
-
-		var onClick = (e) => {
-			/*if (this.state.active == true)
-				console.log(e);*/
-		}
-
-		this.entries = [
-			<MyWallet key="mywallet" active={true} onClick={onClick} />,
-			<Addresses key="addresses" onClick={onClick} />,
-			<Transactions key="transactions" onClick={onClick} />,
-			<Settings key={"settings"} className="bottom" onClick={onClick} />
-		];
-	}
-
 	render() {
 		return(
 			<nav>
 				<ul>
-					{this.entries}
+					<MyWallet key="mywallet" active={true} />
+					<Addresses key="addresses" />
+					<Transactions key="transactions" />
+					<Settings key="settings" />
 				</ul>
 			</nav>
 		);

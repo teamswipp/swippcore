@@ -15,19 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
- 
+
 import React from "react";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWallet } from "@fortawesome/free-solid-svg-icons";
+import NavEntry from "../naventry";
 
 library.add(faWallet);
 
 export default class MyWallet extends React.Component {
-	render() {
+	getContent() {
 		return(
-			<li onClick={this.props.onClick}><FontAwesomeIcon size="lg" icon="wallet"/>My Wallet</li>
+			<div>
+				<script src="https://widgets.coingecko.com/coingecko-coin-ticker-widget.js"></script>
+				<coingecko-coin-ticker-widget  coin-id="swipp" currency="usd" locale="en"></coingecko-coin-ticker-widget>
+			</div>
 		);
+	}
+
+	render() {
+		return(<NavEntry><FontAwesomeIcon size="lg" icon="wallet"/>My Wallet</NavEntry>);
 	}
 }
 
