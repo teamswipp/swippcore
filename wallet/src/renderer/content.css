@@ -25,13 +25,13 @@ div.nav > div {
 div.nav > div > div {
 	width: -webkit-fill-available;
 	position: absolute;
-	/*display: none;*/
+	visibility: hidden;
 	opacity: 0.0;
-	transition: opacity .4s ease-in-out;
+	transition: visibility .4s, opacity .4s ease-in-out;
 }
 
 div.nav > div > div.active {
-	/*display: block;*/
+	visibility: visible;
 	opacity: 1.0;
 }
 
