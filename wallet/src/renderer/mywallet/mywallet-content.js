@@ -17,36 +17,71 @@
  */
 
 import React from "react";
+import Select from "react-select";
+import Store from "electron-store";
 import { Helmet } from "react-helmet";
-import RPCClient from "common/rpc-client.js"
+import CoinGecko from "common/coingecko.js";
+import RPCClient from "common/rpc-client.js";
 import Content from "../content";
 import "./mywallet-content.css";
 
 export default class MyWalletContent extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { balance: 0 };
+		var coinGecko = new CoinGecko();
 		var rpcClient = new RPCClient();
 
-		rpcClient.getbalance().then((response) => {
-		});
+		this.store = new Store();
+
+		this.state = {
+			balance: 0,
+			currencies: [],
+			selectedCurrency: []
+		};
 
 		Promise.all([
-			rpcClient.getbalance()
+			rpcClient.getbalance(),
+			coinGecko.getsupported(),
 		]).then((response) => {
-			this.setState({ balance: response[0] });
+			coinGecko.getprice("swipp", response[1]).then((rates) => {
+				this.state.selectedCurrency = this.store.get("currency", "usd");
+
+				var currencies = Object.entries(rates.swipp).map((currency) => {
+					var v = { value: currency[0], label: currency[0], rate: currency[1] };
+
+					if (currency[0] == this.state.selectedCurrency) {
+						this.setState({ selectedCurrency: v });
+					}
+
+					return v;
+				});
+
+				this.setState({ balance: response[0], currencies: currencies });
+			});
 		});
 	}
 
 	render() {
+		var onChange = (e) => {
+			this.setState({ selectedCurrency: e });
+			this.store.set("currency", e.value);
+		}
+
 		return(
 			<Content id="mywallet">
 				<Helmet>
 					<script src="https://widgets.coingecko.com/coingecko-coin-price-marquee-widget.js" />
 				</Helmet>
-				<coingecko-coin-price-marquee-widget coin-ids="swipp,bitcoin,litecoin,dogecoin" currency="usd" background-color="#000" locale="en" />
-				<div className="balance content">
-					<div>{this.state.balance} SWIPP</div>
+				<coingecko-coin-price-marquee-widget coin-ids="swipp,bitcoin,litecoin,dogecoin"
+				                                     currency={this.state.selectedCurrency.value}
+				                                     background-color="#000" locale="en" />
+				<div>
+					<h1>{this.state.balance} SWIPP</h1>
+					<h2>
+						Valued at {this.state.balance * this.state.selectedCurrency.rate}
+						<Select className="select" classNamePrefix="select" options={this.state.currencies}
+						        value={this.state.selectedCurrency} onChange={onChange} />
+					</h2>
 				</div>
 			</Content>
 		);

@@ -16,11 +16,50 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-div.balance {
+div#mywallet > div {
 	border-top: 4px solid #0a0a0a;
 	text-align: center;
+	padding-top: 50px !important;
+}
+
+div#mywallet > div h1 {
 	font-size: 28pt;
 	font-weight: 600;
-	padding-top: 50px !important;
+	padding-bottom: 10px;
+}
+
+div#mywallet > div h2 {
+	font-size: 14pt;
+	font-weight: 400;
+}
+
+div#mywallet > div div.select {
+	display: inline-block;
+	width: 5em;
+	margin-left: 12px;
+	text-transform: uppercase;
+}
+
+div#mywallet div.select > div.select__control {
+	border-radius: 6px;
+	background-color: #000;
+	border: 2px #255 solid;
+	color: white;
+}
+
+div#mywallet .select__value-container--has-value, div#mywallet .select__value-container {
+	font-size: 12pt;
+}
+
+div#mywallet > div div.select span.select__indicator-separator {
+	display: none;
+}
+
+div#mywallet .select__dropdown-indicator > svg {
+	margin-right: 0px;
+}
+
+.select__menu {
+	background-color: red;
 }
 
