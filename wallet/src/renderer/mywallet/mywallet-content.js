@@ -18,7 +18,7 @@
 
 import React from "react";
 import { Helmet } from "react-helmet";
-//import RPCClient from "common/rpc-client.js"
+import RPCClient from "common/rpc-client.js"
 import Content from "../content";
 import "./mywallet-content.css";
 
@@ -31,11 +31,11 @@ export default class MyWalletContent extends React.Component {
 		rpcClient.getbalance().then((response) => {
 		});
 
-		/*Promise.all([
+		Promise.all([
 			rpcClient.getbalance()
 		]).then((response) => {
 			this.setState({ balance: response[0] });
-		});*/
+		});
 	}
 
 	render() {

@@ -17,13 +17,17 @@
  */
 
 import { Client } from "node-json-rpc2";
+import { remote } from "electron";
 
 export default class RPCClient {
 	constructor() {
+		var credentials = global.credentials == undefined ? remote.getGlobal("credentials") : global.credentials;
+		var rpcPort = global.rpcPort == undefined ? remote.getGlobal("rpcPort") : global.rpcPort;
+
 		this.client = new Client({
-			user: global.credentials.user,
-			password: global.credentials.password,
-			port: global.rpcPort /* Should have been initialized by daemon */
+			user: credentials.user,
+			password: credentials.password,
+			port: rpcPort /* Should have been initialized by daemon */
 		});
 
 		this.send_command = (command, args = []) => {
@@ -37,6 +41,10 @@ export default class RPCClient {
 				});
 			});
 		}
+	}
+
+	async getbalance() {
+		return await this.send_command("getbalance");
 	}
 
 	async getblockcount() {
