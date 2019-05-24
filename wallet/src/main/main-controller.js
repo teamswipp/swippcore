@@ -16,10 +16,8 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { BrowserWindow } from "electron";
-import { remote } from "electron";
+import { BrowserWindow, shell } from "electron";
 import electron from "electron";
-import RPCClient from "common/rpc-client.js"
 
 export default class MainController {
 	constructor() {
@@ -57,6 +55,11 @@ export default class MainController {
 
 		window.webContents.on("did-finish-load", () => {
 			window.show();
+		});
+
+		window.webContents.on('new-window', (event, url) => {
+			event.preventDefault();
+			shell.openExternal(url);
 		});
 
 		return window;
