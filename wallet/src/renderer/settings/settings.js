@@ -25,13 +25,6 @@ import NavEntry from "../naventry";
 library.add(faCogs);
 
 export default class Settings extends React.Component {
-	getContent() {
-		return(
-			<div>
-			</div>
-		);
-	}
-
 	render() {
 		return(
 			<NavEntry className={this.props.className}>

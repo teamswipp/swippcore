@@ -22,12 +22,24 @@ import { Router } from "common/router";
 import ControlBar from "./controlbar";
 import NavBar from "./navbar";
 import Splash from "./splash";
+import MyWalletContent from "./mywallet/mywallet-content.js";
+import TransactionsContent from "./transactions/transactions-content.js";
+import AddressesContent from "./addresses/addresses-content.js";
+import SettingsContent from "./settings/settings-content.js";
 import "./index.css";
 
 const routes = {
 	main: [
 		<ControlBar key={1} headerText="Swipp" fullControls={true} />,
-		<div className="nav" key={2}><NavBar /><div /></div>
+		<div className="nav" key={2}>
+			<NavBar />
+			<div>
+				<MyWalletContent key="mywallet-content" active={true} />
+				<AddressesContent key="addressbook-content" />
+				<TransactionsContent key="transactions-content" />
+				<SettingsContent key="settings-content" />
+			</div>
+		</div>
 	],
 	splash: [
 		<ControlBar key={1} className="nobg" fullControls={false} />, <Splash key={2} />

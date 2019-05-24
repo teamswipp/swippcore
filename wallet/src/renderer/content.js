@@ -16,32 +16,30 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-nav {
-	min-width: fit-content;
-}
+import React from "react";
+import { ipcRenderer, remote } from "electron";
+import "./content.css";
 
-div.nav {
-	display: flex;
-	flex-grow: 1;
-}
+export default class Content extends React.Component {
+	constructor(props) {
+		super(props);
+		console.log(this.props);
 
-div.nav > nav, div.nav > nav > ul {
-	display: flex;
-}
+		this.state = {
+			active: this.props.children[0]._owner.pendingProps.active
+		};
 
-div.nav > nav > ul {
-	flex-direction: column;
-}
+		ipcRenderer.on("navigate", (event, source) => {
+			this.setState({ active: source.toLowerCase().replace(" ", "") == this.props.id });
+		});
+	}
 
-nav > ul {
-	margin: 0;
-	background-color: #0a0a0a;
-	color: #3dc;
-	list-style-type: none;
-	padding-top: 30px;
-	padding-inline-start: 35px;
-	padding-inline-end: 35px;
-	font-size: 12pt;
-	flex-grow: 1;
+	render() {
+		return(
+			<div id={this.props.id} className={this.state.active ? "active " : "inactive " + this.props.className}>
+				{this.props.children}
+			</div>
+		);
+	}
 }
 

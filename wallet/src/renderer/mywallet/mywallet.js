@@ -25,17 +25,10 @@ import NavEntry from "../naventry";
 library.add(faWallet);
 
 export default class MyWallet extends React.Component {
-	getContent() {
-		return(
-			<div>
-				<script src="https://widgets.coingecko.com/coingecko-coin-ticker-widget.js"></script>
-				<coingecko-coin-ticker-widget  coin-id="swipp" currency="usd" locale="en"></coingecko-coin-ticker-widget>
-			</div>
-		);
-	}
-
 	render() {
-		return(<NavEntry><FontAwesomeIcon size="lg" icon="wallet"/>My Wallet</NavEntry>);
+		return(
+			<NavEntry><FontAwesomeIcon size="lg" icon="wallet"/>My Wallet</NavEntry>
+		);
 	}
 }
 

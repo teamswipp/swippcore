@@ -25,13 +25,6 @@ import NavEntry from "../naventry";
 library.add(faAddressBook);
 
 export default class Addresses extends React.Component {
-	getContent() {
-		return(
-			<div>
-			</div>
-		);
-	}
-
 	render() {
 		return(
 			<NavEntry><FontAwesomeIcon size="lg" icon="address-book"/>Address Book</NavEntry>

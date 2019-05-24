@@ -25,13 +25,6 @@ import NavEntry from "../naventry";
 library.add(faExchangeAlt);
 
 export default class Transactions extends React.Component {
-	getContent() {
-		return(
-			<div>
-			</div>
-		);
-	}
-
 	render() {
 		return(
 			<NavEntry><FontAwesomeIcon size="lg" icon="exchange-alt"/>Transactions</NavEntry>

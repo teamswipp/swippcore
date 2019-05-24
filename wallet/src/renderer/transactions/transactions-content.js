@@ -16,32 +16,16 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-nav {
-	min-width: fit-content;
-}
+import React from "react";
+import Content from "../content";
 
-div.nav {
-	display: flex;
-	flex-grow: 1;
-}
-
-div.nav > nav, div.nav > nav > ul {
-	display: flex;
-}
-
-div.nav > nav > ul {
-	flex-direction: column;
-}
-
-nav > ul {
-	margin: 0;
-	background-color: #0a0a0a;
-	color: #3dc;
-	list-style-type: none;
-	padding-top: 30px;
-	padding-inline-start: 35px;
-	padding-inline-end: 35px;
-	font-size: 12pt;
-	flex-grow: 1;
+export default class TransactionsContent extends React.Component {
+	render() {
+		return(
+			<Content id="transactions">
+				<div>Trans</div><div></div>
+			</Content>
+		);
+	}
 }
 

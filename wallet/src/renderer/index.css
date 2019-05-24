@@ -34,3 +34,12 @@ body {
 	user-select: none;
 }
 
+div.nav > div {
+	width: -webkit-fill-available;
+	overflow-x: hidden;
+}
+
+div.nav div.content {
+	padding: 25px 40px;
+}
+
