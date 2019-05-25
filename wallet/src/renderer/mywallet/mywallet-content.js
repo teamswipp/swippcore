@@ -78,7 +78,7 @@ export default class MyWalletContent extends React.Component {
 				<div>
 					<h1>{this.state.balance} SWIPP</h1>
 					<h2>
-						Valued at {this.state.balance * this.state.selectedCurrency.rate}
+						<span>Valued at {this.state.balance * this.state.selectedCurrency.rate}</span>
 						<Select className="select" classNamePrefix="select" options={this.state.currencies}
 						        value={this.state.selectedCurrency} onChange={onChange} />
 					</h2>
