@@ -17,28 +17,14 @@
  */
 
 import React from "react";
-import { ipcRenderer } from "electron";
-import MyWallet from "./mywallet/mywallet.js";
-import Transactions from "./transactions/transactions.js";
-import Addresses from "./addresses/addresses.js";
-import Settings from "./settings/settings.js";
-import CLI from "./cli/cli.js";
-import "./navbar.css"
+import Content from "../content";
 
-export default class NavBar extends React.Component {
+export default class CLIContent extends React.Component {
 	render() {
 		return(
-			<nav>
-				<ul>
-					<MyWallet key="mywallet" active={true} />
-					<Addresses key="addressbook" />
-					<Transactions key="transactions" />
-				</ul>
-				<ul>
-					<Settings key="settings" />
-					<CLI key="cli" />
-				</ul>
-			</nav>
+			<Content id="cli">
+				<div>CLI</div><div></div>
+			</Content>
 		);
 	}
 }

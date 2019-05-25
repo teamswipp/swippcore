@@ -26,6 +26,7 @@ import MyWalletContent from "./mywallet/mywallet-content.js";
 import TransactionsContent from "./transactions/transactions-content.js";
 import AddressesContent from "./addresses/addresses-content.js";
 import SettingsContent from "./settings/settings-content.js";
+import CLIContent from "./cli/cli-content.js";
 import "./index.css";
 
 const routes = {
@@ -38,6 +39,7 @@ const routes = {
 				<AddressesContent key="addressbook-content" />
 				<TransactionsContent key="transactions-content" />
 				<SettingsContent key="settings-content" />
+				<CLIContent key="cli-content" />
 			</div>
 		</div>
 	],

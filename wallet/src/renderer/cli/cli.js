@@ -17,28 +17,19 @@
  */
 
 import React from "react";
-import { ipcRenderer } from "electron";
-import MyWallet from "./mywallet/mywallet.js";
-import Transactions from "./transactions/transactions.js";
-import Addresses from "./addresses/addresses.js";
-import Settings from "./settings/settings.js";
-import CLI from "./cli/cli.js";
-import "./navbar.css"
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTerminal } from "@fortawesome/free-solid-svg-icons";
+import NavEntry from "../naventry";
 
-export default class NavBar extends React.Component {
+library.add(faTerminal);
+
+export default class CLI extends React.Component {
 	render() {
 		return(
-			<nav>
-				<ul>
-					<MyWallet key="mywallet" active={true} />
-					<Addresses key="addressbook" />
-					<Transactions key="transactions" />
-				</ul>
-				<ul>
-					<Settings key="settings" />
-					<CLI key="cli" />
-				</ul>
-			</nav>
+			<NavEntry className={this.props.className}>
+				<FontAwesomeIcon size="lg" icon="terminal"/>
+			</NavEntry>
 		);
 	}
 }
