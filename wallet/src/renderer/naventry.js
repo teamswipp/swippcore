@@ -23,13 +23,14 @@ import "./naventry.css"
 export default class NavEntry extends React.Component {
 	constructor(props) {
 		super(props);
+		this.element = this.props.children[0] == undefined ? this.props.children : this.props.children[0];
 
 		this.state = {
-			active: this.props.children[0]._owner.pendingProps.active
-		};
+			active: this.element._owner.pendingProps.active
+		}
 
 		ipcRenderer.on("navigate", (event, source) => {
-			if (source != this.props.children[1]) {
+			if (source != this.element._owner.key) {
 				this.setState({ active: false });
 			}
 		});
@@ -37,7 +38,7 @@ export default class NavEntry extends React.Component {
 
 	render() {
 		var onClick = (e) => {
-			ipcRenderer.sendTo(remote.getCurrentWebContents().id, "navigate", this.props.children[1]);
+			ipcRenderer.sendTo(remote.getCurrentWebContents().id, "navigate", this.element._owner.key);
 			this.setState({ active: true });
 		}
 

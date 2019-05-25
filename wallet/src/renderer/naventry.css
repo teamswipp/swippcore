@@ -16,7 +16,7 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-nav > ul > li {
+nav > ul > li, nav > ul > div > li {
 	cursor: pointer;
 	margin: 0px 0px 30px 0px;
 	padding: 12px 16px 12px 16px;
@@ -37,11 +37,11 @@ nav > ul > li.active {
 	pointer-events: none;
 }
 
-nav > ul > li:last-child {
+nav > ul > div {
 	margin-top: auto;
 }
 
-nav > ul > li > svg {
-	padding-right: 5px;
+nav > ul:first-child > li > svg {
+	padding-right: 15px;
 }
 

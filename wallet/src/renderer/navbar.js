@@ -30,8 +30,10 @@ export default class NavBar extends React.Component {
 			<nav>
 				<ul>
 					<MyWallet key="mywallet" active={true} />
-					<Addresses key="addresses" />
+					<Addresses key="addressbook" />
 					<Transactions key="transactions" />
+				</ul>
+				<ul>
 					<Settings key="settings" />
 				</ul>
 			</nav>

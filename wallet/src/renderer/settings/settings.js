@@ -28,7 +28,7 @@ export default class Settings extends React.Component {
 	render() {
 		return(
 			<NavEntry className={this.props.className}>
-				<FontAwesomeIcon size="lg" icon="cogs"/>Settings
+				<FontAwesomeIcon size="lg" icon="cogs"/>
 			</NavEntry>
 		);
 	}
