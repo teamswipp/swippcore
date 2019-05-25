@@ -23,7 +23,6 @@ import "./content.css";
 export default class Content extends React.Component {
 	constructor(props) {
 		super(props);
-		console.log(this.props);
 
 		this.state = {
 			active: this.props.children[0]._owner.pendingProps.active
