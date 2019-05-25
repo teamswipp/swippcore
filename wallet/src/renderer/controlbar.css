@@ -56,6 +56,10 @@ div.controlbar svg:hover {
 
 div.controlbar svg:active {
 	transform: scale(1.15);
+	color: #fff;
+}
+
+div.controlbar svg.close:active {
 	color: #f77;
 }
 

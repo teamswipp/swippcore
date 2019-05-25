@@ -17,7 +17,7 @@
  */
 
 import React from "react";
-import { ipcRenderer } from "electron";
+import { ipcRenderer, remote } from "electron";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner, faWindowMinimize, faWindowMaximize, faWindowClose } from "@fortawesome/free-solid-svg-icons";
@@ -38,15 +38,21 @@ export default class ControlBar extends React.Component {
 
 	render() {
 		var onMinimize = () => {
-			window.minimize();
+			remote.getCurrentWindow().minimize();
 		}
 
 		var onMaximize = () => {
-			window.maximize();
+			var w = remote.getCurrentWindow();
+
+			if (w.isMaximized()) {
+				w.unmaximize();
+			} else {
+				w.maximize();
+			}
 		}
 
 		var onClose = () => {
-			window.close();
+			remote.getCurrentWindow().close();
 		}
 
 		return(
