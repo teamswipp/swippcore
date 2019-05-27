@@ -1,0 +1,62 @@
+/*
+ * This file is part of The Swipp Wallet
+ * Copyright (C) 2019 The Swipp developers <info@swippcoin.com>
+ *
+ * The Swipp Wallet is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * The Swipp Wallet is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+div#cli {
+	height: -webkit-fill-available;
+	display: flex;
+	flex-direction: column;
+}
+
+div.nav > div > div > div.terminalContainer {
+	height: -webkit-fill-available;
+	width: -webkit-fill-available;
+	flex-grow: 1;
+	padding: 15px 15px;
+	font-size: 12pt;
+	overflow: auto;
+	line-height: 1.3em;
+}
+
+div.nav > div > div > div.terminalContainer,
+div.nav > div > div > div.terminalContainer input,
+div#cli ::-webkit-scrollbar, div#cli ::-webkit-scrollbar-corner {
+	background-color: #0e1923;
+}
+
+div.nav > div > div > div.terminalContainer > div > div {
+	padding-left: 10px;
+	padding-top: 2px;
+}
+
+div.terminalContainer > div.terminalInput {
+	padding-left: 10px;
+	padding-right: 10px;
+	background-color: #0e2933;
+	padding-bottom: 0;
+	line-height: 2em;
+	border-radius: 4px;
+}
+
+div.terminalContainer > div.terminalInput > form > input {
+	padding-left: 10px;
+	background-color: #0e2933 !important;
+}
+
+div.terminalContainer > div.terminalInput > form > span {
+	padding-top: 2px;
+}

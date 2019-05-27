@@ -17,15 +17,37 @@
  */
 
 import React from "react";
-import ReactTerminal from "react-terminal-component";
-import { ReactOutputRenderers } from "react-terminal-component";
+import { ReactOutputRenderer, ReactTerminal, ReactThemes } from "react-terminal-component";
+import { CommandMapping, defaultCommandMapping, EmulatorState, OutputFactory} from "javascript-terminal";
 import Content from "../content";
+import "./cli-content.css";
 
 export default class CLIContent extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
 	render() {
+		//TODO: We need to handle this somehow
+		const customState = EmulatorState.create({
+			"commandMapping": CommandMapping.create({
+				/*...defaultCommandMapping,*/
+				"*": {
+					"function": (state, opts) => {
+						const input = opts.join(" ");
+
+						return {
+							output: OutputFactory.makeTextOutput(input)
+						};
+					},
+					'optDef': {}
+				}
+			})
+		});
+
 		return(
 			<Content id="cli">
-				<div>CLI</div>
+				<ReactTerminal emulatorState={customState} theme={ReactThemes.sea} promptSymbol={"swippd > "} />
 			</Content>
 		);
 	}

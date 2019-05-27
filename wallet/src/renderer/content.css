@@ -48,3 +48,93 @@ div.nav > div > div.active {
 div.nav > div > div > div {
 	padding: 25px 40px;
 }
+
+div.select > div.select__control {
+	border-radius: 6px;
+	background-color: #000;
+	border: 2px #244 solid;
+	transition: border-color .2s ease-in-out;
+	cursor: pointer;
+}
+
+div.select > div.select__control:hover {
+	border: 2px #277 solid;
+	transition: border-color .2s ease-in-out;
+}
+
+div.select > div.select__control--is_focused {
+	background-color: red !important;
+	color: white;
+}
+
+div.select__value-container--has-value, div#mywallet .select__value-container {
+	font-size: 12pt;
+}
+
+div.select__control--is-focused {
+	box-shadow: none;
+}
+
+div.select span.select__indicator-separator {
+	display: none;
+}
+
+div.select .select__dropdown-indicator > svg {
+	margin-right: 0px;
+}
+
+div.select .select__single-value {
+	color: #3dc;
+}
+
+div.select .select__menu {
+	background-color: #070707;
+}
+
+@keyframes show-menu {
+	from {
+		opacity: 0;
+	}
+}
+
+div.select .select__menu {
+	animation: show-menu .2s ease-in-out;
+}
+
+div.select .select__menu-list > div {
+	font-size: 12pt;
+	padding: 6px 5px 5px 5px;
+	border-radius: 5px;
+	border: 3px solid #070707;
+	cursor: pointer;
+}
+
+div.select .select__option--is-focused {
+	background-color: #171717;
+}
+
+div.select .select__option--is-selected {
+	background-color: #333;
+}
+
+div.select .select__menu-list > div:hover {
+	background-color: #222;
+	border: 3px solid #070707;
+}
+
+::-webkit-scrollbar {
+	border-radius: 2px;
+	background-color: #171717;
+	width: 6px;
+	height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+	border-radius: 2px;
+	background-color: #2cb;
+}
+
+::-webkit-scrollbar-corner {
+	background-color: #171717;
+}
+

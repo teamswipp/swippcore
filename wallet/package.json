@@ -16,6 +16,7 @@
     "@fortawesome/react-fontawesome": "^0.1.4",
     "electron-store": "^3.2.0",
     "empty-promise": "^1.2.0",
+    "javascript-terminal": "^1.0.2",
     "jquery": "^3.3.1",
     "less": "^3.8.1",
     "less-loader": "^4.1.0",
@@ -25,6 +26,7 @@
     "react-dom": "^16.8.6",
     "react-helmet": "^5.2.1",
     "react-select": "^2.4.3",
+    "react-terminal-component": "^1.4.0",
     "roboto-fontface": "^0.10.0",
     "source-map-support": "^0.5.10",
     "tcp-port-used": "^1.0.1"

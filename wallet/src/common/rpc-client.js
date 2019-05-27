@@ -55,6 +55,10 @@ export default class RPCClient {
 		return await this.send_command("getinfo");
 	}
 
+	async help() {
+		return await this.send_command("help");
+	}
+
 	async stop() {
 		return await this.send_command("stop");
 	}

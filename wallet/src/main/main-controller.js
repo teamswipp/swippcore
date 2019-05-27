@@ -16,7 +16,7 @@
  * along with The Swipp Wallet. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { BrowserWindow, shell } from "electron";
+import { BrowserWindow, globalShortcut, shell } from "electron";
 import electron from "electron";
 
 export default class MainController {
@@ -38,6 +38,11 @@ export default class MainController {
 		if (global.isDevelopment) {
 			window.webContents.openDevTools({ mode : "detach" });
 			window.loadURL(`http://localhost:${process.env.ELECTRON_WEBPACK_WDS_PORT}?route=main`);
+
+			globalShortcut.register('f5', function() {
+				window.reload();
+			});
+
 		} else {
 			window.loadURL(formatUrl({
 				pathname: path.join(__dirname, "main-window.html?route=main"),
