@@ -17,13 +17,15 @@
  */
 
 import React from "react";
+import ReactTerminal from "react-terminal-component";
+import { ReactOutputRenderers } from "react-terminal-component";
 import Content from "../content";
 
 export default class CLIContent extends React.Component {
 	render() {
 		return(
 			<Content id="cli">
-				<div>CLI</div><div></div>
+				<div>CLI</div>
 			</Content>
 		);
 	}

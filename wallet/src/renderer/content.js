@@ -23,9 +23,10 @@ import "./content.css";
 export default class Content extends React.Component {
 	constructor(props) {
 		super(props);
+		var element = this.props.children[0] == undefined ? this.props.children : this.props.children[0];
 
 		this.state = {
-			active: this.props.children[0]._owner.pendingProps.active
+			active: element._owner.pendingProps.active
 		};
 
 		ipcRenderer.on("navigate", (event, source) => {
