@@ -28,24 +28,25 @@ import "./mywallet-content.css";
 export default class MyWalletContent extends React.Component {
 	constructor(props) {
 		super(props);
-		var coinGecko = new CoinGecko();
-		var rpcClient = new RPCClient();
-
 		this.store = new Store();
+		var currency = this.store.get("currency", "usd");
 
 		this.state = {
 			balance: 0,
 			currencies: [],
-			selectedCurrency: []
+			selectedCurrency: { value: currency, label: currency, rate: 0 }
 		};
+	}
 
-		Promise.all([
+	async componentDidMount() {
+		var coinGecko = new CoinGecko();
+		var rpcClient = new RPCClient();
+
+		await fetch(Promise.all([
 			rpcClient.getbalance(),
 			coinGecko.getsupported(),
 		]).then((response) => {
 			coinGecko.getprice("swipp", response[1]).then((rates) => {
-				this.state.selectedCurrency = this.store.get("currency", "usd");
-
 				var currencies = Object.entries(rates.swipp).map((currency) => {
 					var v = { value: currency[0], label: currency[0], rate: currency[1] };
 
@@ -58,7 +59,7 @@ export default class MyWalletContent extends React.Component {
 
 				this.setState({ balance: response[0], currencies: currencies });
 			});
-		});
+		}));
 	}
 
 	render() {
@@ -72,6 +73,7 @@ export default class MyWalletContent extends React.Component {
 				<Helmet>
 					<script src="https://widgets.coingecko.com/coingecko-coin-price-marquee-widget.js" />
 				</Helmet>
+
 				<coingecko-coin-price-marquee-widget coin-ids="swipp,bitcoin,litecoin,dogecoin"
 				                                     currency={this.state.selectedCurrency.value}
 				                                     background-color="#000" locale="en" />
