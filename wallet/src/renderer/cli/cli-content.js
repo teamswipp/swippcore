@@ -17,37 +17,73 @@
  */
 
 import React from "react";
-import { ReactOutputRenderer, ReactTerminal, ReactThemes } from "react-terminal-component";
-import { CommandMapping, defaultCommandMapping, EmulatorState, OutputFactory} from "javascript-terminal";
+import { ReactTerminalStateless, ReactThemes } from "react-terminal-component";
+import { CommandMapping, EmulatorState, OutputFactory, Outputs } from "javascript-terminal";
 import Content from "../content";
+import RPCClient from "common/rpc-client.js";
+import CustomTerminal from "./custom-terminal";
 import "./cli-content.css";
 
 export default class CLIContent extends React.Component {
 	constructor(props) {
 		super(props);
+		this.rpcClient = new RPCClient();
+
+		this.state = {
+			terminal: EmulatorState.createEmpty(),
+			inputStr: ""
+		};
+	}
+
+	componentDidMount() {
+		this.rpcClient.help().then((response) => {
+			var commands = {};
+
+			response.split("\n").forEach((line) => {
+				var c = line.split(" ")[0];
+
+				/* We return command results in onStateChange instead */
+				commands[c] = { "function": () => {
+					return { output: undefined }
+				}, "optDef": {} }
+			});
+
+			const customState = EmulatorState.create({
+				"commandMapping": CommandMapping.create(commands)
+			});
+
+			this.setState({ terminal: customState });
+		});
 	}
 
 	render() {
-		//TODO: We need to handle this somehow
-		const customState = EmulatorState.create({
-			"commandMapping": CommandMapping.create({
-				/*...defaultCommandMapping,*/
-				"*": {
-					"function": (state, opts) => {
-						const input = opts.join(" ");
+		var onInputChange = (input) => {
+			this.setState({ inputStr : input });
+		}
 
-						return {
-							output: OutputFactory.makeTextOutput(input)
-						};
-					},
-					'optDef': {}
-				}
-			})
-		});
+		var onStateChange = (state, command) => {
+			if (command != "" && state.getCommandMapping().get(command) != undefined) {
+				this.rpcClient.raw_command(command, []).then((response) => {
+					var msg;
+
+					if (typeof response === "string") {
+						msg = OutputFactory.makeTextOutput(response);
+					} else {
+						msg = OutputFactory.makeTextOutput(JSON.stringify(response, null, 4));
+					}
+
+					const newState = state.setOutputs(Outputs.addRecord(state.getOutputs(), msg));
+					this.setState({ terminal: newState, inputStr : "" });
+				});
+			} else {
+				this.setState({ terminal: state, inputStr : "" });
+			}
+		}
 
 		return(
 			<Content id="cli">
-				<ReactTerminal emulatorState={customState} theme={ReactThemes.sea} promptSymbol={"swippd > "} />
+				<CustomTerminal inputStr={this.state.inputStr} onInputChange={onInputChange} onStateChange={onStateChange}
+				                emulatorState={this.state.terminal} theme={ReactThemes.sea} promptSymbol={"swippd > "} />
 			</Content>
 		);
 	}

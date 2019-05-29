@@ -38,11 +38,11 @@ export default class MyWalletContent extends React.Component {
 		};
 	}
 
-	async componentDidMount() {
+	componentDidMount() {
 		var coinGecko = new CoinGecko();
 		var rpcClient = new RPCClient();
 
-		await fetch(Promise.all([
+		Promise.all([
 			rpcClient.getbalance(),
 			coinGecko.getsupported(),
 		]).then((response) => {
@@ -59,7 +59,7 @@ export default class MyWalletContent extends React.Component {
 
 				this.setState({ balance: response[0], currencies: currencies });
 			});
-		}));
+		});
 	}
 
 	render() {

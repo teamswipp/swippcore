@@ -43,6 +43,10 @@ export default class RPCClient {
 		}
 	}
 
+	async raw_command(command, args) {
+		return await this.send_command(command, args);
+	}
+
 	async getbalance() {
 		return await this.send_command("getbalance");
 	}

@@ -27,7 +27,7 @@ div.nav > div > div > div.terminalContainer {
 	width: -webkit-fill-available;
 	flex-grow: 1;
 	padding: 15px 15px;
-	font-size: 12pt;
+	font-size: 11pt;
 	overflow: auto;
 	line-height: 1.3em;
 }
@@ -60,3 +60,4 @@ div.terminalContainer > div.terminalInput > form > input {
 div.terminalContainer > div.terminalInput > form > span {
 	padding-top: 2px;
 }
+
