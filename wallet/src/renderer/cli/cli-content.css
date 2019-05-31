@@ -30,6 +30,7 @@ div.nav > div > div > div.terminalContainer {
 	font-size: 11pt;
 	overflow: auto;
 	line-height: 1.3em;
+	scroll-padding-block-end: 15px;
 }
 
 div.nav > div > div > div.terminalContainer,

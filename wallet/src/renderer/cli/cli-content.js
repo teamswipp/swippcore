@@ -17,11 +17,12 @@
  */
 
 import React from "react";
-import { ReactTerminalStateless, ReactThemes } from "react-terminal-component";
+import { ReactTerminalStateless, ReactOutputRenderers, ReactThemes } from "react-terminal-component";
 import { CommandMapping, EmulatorState, OutputFactory, Outputs } from "javascript-terminal";
 import Content from "../content";
 import RPCClient from "common/rpc-client.js";
 import CustomTerminal from "./custom-terminal";
+import { JSON_TYPE, JsonOutput, makeJsonRecord } from "./json-output.js";
 import "./cli-content.css";
 
 export default class CLIContent extends React.Component {
@@ -69,7 +70,7 @@ export default class CLIContent extends React.Component {
 					if (typeof response === "string") {
 						msg = OutputFactory.makeTextOutput(response);
 					} else {
-						msg = OutputFactory.makeTextOutput(JSON.stringify(response, null, 4));
+						msg = makeJsonRecord(response);
 					}
 
 					const newState = state.setOutputs(Outputs.addRecord(state.getOutputs(), msg));
@@ -83,7 +84,8 @@ export default class CLIContent extends React.Component {
 		return(
 			<Content id="cli">
 				<CustomTerminal inputStr={this.state.inputStr} onInputChange={onInputChange} onStateChange={onStateChange}
-				                emulatorState={this.state.terminal} theme={ReactThemes.sea} promptSymbol={"swippd > "} />
+				                emulatorState={this.state.terminal} theme={ReactThemes.sea} promptSymbol={"swippd > "}
+				                outputRenderers={{...ReactOutputRenderers, [JSON_TYPE]: JsonOutput}} />
 			</Content>
 		);
 	}
