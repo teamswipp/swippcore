@@ -18,6 +18,7 @@
 
 import React from "react";
 import ReactDOM from "react-dom";
+import { ipcRenderer } from "electron";
 import { Router } from "common/router";
 import ControlBar from "./controlbar";
 import NavBar from "./navbar";
@@ -27,9 +28,24 @@ import TransactionsContent from "./transactions/transactions-content.js";
 import AddressesContent from "./addresses/addresses-content.js";
 import SettingsContent from "./settings/settings-content.js";
 import CLIContent from "./cli/cli-content.js";
+import Reacteroids from "./asteroids/reacteroids.js";
+import File from "common/file";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import "./index.css";
 
+library.add(faRocket);
+
+let onStartGame = () => {
+	ipcRenderer.send("open-asteroids");
+};
+
 const routes = {
+	asteroids: [
+		<ControlBar key={1} headerText="Swipp Asteroids" fullControls={true} />,
+		<Reacteroids key={2} />
+	],
 	main: [
 		<ControlBar key={1} headerText="Swipp" fullControls={true} />,
 		<div className="nav" key={2}>
@@ -44,7 +60,8 @@ const routes = {
 		</div>
 	],
 	splash: [
-		<ControlBar key={1} className="nobg" fullControls={false} />, <Splash key={2} />
+		<ControlBar key={1} className="nobg" fullControls={false} extraButton="rocket"
+		            extraButtonOnClick={onStartGame}/>, <Splash key={2} />
 	]
 };
 

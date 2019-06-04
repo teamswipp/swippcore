@@ -59,6 +59,18 @@ div.controlbar svg:active {
 	color: #fff;
 }
 
+div.controlbar svg.extra {
+	transform: scale(1);
+}
+
+div.controlbar svg.extra:hover {
+	transform: scale(1.2);
+}
+
+div.controlbar svg.extra:active {
+	transform: scale(1);
+}
+
 div.controlbar svg.close:active {
 	color: #f77;
 }

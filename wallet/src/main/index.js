@@ -21,6 +21,7 @@ import * as path from "path";
 import { format as formatUrl } from "url";
 import Daemon from "common/daemon";
 import RPCClient from "common/rpc-client.js"
+import AsteroidsController from "./asteroids-controller";
 import MainController from "./main-controller";
 import SplashController from "./splash-controller";
 
@@ -42,6 +43,10 @@ app.on("activate", () => {
 /*	if (mainWindow === null) {
 		mainWindow = createMainWindow();
 	}*/
+});
+
+ipcMain.on("open-asteroids", () => {
+	var asteroidsController = new AsteroidsController();
 });
 
 const defaultRPCPort = 35075;

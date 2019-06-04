@@ -59,21 +59,27 @@ export default class ControlBar extends React.Component {
 			<div className={"controlbar " + this.props.className}>
 				<div>
 					{this.props.fullControls == true &&
-						<img src={File.get("logo.png")} className="piclet"/>
+						<img src={File.get("logo.png")} className="piclet" />
 					}
 					<div>{this.props.headerText}</div>
 				</div>
 				<div>
 					{this.state.showSpinner == true &&
-						<FontAwesomeIcon className="spinner" icon="spinner" spin/>
+						<FontAwesomeIcon className="spinner" icon="spinner" spin />
 					}
 					{this.props.fullControls == true &&
 						<div>
-							<FontAwesomeIcon onClick={onMinimize} className="minimize" icon="window-minimize"/>
-							<FontAwesomeIcon onClick={onMaximize} className="maximize" icon="window-maximize"/>
+							<FontAwesomeIcon onClick={onMinimize} className="minimize"
+							                 icon="window-minimize" />
+							<FontAwesomeIcon onClick={onMaximize} className="maximize"
+							                 icon="window-maximize" />
 						</div>
 					}
-					<FontAwesomeIcon onClick={onClose} className="close" icon="window-close"/>
+					{this.props.extraButton &&
+						<FontAwesomeIcon className="extra" onClick={this.props.extraButtonOnClick}
+						                 icon={this.props.extraButton} />
+					}
+					<FontAwesomeIcon onClick={onClose} className="close" icon="window-close" />
 				</div>
 			</div>
 		);
