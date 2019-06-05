@@ -17,7 +17,8 @@
  */
 
 import { BrowserWindow } from "electron";
-import { remote } from "electron";
+import { format as formatUrl } from "url";
+import path from "path";
 import tcpPortUsed from "tcp-port-used";
 import Daemon from "common/daemon";
 import Explorer from "common/explorer";

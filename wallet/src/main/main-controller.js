@@ -17,6 +17,8 @@
  */
 
 import { BrowserWindow, globalShortcut, shell } from "electron";
+import { format as formatUrl } from "url";
+import path from "path";
 import electron from "electron";
 
 export default class MainController {
