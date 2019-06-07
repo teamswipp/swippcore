@@ -664,7 +664,7 @@ bool CWallet::AddToWallet(const CWalletTx& wtxIn)
                         if (GetKeyFromPool(newDefaultKey))
                         {
                             SetDefaultKey(newDefaultKey);
-                            SetAddressBookName(vchDefaultKey.GetID(), "");
+                            SetAddressBookAccount(vchDefaultKey.GetID(), "");
                         }
                     }
                 }
@@ -826,12 +826,12 @@ bool CWallet::IsChange(const CTxOut& txout) const
     // a better way of identifying which outputs are 'the send' and which are
     // 'the change' will need to be implemented (maybe extend CWalletTx to remember
     // which output, if any, was change).
-    if (ExtractDestination(txout.scriptPubKey, address) && ::IsMine(*this, address))
-    {
+    if (ExtractDestination(txout.scriptPubKey, address) && ::IsMine(*this, address)) {
         LOCK(cs_wallet);
 
-        if (!mapAddressBook.count(address))
+        if (!mapAddressAccount.count(address)) {
             return true;
+        }
     }
 
     return false;
@@ -969,17 +969,16 @@ void CWalletTx::GetAccountAmounts(const string& strAccount, int64_t& nReceived,
         nFee = allFee;
     }
 
-    BOOST_FOREACH(const PAIRTYPE(CTxDestination,int64_t)& r, listReceived)
-    {
-        if (pwallet->mapAddressBook.count(r.first))
-        {
-            map<CTxDestination, string>::const_iterator mi = pwallet->mapAddressBook.find(r.first);
+    BOOST_FOREACH(const PAIRTYPE(CTxDestination,int64_t)& r, listReceived) {
+        if (pwallet->mapAddressAccount.count(r.first)) {
+            map<CTxDestination, string>::const_iterator mi = pwallet->mapAddressAccount.find(r.first);
 
-            if (mi != pwallet->mapAddressBook.end() && (*mi).second == strAccount)
+            if (mi != pwallet->mapAddressAccount.end() && (*mi).second == strAccount) {
                 nReceived += r.second;
-        }
-        else if (strAccount.empty())
+            }
+        } else if (strAccount.empty()) {
             nReceived += r.second;
+        }
     }
 }
 
@@ -3502,8 +3501,8 @@ bool CWallet::FindStealthTransactions(const CTransaction& tx, mapValue_t& mapNar
                     AddCryptedKey(cpkE, vchEmpty);
                     CKeyID keyId = cpkE.GetID();
                     CBitcoinAddress coinAddress(keyId);
-                    std::string sLabel = it->Encoded();
-                    SetAddressBookName(keyId, sLabel);
+
+                    SetAddressBookAccount(keyId, it->Encoded());
 
                     CPubKey cpkEphem(vchEphemPK);
                     CPubKey cpkScan(it->scan_pubkey);
@@ -3580,8 +3579,7 @@ bool CWallet::FindStealthTransactions(const CTransaction& tx, mapValue_t& mapNar
                         continue;
                     }
 
-                    std::string sLabel = it->Encoded();
-                    SetAddressBookName(keyID, sLabel);
+                    SetAddressBookAccount(keyID, it->Encoded());
                     nFoundStealth++;
                 }
 
@@ -4237,30 +4235,60 @@ DBErrors CWallet::LoadWallet(bool& fFirstRunRet)
 }
 
 
-bool CWallet::SetAddressBookName(const CTxDestination& address, const string& strName)
+bool CWallet::SetAddressBookAccount(const CTxDestination& address, const string& strName)
 {
     {
-        LOCK(cs_wallet); // mapAddressBook
-        mapAddressBook[address] = strName;
+        LOCK(cs_wallet);
+        mapAddressAccount[address] = strName;
     }
 
-    if (!fFileBacked)
+    if (!fFileBacked) {
         return false;
+    }
 
-    return CWalletDB(strWalletFile).WriteName(CBitcoinAddress(address).ToString(), strName);
+    return CWalletDB(strWalletFile).WriteAccount(CBitcoinAddress(address).ToString(), strName);
 }
 
-bool CWallet::DelAddressBookName(const CTxDestination& address)
+bool CWallet::DelAddressBookAccount(const CTxDestination& address)
 {
     {
-        LOCK(cs_wallet); // mapAddressBook
-        mapAddressBook.erase(address);
+        LOCK(cs_wallet);
+        mapAddressAccount.erase(address);
     }
 
-    if (!fFileBacked)
+    if (!fFileBacked) {
         return false;
+    }
 
-    return CWalletDB(strWalletFile).EraseName(CBitcoinAddress(address).ToString());
+    return CWalletDB(strWalletFile).EraseAccount(CBitcoinAddress(address).ToString());
+}
+
+bool CWallet::SetAddressBookLabel(const CTxDestination& address, const string& strName)
+{
+    {
+        LOCK(cs_wallet);
+        mapAddressLabel[address] = strName;
+    }
+
+    if (!fFileBacked) {
+        return false;
+    }
+
+    return CWalletDB(strWalletFile).WriteLabel(CBitcoinAddress(address).ToString(), strName);
+}
+
+bool CWallet::DelAddressBookLabel(const CTxDestination& address)
+{
+    {
+        LOCK(cs_wallet);
+        mapAddressLabel.erase(address);
+    }
+
+    if (!fFileBacked) {
+        return false;
+    }
+
+    return CWalletDB(strWalletFile).EraseLabel(CBitcoinAddress(address).ToString());
 }
 
 bool CWallet::SetDefaultKey(const CPubKey &vchPubKey)

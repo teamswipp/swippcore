@@ -236,12 +236,16 @@ Value listunspent(const Array& params, bool fHelp)
 
         CTxDestination address;
 
-        if (ExtractDestination(out.tx->vout[out.i].scriptPubKey, address))
-        {
+        if (ExtractDestination(out.tx->vout[out.i].scriptPubKey, address)) {
             entry.push_back(Pair("address", CBitcoinAddress(address).ToString()));
 
-            if (pwalletMain->mapAddressBook.count(address))
-                entry.push_back(Pair("account", pwalletMain->mapAddressBook[address]));
+            if (pwalletMain->mapAddressAccount.count(address)) {
+                entry.push_back(Pair("account", pwalletMain->mapAddressAccount[address]));
+            }
+
+            if (pwalletMain->mapAddressLabel.count(address)) {
+                entry.push_back(Pair("label", pwalletMain->mapAddressLabel[address]));
+            }
         }
 
         entry.push_back(Pair("scriptPubKey", HexStr(pk.begin(), pk.end())));

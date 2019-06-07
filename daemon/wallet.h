@@ -188,7 +188,9 @@ public:
     int64_t nOrderPosNext;
     std::map<uint256, int> mapRequestCount;
 
-    std::map<CTxDestination, std::string> mapAddressBook;
+    std::map<CTxDestination, std::string> mapAddressAccount;
+    std::map<CTxDestination, std::string> mapAddressLabel;
+
     CPubKey vchDefaultKey;
     std::set<COutPoint> setLockedCoins;
     int64_t nTimeFirstKey;
@@ -449,10 +451,13 @@ public:
 
     void SetBestChain(const CBlockLocator& loc);
     DBErrors LoadWallet(bool& fFirstRunRet);
-
-    bool SetAddressBookName(const CTxDestination& address, const std::string& strName);
-    bool DelAddressBookName(const CTxDestination& address);
     void UpdatedTransaction(const uint256 &hashTx);
+
+    bool SetAddressBookAccount(const CTxDestination& address, const std::string& strName);
+    bool DelAddressBookAccount(const CTxDestination& address);
+
+    bool SetAddressBookLabel(const CTxDestination& address, const std::string& strName);
+    bool DelAddressBookLabel(const CTxDestination& address);
 
     void Inventory(const uint256 &hash)
     {

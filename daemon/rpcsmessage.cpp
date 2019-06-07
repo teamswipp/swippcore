@@ -1,5 +1,5 @@
 // Copyright (c) 2014 The ShadowCoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
@@ -189,14 +189,14 @@ Value smsglocalkeys(const Array& params, bool fHelp)
 
             sPublicKey = EncodeBase58(pubKey.Raw());
 
-            std::string sLabel = pwalletMain->mapAddressBook[keyID];
+            std::string sAccount = pwalletMain->mapAddressAccount[keyID];
             std::string sInfo;
 
             if (all)
                 sInfo = std::string("Receive ") + (it->fReceiveEnabled ? "on,  " : "off, ");
 
             sInfo += std::string("Anon ") + (it->fReceiveAnon ? "on" : "off");
-            result.push_back(Pair("key", it->sAddress + " - " + sPublicKey + " " + sInfo + " - " + sLabel));
+            result.push_back(Pair("key", it->sAddress + " - " + sPublicKey + " " + sInfo + " - " + sAccount));
             nKeys++;
         }
 
@@ -299,7 +299,7 @@ Value smsglocalkeys(const Array& params, bool fHelp)
     {
         uint32_t nKeys = 0;
 
-        BOOST_FOREACH(const PAIRTYPE(CTxDestination, std::string)& entry, pwalletMain->mapAddressBook)
+        BOOST_FOREACH(const PAIRTYPE(CTxDestination, std::string)& entry, pwalletMain->mapAddressAccount)
         {
             if (!IsMine(*pwalletMain, entry.first))
                 continue;

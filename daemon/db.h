@@ -172,25 +172,6 @@ protected:
         return ret == 0;
     }
 
-    template<typename K> bool Erase(const K& key)
-    {
-        if (!pdb)
-            return false;
-
-        if (fReadOnly)
-            assert(!"Erase called on database in read-only mode");
-
-        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
-        ssKey.reserve(get_serialization_reserve_count());
-        ssKey << key;
-        Dbt datKey(&ssKey[0], ssKey.size());
-
-        int ret = pdb->del(activeTxn, &datKey, 0);
-        memset(datKey.get_data(), 0, datKey.get_size());
-
-        return ret == 0 || ret == DB_NOTFOUND;
-    }
-
     template<typename K> bool Exists(const K& key)
     {
         if (!pdb)
@@ -267,6 +248,25 @@ protected:
     }
 
 public:
+    template<typename K> bool Erase(const K& key)
+    {
+        if (!pdb)
+            return false;
+
+        if (fReadOnly)
+            assert(!"Erase called on database in read-only mode");
+
+        CDataStream ssKey(SER_DISK, CLIENT_VERSION);
+        ssKey.reserve(get_serialization_reserve_count());
+        ssKey << key;
+        Dbt datKey(&ssKey[0], ssKey.size());
+
+        int ret = pdb->del(activeTxn, &datKey, 0);
+        memset(datKey.get_data(), 0, datKey.get_size());
+
+        return ret == 0 || ret == DB_NOTFOUND;
+    }
+
     bool TxnBegin()
     {
         if (!pdb || activeTxn)

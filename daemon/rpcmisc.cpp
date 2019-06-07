@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2013 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
@@ -155,18 +155,17 @@ public:
 
 Value validateaddress(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() != 1)
+    if (fHelp || params.size() != 1) {
         throw runtime_error("validateaddress <Swippaddress>\n"
                             "Return information about <Swippaddress>.");
-
-    CBitcoinAddress address(params[0].get_str());
-    bool isValid = address.IsValid();
+    }
 
     Object ret;
+    CBitcoinAddress address(params[0].get_str());
+    bool isValid = address.IsValid();
     ret.push_back(Pair("isvalid", isValid));
 
-    if (isValid)
-    {
+    if (isValid) {
         CTxDestination dest = address.Get();
         string currentAddress = address.ToString();
         ret.push_back(Pair("address", currentAddress));
@@ -175,14 +174,18 @@ Value validateaddress(const Array& params, bool fHelp)
         bool fMine = pwalletMain ? IsMine(*pwalletMain, dest) : false;
         ret.push_back(Pair("ismine", fMine));
 
-        if (fMine)
-        {
+        if (fMine) {
             Object detail = boost::apply_visitor(DescribeAddressVisitor(), dest);
             ret.insert(ret.end(), detail.begin(), detail.end());
         }
 
-        if (pwalletMain && pwalletMain->mapAddressBook.count(dest))
-            ret.push_back(Pair("account", pwalletMain->mapAddressBook[dest]));
+        if (pwalletMain && pwalletMain->mapAddressAccount.count(dest)) {
+            ret.push_back(Pair("account", pwalletMain->mapAddressAccount[dest]));
+        }
+
+        if (pwalletMain && pwalletMain->mapAddressLabel.count(dest)) {
+            ret.push_back(Pair("label", pwalletMain->mapAddressLabel[dest]));
+        }
 #endif
     }
 
@@ -202,14 +205,12 @@ Value validatepubkey(const Array& params, bool fHelp)
     bool isCompressed = pubKey.IsCompressed();
     CKeyID keyID = pubKey.GetID();
 
+    Object ret;
     CBitcoinAddress address;
     address.Set(keyID);
-
-    Object ret;
     ret.push_back(Pair("isvalid", isValid));
 
-    if (isValid)
-    {
+    if (isValid) {
         CTxDestination dest = address.Get();
         string currentAddress = address.ToString();
         ret.push_back(Pair("address", currentAddress));
@@ -219,14 +220,16 @@ Value validatepubkey(const Array& params, bool fHelp)
         bool fMine = pwalletMain ? IsMine(*pwalletMain, dest) : false;
         ret.push_back(Pair("ismine", fMine));
 
-        if (fMine)
-        {
+        if (fMine) {
             Object detail = boost::apply_visitor(DescribeAddressVisitor(), dest);
             ret.insert(ret.end(), detail.begin(), detail.end());
         }
 
-        if (pwalletMain && pwalletMain->mapAddressBook.count(dest))
-            ret.push_back(Pair("account", pwalletMain->mapAddressBook[dest]));
+        if (pwalletMain && pwalletMain->mapAddressAccount.count(dest))
+            ret.push_back(Pair("account", pwalletMain->mapAddressAccount[dest]));
+
+        if (pwalletMain && pwalletMain->mapAddressLabel.count(dest))
+            ret.push_back(Pair("label", pwalletMain->mapAddressLabel[dest]));
 #endif
     }
 

@@ -862,10 +862,10 @@ int SecureMsgAddWalletAddresses()
     std::string sAnonPrefix("ao ");
     uint32_t nAdded = 0;
 
-    BOOST_FOREACH(const PAIRTYPE(CTxDestination, std::string)& entry, pwalletMain->mapAddressBook)
-    {
-        if (!IsMine(*pwalletMain, entry.first))
+    BOOST_FOREACH(const PAIRTYPE(CTxDestination, std::string)& entry, pwalletMain->mapAddressAccount) {
+        if (!IsMine(*pwalletMain, entry.first)) {
             continue;
+        }
 
         // Skip addresses for anonymous outputs
         if (entry.second.compare(0, sAnonPrefix.length(), sAnonPrefix) == 0)
@@ -3405,7 +3405,7 @@ int SecureMsgSend(std::string& addressFrom, std::string& addressTo, std::string&
     std::string addressOutbox = "None";
     CBitcoinAddress coinAddrOutbox;
 
-    BOOST_FOREACH(const PAIRTYPE(CTxDestination, std::string)& entry, pwalletMain->mapAddressBook)
+    BOOST_FOREACH(const PAIRTYPE(CTxDestination, std::string)& entry, pwalletMain->mapAddressAccount)
     {
         if (!IsMine(*pwalletMain, entry.first))
             continue;

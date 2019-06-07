@@ -900,18 +900,17 @@ int AppInit2(boost::thread_group& threadGroup)
             pwalletMain->SetMaxVersion(nMaxVersion);
         }
 
-        if (fFirstRun)
-        {
+        if (fFirstRun) {
             // Create new keyUser and set as default key
             RandAddSeedPerfmon();
             CPubKey newDefaultKey;
 
-            if (pwalletMain->GetKeyFromPool(newDefaultKey))
-            {
+            if (pwalletMain->GetKeyFromPool(newDefaultKey)) {
                 pwalletMain->SetDefaultKey(newDefaultKey);
 
-                if (!pwalletMain->SetAddressBookName(pwalletMain->vchDefaultKey.GetID(), ""))
+                if (!pwalletMain->SetAddressBookAccount(pwalletMain->vchDefaultKey.GetID(), "")) {
                     strErrors << _("Cannot write default address") << "\n";
+                }
             }
 
             pwalletMain->SetBestChain(CBlockLocator(pindexBest));
@@ -923,10 +922,9 @@ int AppInit2(boost::thread_group& threadGroup)
         RegisterWallet(pwalletMain);
         CBlockIndex *pindexRescan = pindexBest;
 
-        if (GetBoolArg("-rescan", false))
+        if (GetBoolArg("-rescan", false)) {
             pindexRescan = pindexGenesisBlock;
-        else
-        {
+        } else {
             CWalletDB walletdb(strWalletFileName);
             CBlockLocator locator;
 
@@ -1121,9 +1119,10 @@ int AppInit2(boost::thread_group& threadGroup)
     LogPrintf("nBestHeight = %d\n", nBestHeight);
 
 #ifdef ENABLE_WALLET
-    LogPrintf("setKeyPool.size() = %u\n",      pwalletMain ? pwalletMain->setKeyPool.size() : 0);
-    LogPrintf("mapWallet.size() = %u\n",       pwalletMain ? pwalletMain->mapWallet.size() : 0);
-    LogPrintf("mapAddressBook.size() = %u\n",  pwalletMain ? pwalletMain->mapAddressBook.size() : 0);
+    LogPrintf("setKeyPool.size() = %u\n", pwalletMain ? pwalletMain->setKeyPool.size() : 0);
+    LogPrintf("mapWallet.size() = %u\n", pwalletMain ? pwalletMain->mapWallet.size() : 0);
+    LogPrintf("mapAddressAccount.size() = %u\n", pwalletMain ? pwalletMain->mapAddressAccount.size() : 0);
+    LogPrintf("mapAddressLabel.size() = %u\n", pwalletMain ? pwalletMain->mapAddressLabel.size() : 0);
 #endif
 
     StartNode(threadGroup);

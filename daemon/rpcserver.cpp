@@ -150,10 +150,6 @@ string CRPCTable::help(string strCommand) const
         const CRPCCommand *pcmd = mi->second;
         string strMethod = mi->first;
 
-        // We already filter duplicates, but these deprecated screw up the sort order
-        if (strMethod.find("label") != string::npos)
-            continue;
-
         if (strCommand != "" && strMethod != strCommand)
             continue;
 
@@ -259,6 +255,8 @@ static const CRPCCommand vRPCCommands[] =
     { "getstakinginfo",         &getstakinginfo,         true,      false,     false },
     { "getnewaddress",          &getnewaddress,          true,      false,     true },
     { "getnewpubkey",           &getnewpubkey,           true,      false,     true },
+    { "getaddressesbylabel",    &getaddressesbylabel,    false,     false,     true },
+    { "setlabel",               &setlabel,               false,     false,     true },
     { "getaccountaddress",      &getaccountaddress,      true,      false,     true },
     { "setaccount",             &setaccount,             true,      false,     true },
     { "getaccount",             &getaccount,             false,     false,     true },

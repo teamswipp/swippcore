@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
@@ -20,18 +20,36 @@ using namespace boost;
 static uint64_t nAccountingEntryNumber = 0;
 extern bool fWalletUnlockStakingOnly;
 
-bool CWalletDB::WriteName(const string& strAddress, const string& strName)
+bool CWalletDB::WriteLabel(const string& strAddress, const string& label)
 {
     nWalletDBUpdated++;
-    return Write(make_pair(string("name"), strAddress), strName);
+    return Write(make_pair(string("label"), strAddress), label);
 }
 
-bool CWalletDB::EraseName(const string& strAddress)
+bool CWalletDB::ReadLabel(const string& strAddress, string& label)
+{
+    nWalletDBUpdated++;
+    return Read(make_pair(string("label"), strAddress), label);
+}
+
+bool CWalletDB::EraseLabel(const string& strAddress)
+{
+    nWalletDBUpdated++;
+    return Erase(make_pair(string("label"), strAddress));
+}
+
+bool CWalletDB::WriteAccount(const string& strAddress, const string& strName)
+{
+    nWalletDBUpdated++;
+    return Write(make_pair(string("account"), strAddress), strName);
+}
+
+bool CWalletDB::EraseAccount(const string& strAddress)
 {
     // This should only be used for sending addresses, never for receiving addresses,
     // receiving addresses must always have an address book entry if they're not change return.
     nWalletDBUpdated++;
-    return Erase(make_pair(string("name"), strAddress));
+    return Erase(make_pair(string("account"), strAddress));
 }
 
 bool CWalletDB::WriteTx(uint256 hash, const CWalletTx& wtx)
@@ -350,53 +368,45 @@ DBErrors CWalletDB::ReorderTransactions(CWallet* pwallet)
     return DB_LOAD_OK;
 }
 
-class CWalletScanState
+static bool ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue, CWalletScanState &wss,
+                         string& strType, string& strErr, CWalletDB *cwdb = nullptr)
 {
-public:
-    unsigned int nKeys;
-    unsigned int nCKeys;
-    unsigned int nKeyMeta;
-    bool fIsEncrypted;
-    bool fAnyUnordered;
-    int nFileVersion;
-    vector<uint256> vWalletUpgrade;
-
-    CWalletScanState()
-    {
-        nKeys = nCKeys = nKeyMeta = 0;
-        fIsEncrypted = false;
-        fAnyUnordered = false;
-        nFileVersion = 0;
-    }
-};
-
-bool ReadKeyValue(CWallet* pwallet, CDataStream& ssKey, CDataStream& ssValue,
-                  CWalletScanState &wss, string& strType, string& strErr)
-{
-    try
-    {
+    try {
         // Unserialize. Taking advantage of the fact that pair serialization
         // is just the two items serialized one after the other
-
         ssKey >> strType;
 
-        if (strType == "name")
-        {
+        if (strType == "name") {
             string strAddress;
             ssKey >> strAddress;
-            ssValue >> pwallet->mapAddressBook[CBitcoinAddress(strAddress).Get()];
-        }
-        else if (strType == "tx")
-        {
+
+            std::string account;
+            ssValue >> account;
+            pwallet->mapAddressAccount[CBitcoinAddress(strAddress).Get()] = account;
+
+			// Swap out any old "name" entries with "account" (new format)
+			if (cwdb != nullptr && !ssValue.empty()) {
+			    nWalletDBUpdated++;
+                cwdb->Erase(make_pair(string("name"), strAddress));
+                cwdb->WriteAccount(strAddress, account);
+            }
+        } else if (strType == "account") {
+            string strAddress;
+            ssKey >> strAddress;
+            ssValue >> pwallet->mapAddressAccount[CBitcoinAddress(strAddress).Get()];
+        } else if (strType == "label") {
+            string strAddress;
+            ssKey >> strAddress;
+            ssValue >> pwallet->mapAddressLabel[CBitcoinAddress(strAddress).Get()];
+        } else if (strType == "tx") {
             uint256 hash;
             ssKey >> hash;
             CWalletTx& wtx = pwallet->mapWallet[hash];
             ssValue >> wtx;
 
-            if (wtx.CheckTransaction() && (wtx.GetHash() == hash))
+            if (wtx.CheckTransaction() && (wtx.GetHash() == hash)) {
                 wtx.BindWallet(pwallet);
-            else
-            {
+            } else {
                 pwallet->mapWallet.erase(hash);
                 return false;
             }
@@ -699,7 +709,7 @@ DBErrors CWalletDB::LoadWallet(CWallet* pwallet)
             // Try to be tolerant of single corrupt records
             string strType, strErr;
 
-            if (!ReadKeyValue(pwallet, ssKey, ssValue, wss, strType, strErr))
+            if (!ReadKeyValue(pwallet, ssKey, ssValue, wss, strType, strErr, this))
             {
                 // losing keys is considered a catastrophic error, anything else
                 // we assume the user can live with

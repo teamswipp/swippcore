@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2019 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING.daemon or http://www.opensource.org/licenses/mit-license.php.
 
@@ -114,6 +114,26 @@ public:
     )
 };
 
+class CWalletScanState
+{
+public:
+    unsigned int nKeys;
+    unsigned int nCKeys;
+    unsigned int nKeyMeta;
+    bool fIsEncrypted;
+    bool fAnyUnordered;
+    int nFileVersion;
+    std::vector<uint256> vWalletUpgrade;
+
+    CWalletScanState()
+    {
+        nKeys = nCKeys = nKeyMeta = 0;
+        fIsEncrypted = false;
+        fAnyUnordered = false;
+        nFileVersion = 0;
+    }
+};
+
 // Access to the wallet database (wallet.dat)
 class CWalletDB : public CDB
 {
@@ -125,8 +145,12 @@ private:
     void operator=(const CWalletDB&);
 
 public:
-    bool WriteName(const std::string& strAddress, const std::string& strName);
-    bool EraseName(const std::string& strAddress);
+    bool WriteLabel(const std::string& strAddress, const std::string& label);
+    bool ReadLabel(const std::string& strAddress, std::string& label);
+    bool EraseLabel(const std::string& strAddress);
+
+    bool WriteAccount(const std::string& strAddress, const std::string& strName);
+    bool EraseAccount(const std::string& strAddress);
 
     bool WriteTx(uint256 hash, const CWalletTx& wtx);
     bool EraseTx(uint256 hash);

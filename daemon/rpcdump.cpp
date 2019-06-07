@@ -105,45 +105,57 @@ public:
 
 Value importprivkey(const Array& params, bool fHelp)
 {
-    if (fHelp || params.size() < 1 || params.size() > 3)
+    if (fHelp || params.size() < 1 || params.size() > 3) {
         throw runtime_error(
             "importprivkey <Swippprivkey> [label] [rescan=true]\n"
             "Adds a private key (as returned by dumpprivkey) to your wallet.");
+    }
 
     string strSecret = params[0].get_str();
-    string strLabel = "";
-    if (params.size() > 1)
-        strLabel = params[1].get_str();
+    string strAccount = "";
+
+    if (params.size() > 1) {
+        strAccount = params[1].get_str();
+    }
 
     // Whether to perform rescan after import
     bool fRescan = true;
-    if (params.size() > 2)
+
+    if (params.size() > 2) {
         fRescan = params[2].get_bool();
+    }
 
     CBitcoinSecret vchSecret;
     bool fGood = vchSecret.SetString(strSecret);
 
-    if (!fGood) throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid private key");
-    if (fWalletUnlockStakingOnly)
+    if (!fGood) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid private key");
+    }
+
+    if (fWalletUnlockStakingOnly) {
         throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Wallet is unlocked for staking only.");
+    }
 
     CKey key = vchSecret.GetKey();
     CPubKey pubkey = key.GetPubKey();
     CKeyID vchAddress = pubkey.GetID();
+
     {
         LOCK2(cs_main, pwalletMain->cs_wallet);
 
         pwalletMain->MarkDirty();
-        pwalletMain->SetAddressBookName(vchAddress, strLabel);
+        pwalletMain->SetAddressBookAccount(vchAddress, strAccount);
 
         // Don't throw error in case a key is already there
-        if (pwalletMain->HaveKey(vchAddress))
+        if (pwalletMain->HaveKey(vchAddress)) {
             return Value::null;
+        }
 
         pwalletMain->mapKeyMetadata[vchAddress].nCreateTime = 1;
 
-        if (!pwalletMain->AddKeyPubKey(key, pubkey))
+        if (!pwalletMain->AddKeyPubKey(key, pubkey)) {
             throw JSONRPCError(RPC_WALLET_ERROR, "Error adding key to wallet");
+        }
 
         // whenever a key is imported, we need to scan the whole chain
         pwalletMain->nTimeFirstKey = 1; // 0 would be considered 'no value'
@@ -168,78 +180,99 @@ Value importwallet(const Array& params, bool fHelp)
 
     ifstream file;
     file.open(params[0].get_str().c_str());
+
     if (!file.is_open())
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Cannot open wallet dump file");
 
     int64_t nTimeBegin = pindexBest->nTime;
-
     bool fGood = true;
 
     while (file.good()) {
         std::string line;
         std::getline(file, line);
+
         if (line.empty() || line[0] == '#')
             continue;
 
         std::vector<std::string> vstr;
         boost::split(vstr, line, boost::is_any_of(" "));
+
         if (vstr.size() < 2)
             continue;
+
         CBitcoinSecret vchSecret;
+
         if (!vchSecret.SetString(vstr[0]))
             continue;
+
         CKey key = vchSecret.GetKey();
         CPubKey pubkey = key.GetPubKey();
         CKeyID keyid = pubkey.GetID();
+
         if (pwalletMain->HaveKey(keyid)) {
             LogPrintf("Skipping import of %s (key already present)\n", CBitcoinAddress(keyid).ToString());
             continue;
         }
+
         int64_t nTime = DecodeDumpTime(vstr[1]);
+        std::string strAccount;
         std::string strLabel;
-        bool fLabel = true;
+
         for (unsigned int nStr = 2; nStr < vstr.size(); nStr++) {
-            if (boost::algorithm::starts_with(vstr[nStr], "#"))
+            if (boost::algorithm::starts_with(vstr[nStr], "#")) {
                 break;
-            if (vstr[nStr] == "change=1")
-                fLabel = false;
-            if (vstr[nStr] == "reserve=1")
-                fLabel = false;
+            }
+
+            if (boost::algorithm::starts_with(vstr[nStr], "account=")) {
+                strAccount = DecodeDumpString(vstr[nStr].substr(6));
+            }
+
             if (boost::algorithm::starts_with(vstr[nStr], "label=")) {
                 strLabel = DecodeDumpString(vstr[nStr].substr(6));
-                fLabel = true;
             }
         }
+
         LogPrintf("Importing %s...\n", CBitcoinAddress(keyid).ToString());
+
         if (!pwalletMain->AddKey(key)) {
             fGood = false;
             continue;
         }
+
         pwalletMain->mapKeyMetadata[keyid].nCreateTime = nTime;
-        if (fLabel)
-            pwalletMain->SetAddressBookName(keyid, strLabel);
+
+        if (!strAccount.empty()) {
+            pwalletMain->SetAddressBookAccount(keyid, strAccount);
+        }
+
+        if (!strLabel.empty()) {
+            pwalletMain->SetAddressBookLabel(keyid, strLabel);
+        }
+
         nTimeBegin = std::min(nTimeBegin, nTime);
     }
-    file.close();
 
+    file.close();
     CBlockIndex *pindex = pindexBest;
+
     while (pindex && pindex->pprev && pindex->nTime > nTimeBegin - 7200)
         pindex = pindex->pprev;
 
-    if (!pwalletMain->nTimeFirstKey || nTimeBegin < pwalletMain->nTimeFirstKey)
+    if (!pwalletMain->nTimeFirstKey || nTimeBegin < pwalletMain->nTimeFirstKey) {
         pwalletMain->nTimeFirstKey = nTimeBegin;
+    }
 
     LogPrintf("Rescanning last %i blocks\n", pindexBest->nHeight - pindex->nHeight + 1);
     pwalletMain->ScanForWalletTransactions(pindex);
     pwalletMain->ReacceptWalletTransactions();
     pwalletMain->MarkDirty();
 
-    if (!fGood)
+    if (!fGood) {
         throw JSONRPCError(RPC_WALLET_ERROR, "Error adding some keys to wallet");
+    }
 
     return Value::null;
 }
-
 
 Value dumpprivkey(const Array& params, bool fHelp)
 {
@@ -308,8 +341,10 @@ Value dumpwallet(const Array& params, bool fHelp)
 
         CKey key;
         if (pwalletMain->GetKey(keyid, key)) {
-            if (pwalletMain->mapAddressBook.count(keyid)) {
-                file << strprintf("%s %s label=%s # addr=%s\n", CBitcoinSecret(key).ToString(), strTime, EncodeDumpString(pwalletMain->mapAddressBook[keyid]), strAddr);
+            if (pwalletMain->mapAddressAccount.count(keyid)) {
+                file << strprintf("%s %s account=%s # addr=%s\n", CBitcoinSecret(key).ToString(), strTime, EncodeDumpString(pwalletMain->mapAddressAccount[keyid]), strAddr);
+            } else if (pwalletMain->mapAddressLabel.count(keyid)) {
+                file << strprintf("%s %s label=%s # addr=%s\n", CBitcoinSecret(key).ToString(), strTime, EncodeDumpString(pwalletMain->mapAddressLabel[keyid]), strAddr);
             } else if (setKeyPool.count(keyid)) {
                 file << strprintf("%s %s reserve=1 # addr=%s\n", CBitcoinSecret(key).ToString(), strTime, strAddr);
             } else {
