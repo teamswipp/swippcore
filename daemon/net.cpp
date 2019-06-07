@@ -2119,7 +2119,7 @@ std::list<ComparableVersion> GetAllReleases()
 std::string GetLatestRelease()
 {
     std::list<ComparableVersion> versions = GetAllReleases();
-    return versions.empty() ? "unknown" : "v" + versions.back().ToString();
+    return versions.empty() ? "unknown" : versions.back().ToString();
 }
 
 void FindReleases()
