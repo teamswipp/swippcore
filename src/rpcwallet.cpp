@@ -1,6 +1,6 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2020 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -15,7 +15,7 @@
 #include "wallet.h"
 #include "walletdb.h"
 
-#include <tuple>
+#include <boost/tuple/tuple.hpp>
 
 using namespace std;
 using namespace json_spirit;
@@ -566,19 +566,19 @@ Value getbalance(const Array& params, bool fHelp)
 
             int64_t allFee;
             string strSentAccount;
-            list<pair<CTxDestination, int64_t> > listReceived;
-            list<pair<CTxDestination, int64_t> > listSent;
+            list<boost::tuple<CTxDestination, int64_t, int> > listReceived;
+            list<boost::tuple<CTxDestination, int64_t, int> > listSent;
 
             wtx.GetAmounts(listReceived, listSent, allFee, strSentAccount);
 
             if (wtx.GetDepthInMainChain() >= nMinDepth && wtx.GetBlocksToMaturity() == 0)
             {
-                BOOST_FOREACH(const PAIRTYPE(CTxDestination,int64_t)& r, listReceived)
-                    nBalance += r.second;
+                BOOST_FOREACH(const TUPLETYPE(CTxDestination,int64_t,int)& r, listReceived)
+                    nBalance += r.get<1>();
             }
 
-            BOOST_FOREACH(const PAIRTYPE(CTxDestination,int64_t)& r, listSent)
-                nBalance -= r.second;
+            BOOST_FOREACH(const TUPLETYPE(CTxDestination,int64_t,int)& r, listSent)
+                nBalance -= r.get<1>();
 
             nBalance -= allFee;
         }
@@ -1050,8 +1050,8 @@ void ListTransactions(const CWalletTx& wtx, const string& strAccount, int nMinDe
 {
     int64_t nFee;
     string strSentAccount;
-    list<pair<CTxDestination, int64_t> > listReceived;
-    list<pair<CTxDestination, int64_t> > listSent;
+    list<boost::tuple<CTxDestination, int64_t, int> > listReceived;
+    list<boost::tuple<CTxDestination, int64_t, int> > listSent;
 
     wtx.GetAmounts(listReceived, listSent, nFee, strSentAccount);
     bool fAllAccounts = (strAccount == string("*"));
@@ -1059,13 +1059,14 @@ void ListTransactions(const CWalletTx& wtx, const string& strAccount, int nMinDe
     // Sent
     if ((!wtx.IsCoinStake()) && (!listSent.empty() || nFee != 0) && (fAllAccounts || strAccount == strSentAccount))
     {
-        BOOST_FOREACH(const PAIRTYPE(CTxDestination, int64_t)& s, listSent)
+        BOOST_FOREACH(const TUPLETYPE(CTxDestination, int64_t, int)& s, listSent)
         {
             Object entry;
             entry.push_back(Pair("account", strSentAccount));
-            MaybePushAddress(entry, s.first);
+            MaybePushAddress(entry, s.get<0>());
             entry.push_back(Pair("category", "send"));
-            entry.push_back(Pair("amount", ValueFromAmount(-s.second)));
+            entry.push_back(Pair("amount", ValueFromAmount(-s.get<1>())));
+            entry.push_back(Pair("vout", s.get<2>()));
             entry.push_back(Pair("fee", ValueFromAmount(-nFee)));
 
             if (fLong)
@@ -1080,18 +1081,18 @@ void ListTransactions(const CWalletTx& wtx, const string& strAccount, int nMinDe
     {
         bool stop = false;
 
-        BOOST_FOREACH(const PAIRTYPE(CTxDestination, int64_t)& r, listReceived)
+        BOOST_FOREACH(const TUPLETYPE(CTxDestination, int64_t, int)& r, listReceived)
         {
             string account;
 
-            if (pwalletMain->mapAddressBook.count(r.first))
-                account = pwalletMain->mapAddressBook[r.first];
+            if (pwalletMain->mapAddressBook.count(r.get<0>()))
+                account = pwalletMain->mapAddressBook[r.get<0>()];
 
             if (fAllAccounts || (account == strAccount))
             {
                 Object entry;
                 entry.push_back(Pair("account", account));
-                MaybePushAddress(entry, r.first);
+                MaybePushAddress(entry, r.get<0>());
 
                 if (wtx.IsCoinBase() || wtx.IsCoinStake())
                 {
@@ -1106,12 +1107,14 @@ void ListTransactions(const CWalletTx& wtx, const string& strAccount, int nMinDe
                     entry.push_back(Pair("category", "receive"));
 
                 if (!wtx.IsCoinStake())
-                    entry.push_back(Pair("amount", ValueFromAmount(r.second)));
+                    entry.push_back(Pair("amount", ValueFromAmount(r.get<1>())));
                 else
                 {
                     entry.push_back(Pair("amount", ValueFromAmount(-nFee)));
                     stop = true; // only one coinstake output
                 }
+
+                entry.push_back(Pair("vout", r.get<2>()));
 
                 if (fLong)
                     WalletTxToJSON(wtx, entry);
@@ -1241,8 +1244,8 @@ Value listaccounts(const Array& params, bool fHelp)
         const CWalletTx& wtx = (*it).second;
         int64_t nFee;
         string strSentAccount;
-        list<pair<CTxDestination, int64_t> > listReceived;
-        list<pair<CTxDestination, int64_t> > listSent;
+        list<boost::tuple<CTxDestination, int64_t, int> > listReceived;
+        list<boost::tuple<CTxDestination, int64_t, int> > listSent;
         int nDepth = wtx.GetDepthInMainChain();
 
         if (nDepth < 0)
@@ -1251,17 +1254,17 @@ Value listaccounts(const Array& params, bool fHelp)
         wtx.GetAmounts(listReceived, listSent, nFee, strSentAccount);
         mapAccountBalances[strSentAccount] -= nFee;
 
-        BOOST_FOREACH(const PAIRTYPE(CTxDestination, int64_t)& s, listSent)
-            mapAccountBalances[strSentAccount] -= s.second;
+        BOOST_FOREACH(const TUPLETYPE(CTxDestination, int64_t, int)& s, listSent)
+            mapAccountBalances[strSentAccount] -= s.get<1>();
 
         if (nDepth >= nMinDepth && wtx.GetBlocksToMaturity() == 0)
         {
-            BOOST_FOREACH(const PAIRTYPE(CTxDestination, int64_t)& r, listReceived)
+            BOOST_FOREACH(const TUPLETYPE(CTxDestination, int64_t, int)& r, listReceived)
             {
-                if (pwalletMain->mapAddressBook.count(r.first))
-                    mapAccountBalances[pwalletMain->mapAddressBook[r.first]] += r.second;
+                if (pwalletMain->mapAddressBook.count(r.get<0>()))
+                    mapAccountBalances[pwalletMain->mapAddressBook[r.get<0>()]] += r.get<1>();
                 else
-                    mapAccountBalances[""] += r.second;
+                    mapAccountBalances[""] += r.get<1>();
             }
         }
     }

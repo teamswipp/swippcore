@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017 The Swipp developers
+// Copyright (c) 2017-2020 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -28,6 +28,7 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/tuple/tuple.hpp>
 
 using namespace std;
 
@@ -893,8 +894,8 @@ int CWalletTx::GetRequestCount() const
     return nRequests;
 }
 
-void CWalletTx::GetAmounts(list<pair<CTxDestination, int64_t> >& listReceived,
-                           list<pair<CTxDestination, int64_t> >& listSent, int64_t& nFee, string& strSentAccount) const
+void CWalletTx::GetAmounts(list<boost::tuple<CTxDestination, int64_t, int> >& listReceived,
+                           list<boost::tuple<CTxDestination, int64_t, int> >& listSent, int64_t& nFee, string& strSentAccount) const
 {
     LOCK(pwallet->cs_wallet);
 
@@ -912,9 +913,11 @@ void CWalletTx::GetAmounts(list<pair<CTxDestination, int64_t> >& listReceived,
         nFee = nDebit - nValueOut;
     }
 
-    // Sent/received.
-    BOOST_FOREACH(const CTxOut& txout, vout)
+    // Sent/received
+    for (unsigned int i = 0; i < vout.size(); i++)
     {
+        const CTxOut& txout = vout[i];
+
         // Skip special stake out
         if (txout.scriptPubKey.empty())
             continue;
@@ -946,11 +949,11 @@ void CWalletTx::GetAmounts(list<pair<CTxDestination, int64_t> >& listReceived,
 
         // If we are debited by the transaction, add the output as a "sent" entry
         if (nDebit > 0)
-            listSent.push_back(make_pair(address, txout.nValue));
+            listSent.push_back(boost::make_tuple(address, txout.nValue, i));
 
         // If we are receiving the output, add it as a "received" entry
         if (fIsMine)
-            listReceived.push_back(make_pair(address, txout.nValue));
+            listReceived.push_back(boost::make_tuple(address, txout.nValue, i));
     }
 
 }
@@ -963,29 +966,29 @@ void CWalletTx::GetAccountAmounts(const string& strAccount, int64_t& nReceived,
 
     int64_t allFee;
     string strSentAccount;
-    list<pair<CTxDestination, int64_t> > listReceived;
-    list<pair<CTxDestination, int64_t> > listSent;
+    list<boost::tuple<CTxDestination, int64_t, int> > listReceived;
+    list<boost::tuple<CTxDestination, int64_t, int> > listSent;
     GetAmounts(listReceived, listSent, allFee, strSentAccount);
 
     if (strAccount == strSentAccount)
     {
-        BOOST_FOREACH(const PAIRTYPE(CTxDestination,int64_t)& s, listSent)
-            nSent += s.second;
+        BOOST_FOREACH(const TUPLETYPE(CTxDestination,int64_t,int)& s, listSent)
+            nSent += s.get<1>();
 
         nFee = allFee;
     }
 
-    BOOST_FOREACH(const PAIRTYPE(CTxDestination,int64_t)& r, listReceived)
+    BOOST_FOREACH(const TUPLETYPE(CTxDestination, int64_t, int)& r, listReceived)
     {
-        if (pwallet->mapAddressBook.count(r.first))
+        if (pwallet->mapAddressBook.count(r.get<0>()))
         {
-            map<CTxDestination, string>::const_iterator mi = pwallet->mapAddressBook.find(r.first);
+            map<CTxDestination, string>::const_iterator mi = pwallet->mapAddressBook.find(r.get<0>());
 
             if (mi != pwallet->mapAddressBook.end() && (*mi).second == strAccount)
-                nReceived += r.second;
+                nReceived += r.get<1>();
         }
         else if (strAccount.empty())
-            nReceived += r.second;
+            nReceived += r.get<1>();
     }
 }
 

@@ -1,6 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2017-2018 The Swipp developers
+// Copyright (c) 2017-2020 The Swipp developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -29,6 +29,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/date_time/gregorian/gregorian_types.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include <openssl/bio.h>
 #include <openssl/evp.h>
@@ -74,8 +75,8 @@ typedef int64_t CAmount;
   #define PRIpdd    "td"
 #endif
 
-// This is needed because the foreach macro can't get over the comma in pair<t1, t2>
-#define PAIRTYPE(t1, t2)    std::pair<t1, t2>
+#define PAIRTYPE(t1, t2)        std::pair<t1, t2>
+#define TUPLETYPE(t1, t2, t3)   boost::tuple<t1, t2, t3>
 
 // Align by increasing pointer, must have extra space at end of buffer
 template <size_t nBytes, typename T>
