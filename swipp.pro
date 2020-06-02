@@ -1,11 +1,11 @@
 # Copyright (c) 2009-2010 Satoshi Nakamoto
-# Copyright (c) 2017-2018 The Swipp developers
+# Copyright (c) 2017-2020 The Swipp developers
 # Distributed under the MIT/X11 software license, see the accompanying
 # file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 TEMPLATE = app
 TARGET = swipp-qt
-VERSION = 2.1.6
+VERSION = 2.1.7
 INCLUDEPATH += src src/json src/qt src/qt/plugins/mrichtexteditor src/qt/plugins/rangeslider
 DEFINES += ENABLE_WALLET
 DEFINES += BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE BOOST_ASIO_ENABLE_OLD_SERVICES
